@@ -8,6 +8,7 @@ How to use it?
 
 edit in shiro.ini
 
+```properties
 #required
 cacheManager = org.yqr.shiro.RedisCacheManager
 #optional if you don't specify host the default value is 127.0.0.1
@@ -18,3 +19,4 @@ cacheManager.port=6379
 cacheManager.expire=5
 #required
 securityManager.cacheManager = $cacheManager
+```

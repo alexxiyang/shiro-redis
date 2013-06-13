@@ -20,3 +20,8 @@ cacheManager.expire=5
 #required
 securityManager.cacheManager = $cacheManager
 ```
+
+If you found any bugs
+===========
+
+Please send email to idante@qq.com

@@ -9,7 +9,7 @@
 
   <name>shiro-redis</name>
   <description>shiro only provide the support of ehcache and concurrentHashMap. Here is an implement of redis cache can be used by shiro. Hope it will help you!</description>
-  <url>http://maven.apache.org</url>
+  <url>https://github.com/alexxiyang/shiro-redis</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -38,4 +38,26 @@
     	<version>1.2.1</version>
     </dependency>
   </dependencies>
+  <developers>
+		<developer>
+			<id>alexxiyang</id>
+			<name>Alex Yang</name>
+			<email>idante@qq.com</email>
+			<timezone>GMT+8</timezone>
+			<roles>
+			</roles>
+		</developer>
+	</developers>
+	<scm>
+		<connection>scm:git:https://github.com/alexxiyang/shiro-redis.git</connection>
+		<developerConnection>scm:git:https://github.com/alexxiyang/shiro-redis.git</developerConnection>
+		<url>https://github.com/alexxiyang/shiro-redis.git</url>
+	</scm>
+	<distributionManagement>
+		<repository>
+			<id>nexus-releases</id>
+			<name>Nexus Release Repository</name>
+			<url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 </project>

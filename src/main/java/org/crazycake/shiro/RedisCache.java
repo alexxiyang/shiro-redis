@@ -1,4 +1,4 @@
-package org.yqr.shiro;
+package org.crazycake.shiro;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

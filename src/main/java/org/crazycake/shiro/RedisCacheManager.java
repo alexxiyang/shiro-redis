@@ -1,4 +1,4 @@
-package org.yqr.shiro;
+package org.crazycake.shiro;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;

@@ -12,7 +12,7 @@ edit in shiro.ini
 
 ```properties
 #required
-cacheManager = org.yqr.shiro.RedisCacheManager
+cacheManager = org.crazycake.shiro.RedisCacheManager
 #optional if you don't specify host the default value is 127.0.0.1
 cacheManager.host=127.0.0.1
 #optional , default value: 6379

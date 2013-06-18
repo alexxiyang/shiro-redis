@@ -27,4 +27,3 @@ If you found any bugs
 ===========
 
 Please send email to idante@qq.com
-Thank you for improvement!

@@ -14,6 +14,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+	
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -60,4 +61,60 @@
 			<url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
+	<build>
+		<finalName>shiro-redis</finalName>
+	</build>
+	
+	<profiles>
+		<profile>
+			<id>release-sign-artifacts</id>
+			<activation>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
+
+			<properties>
+				<gpg.keyname>FC2CC73F</gpg.keyname>	<!-- GPG Key ID to use for signing -->
+				<release.username>alexxiyang</release.username>
+			</properties>
+
+			<build>
+				<plugins>
+					<!--
+						Enable signing of the artifacts For gpg:sign-and-deploy-file it's
+						necessary to have a <server> with the repositoryId provided or
+						id="remote-repository" defined in settings.xml (it contains the
+						repository's login, psw) Signing: mvn gpg:sign-and-deploy-file
+						-DpomFile=target/myapp-1.0.pom \ > -Dfile=target/myapp-1.0.jar \ >
+						-Durl=http://oss.sonatype.org/content/repositories/malyvelky/ \ >
+						-DrepositoryId=sonatype_oss Note normally it uses the defaul key
+						but we can ovveride it by either setting the property gpg.keyname
+						(done in this POM) or by providing -Dkeyname=66AE163A on the
+						command line. OR directly w/ gpg: gpg -u 66AE163A - -sign -
+						-detach-sign -a target/dbunit-embeddedderby-parenttest.jar Note:
+						"mvn gpg:sign" results in NPE with v 1.o-a.-4, use "mvn package
+						gpg:sign" instead; see the issue MGPG-18
+					-->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.0-alpha-4</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+
+		</profile>
+
+	</profiles>
 </project>

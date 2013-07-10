@@ -25,38 +25,21 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
+	private final String SHIRO_REDIS_CACHE = "shiro_redis_cache:";
+	
 	/**
      * The wrapped Jedis instance.
      */
-	private Jedis cache;
-	
+	private JedisManager cache;
+
 	/**
-	 * 所有对象的超时设置
+	 * 通过一个JedisManager实例构造RedisCache
 	 */
-	private int expire;
-	
-	
-	/**
-	 * 使用一个jedis实例构造RedisCache的方法
-	 * @param cache
-	 */
-	public RedisCache(Jedis cache){
-		if (cache == null) {
-	         throw new IllegalArgumentException("Cache argument cannot be null.");
-	     }
-	     this.cache = cache;
-	}
-	
-	
-	/**
-	 * 通过一个Jedis实例构造RedisCache
-	 */
-	public RedisCache(Jedis cache,int expire){
+	public RedisCache(JedisManager cache){
 		 if (cache == null) {
 	         throw new IllegalArgumentException("Cache argument cannot be null.");
 	     }
 	     this.cache = cache;
-	     this.expire = expire;
 	}
 	
 	/**
@@ -68,7 +51,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 		if(key instanceof String){
     		return ((String) key).getBytes();
     	}else{
-    		return serialize(key);
+    		return SerializeUtils.serialize(key);
     	}
 	}
  	
@@ -81,7 +64,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	        }else{
 	        	byte[] rawValue = cache.get(getByteKey(key));
 	        	@SuppressWarnings("unchecked")
-				V value = (V)deserialize(rawValue);
+				V value = (V)SerializeUtils.deserialize(rawValue);
 	        	return value;
 	        }
 		} catch (Throwable t) {
@@ -94,10 +77,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	public V put(K key, V value) throws CacheException {
 		logger.debug("根据key从存储 key [" + key + "]");
 		 try {
-			 	cache.set(getByteKey(key), serialize(value));
-			 	if(expire != 0){
-			 		cache.expire(getByteKey(key), expire);
-			 	}
+			 	cache.set(getByteKey(key), SerializeUtils.serialize(value));
 	            return value;
 	        } catch (Throwable t) {
 	            throw new CacheException(t);
@@ -175,76 +155,6 @@ public class RedisCache<K, V> implements Cache<K, V> {
         } catch (Throwable t) {
             throw new CacheException(t);
         }
-	}
-	
-	/**
-	 * 反序列化
-	 * @param bytes
-	 * @return
-	 */
-	public Object deserialize(byte[] bytes) {
-		
-		Object result = null;
-		
-		if (isEmpty(bytes)) {
-			return null;
-		}
-
-		try {
-			ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
-			try {
-				ObjectInputStream objectInputStream = new ObjectInputStream(byteStream);
-				try {
-					result = objectInputStream.readObject();
-				}
-				catch (ClassNotFoundException ex) {
-					throw new Exception("Failed to deserialize object type", ex);
-				}
-			}
-			catch (Throwable ex) {
-				throw new Exception("Failed to deserialize", ex);
-			}
-		} catch (Exception e) {
-			logger.error("Failed to deserialize",e);
-		}
-		return result;
-	}
-	
-	private boolean isEmpty(byte[] data) {
-		return (data == null || data.length == 0);
-	}
-
-	/**
-	 * 序列化
-	 * @param object
-	 * @return
-	 */
-	public byte[] serialize(Object object) {
-		
-		byte[] result = null;
-		
-		if (object == null) {
-			return new byte[0];
-		}
-		try {
-			ByteArrayOutputStream byteStream = new ByteArrayOutputStream(128);
-			try  {
-				if (!(object instanceof Serializable)) {
-					throw new IllegalArgumentException(getClass().getSimpleName() + " requires a Serializable payload " +
-							"but received an object of type [" + object.getClass().getName() + "]");
-				}
-				ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteStream);
-				objectOutputStream.writeObject(object);
-				objectOutputStream.flush();
-				result =  byteStream.toByteArray();
-			}
-			catch (Throwable ex) {
-				throw new Exception("Failed to serialize", ex);
-			}
-		} catch (Exception ex) {
-			logger.error("Failed to serialize",ex);
-		}
-		return result;
 	}
 
 }

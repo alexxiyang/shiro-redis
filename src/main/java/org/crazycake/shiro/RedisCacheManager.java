@@ -17,54 +17,29 @@ public class RedisCacheManager implements CacheManager {
 	
 	// fast lookup by name map
 	private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
-		
-	// 0 - never expire
-	private int expire = 0;
 	
-	private String host = "127.0.0.1";
-	
-	private int port = 6379;
+	private JedisManager jedisManager;
 	
 	@Override
 	public <K, V> Cache<K, V> getCache(String name) throws CacheException {
 		logger.debug("获取名称为: " + name + " 的RedisCache实例");
 		Cache c = caches.get(name);
 		if(c==null){
-			Jedis cache = new Jedis(host, port);
-			c = new RedisCache<K, V>(cache,expire);
+			
+			jedisManager.init();
+			c = new RedisCache<K, V>(jedisManager);
 			caches.put(name, c);
 		}
 		return c;
 	}
 
-
-
-	public int getExpire() {
-		return expire;
+	public JedisManager getJedisManager() {
+		return jedisManager;
 	}
 
-	public void setExpire(int expire) {
-		this.expire = expire;
+	public void setJedisManager(JedisManager jedisManager) {
+		this.jedisManager = jedisManager;
 	}
 
-	public String getHost() {
-		return host;
-	}
-
-	public void setHost(String host) {
-		this.host = host;
-	}
-
-
-	public int getPort() {
-		return port;
-	}
-
-
-	public void setPort(int port) {
-		this.port = port;
-	}
-
-
-
+	
 }

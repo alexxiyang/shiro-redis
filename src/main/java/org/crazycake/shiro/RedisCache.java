@@ -30,12 +30,12 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	/**
      * The wrapped Jedis instance.
      */
-	private JedisManager cache;
+	private RedisManager cache;
 
 	/**
 	 * 通过一个JedisManager实例构造RedisCache
 	 */
-	public RedisCache(JedisManager cache){
+	public RedisCache(RedisManager cache){
 		 if (cache == null) {
 	         throw new IllegalArgumentException("Cache argument cannot be null.");
 	     }
@@ -49,7 +49,8 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	 */
 	private byte[] getByteKey(K key){
 		if(key instanceof String){
-    		return ((String) key).getBytes();
+			String preKey = this.SHIRO_REDIS_CACHE + key;
+    		return preKey.getBytes();
     	}else{
     		return SerializeUtils.serialize(key);
     	}
@@ -120,7 +121,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	@Override
 	public Set<K> keys() {
 		try {
-            Set<String> keys = cache.keys("*");
+            Set<String> keys = cache.keys(this.SHIRO_REDIS_CACHE + "*");
             if (CollectionUtils.isEmpty(keys)) {
             	return Collections.emptySet();
             }else{
@@ -138,7 +139,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	@Override
 	public Collection<V> values() {
 		try {
-            Set<String> keys = cache.keys("*");
+            Set<String> keys = cache.keys(this.SHIRO_REDIS_CACHE + "*");
             if (!CollectionUtils.isEmpty(keys)) {
                 List<V> values = new ArrayList<V>(keys.size());
                 for (String key : keys) {

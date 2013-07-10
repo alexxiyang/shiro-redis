@@ -18,7 +18,7 @@ public class RedisCacheManager implements CacheManager {
 	// fast lookup by name map
 	private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
 	
-	private JedisManager jedisManager;
+	private RedisManager redisManager;
 	
 	@Override
 	public <K, V> Cache<K, V> getCache(String name) throws CacheException {
@@ -26,20 +26,21 @@ public class RedisCacheManager implements CacheManager {
 		Cache c = caches.get(name);
 		if(c==null){
 			
-			jedisManager.init();
-			c = new RedisCache<K, V>(jedisManager);
+			redisManager.init();
+			c = new RedisCache<K, V>(redisManager);
 			caches.put(name, c);
 		}
 		return c;
 	}
 
-	public JedisManager getJedisManager() {
-		return jedisManager;
+	public RedisManager getRedisManager() {
+		return redisManager;
 	}
 
-	public void setJedisManager(JedisManager jedisManager) {
-		this.jedisManager = jedisManager;
+	public void setRedisManager(RedisManager redisManager) {
+		this.redisManager = redisManager;
 	}
+
 
 	
 }

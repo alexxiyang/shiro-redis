@@ -121,12 +121,12 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	@Override
 	public Set<K> keys() {
 		try {
-            Set<String> keys = cache.keys(this.SHIRO_REDIS_CACHE + "*");
+            Set<byte[]> keys = cache.keys(this.SHIRO_REDIS_CACHE + "*");
             if (CollectionUtils.isEmpty(keys)) {
             	return Collections.emptySet();
             }else{
             	Set<K> newKeys = new HashSet<K>();
-            	for(String key:keys){
+            	for(byte[] key:keys){
             		newKeys.add((K)key);
             	}
             	return newKeys;
@@ -139,10 +139,10 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	@Override
 	public Collection<V> values() {
 		try {
-            Set<String> keys = cache.keys(this.SHIRO_REDIS_CACHE + "*");
+            Set<byte[]> keys = cache.keys(this.SHIRO_REDIS_CACHE + "*");
             if (!CollectionUtils.isEmpty(keys)) {
                 List<V> values = new ArrayList<V>(keys.size());
-                for (String key : keys) {
+                for (byte[] key : keys) {
                     @SuppressWarnings("unchecked")
 					V value = get((K)key);
                     if (value != null) {

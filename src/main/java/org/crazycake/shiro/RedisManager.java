@@ -1,5 +1,6 @@
 package org.crazycake.shiro;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import redis.clients.jedis.Jedis;
@@ -15,7 +16,7 @@ public class RedisManager {
 	// 0 - never expire
 	private int expire = 0;
 	
-	private static JedisPool jedisPool;
+	private static JedisPool jedisPool = null;
 	
 	public RedisManager(){
 		
@@ -25,7 +26,9 @@ public class RedisManager {
 	 * 初始化方法
 	 */
 	public void init(){
-		jedisPool = new JedisPool(new JedisPoolConfig(), host, port);
+		if(jedisPool == null){
+			jedisPool = new JedisPool(new JedisPoolConfig(), host, port);
+		}
 	}
 	
 	/**
@@ -51,6 +54,26 @@ public class RedisManager {
 	 * @return
 	 */
 	public byte[] set(byte[] key,byte[] value){
+		Jedis jedis = jedisPool.getResource();
+		try{
+			jedis.set(key,value);
+			if(this.expire != 0){
+				jedis.expire(key, this.expire);
+		 	}
+		}finally{
+			jedisPool.returnResource(jedis);
+		}
+		return value;
+	}
+	
+	/**
+	 * set 
+	 * @param key
+	 * @param value
+	 * @param expire
+	 * @return
+	 */
+	public byte[] set(byte[] key,byte[] value,int expire){
 		Jedis jedis = jedisPool.getResource();
 		try{
 			jedis.set(key,value);
@@ -107,11 +130,11 @@ public class RedisManager {
 	 * @param regex
 	 * @return
 	 */
-	public Set<String> keys(String pattern){
-		Set<String> keys = null;
+	public Set<byte[]> keys(String pattern){
+		Set<byte[]> keys = null;
 		Jedis jedis = jedisPool.getResource();
 		try{
-			keys = jedis.keys(pattern);
+			keys = jedis.keys(pattern.getBytes());
 		}finally{
 			jedisPool.returnResource(jedis);
 		}

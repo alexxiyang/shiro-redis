@@ -6,25 +6,7 @@ shiro only provide the support of ehcache and concurrentHashMap. Here is an impl
 How to use it?
 ===========
 
-Add sonatype release repository into your setting.xml
-
-```xml
-<repository>
-	<id>sonatype.maven.release</id>
-	<name>Sonatype Release Repository</name>
-	<url>https://oss.sonatype.org/content/repositories/releases</url>
-</repository>
-```
-
-After updated indexes you can add dependency of shiro-redis into your pom.xml
-
-```xml
-<dependency>
-	<groupId>org.crazycake</groupId>
-	<artifactId>shiro-redis</artifactId>
-	<version>2.0.0-RELEASE</version>
-</dependency>
-```
+Download shiro-redis.jar in bin folder and add it into your classpath.
 
 Edit shiro.ini
 

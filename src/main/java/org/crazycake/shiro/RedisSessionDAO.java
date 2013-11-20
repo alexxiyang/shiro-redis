@@ -40,11 +40,8 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 		
 		byte[] key = getByteKey(session.getId());
 		byte[] value = SerializeUtils.serialize(session);
-		
-		Long timeout = session.getTimeout()/1000;
-		int expire = timeout.intValue();
-		
-		this.redisManager.set(key, value, expire);
+		session.setTimeout(redisManager.getExpire()*1000);		
+		this.redisManager.set(key, value, redisManager.getExpire());
 	}
 
 	@Override

@@ -3,7 +3,6 @@ package org.crazycake.shiro;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.shiro.session.Session;
@@ -18,9 +17,12 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	/**
 	 * shiro-redis的session对象前缀
 	 */
-	private final String SHIRO_REDIS_SESSION_PRE = "shiro_redis_session:";
-	
 	private RedisManager redisManager;
+	
+	/**
+	 * The Redis key prefix for the sessions 
+	 */
+	private String keyPrefix = "shiro_redis_session:";
 	
 	@Override
 	public void update(Session session) throws UnknownSessionException {
@@ -58,7 +60,7 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	public Collection<Session> getActiveSessions() {
 		Set<Session> sessions = new HashSet<Session>();
 		
-		Set<byte[]> keys = redisManager.keys(this.SHIRO_REDIS_SESSION_PRE + "*");
+		Set<byte[]> keys = redisManager.keys(this.keyPrefix + "*");
 		if(keys != null && keys.size()>0){
 			for(byte[] key:keys){
 				Session s = (Session)SerializeUtils.deserialize(redisManager.get(key));
@@ -94,7 +96,7 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	 * @return
 	 */
 	private byte[] getByteKey(Serializable sessionId){
-		String preKey = this.SHIRO_REDIS_SESSION_PRE + sessionId;
+		String preKey = this.keyPrefix + sessionId;
 		return preKey.getBytes();
 	}
 
@@ -110,5 +112,24 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 		 */
 		this.redisManager.init();
 	}
+
+	/**
+	 * Returns the Redis session keys
+	 * prefix.
+	 * @return The prefix
+	 */
+	public String getKeyPrefix() {
+		return keyPrefix;
+	}
+
+	/**
+	 * Sets the Redis sessions key 
+	 * prefix.
+	 * @param keyPrefix The prefix
+	 */
+	public void setKeyPrefix(String keyPrefix) {
+		this.keyPrefix = keyPrefix;
+	}
+	
 	
 }

@@ -1,15 +1,9 @@
 package org.crazycake.shiro;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -19,19 +13,38 @@ import org.apache.shiro.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import redis.clients.jedis.Jedis;
-
 public class RedisCache<K, V> implements Cache<K, V> {
 	
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
-	
-	private final String SHIRO_REDIS_CACHE = "shiro_redis_cache:";
-	
+		
 	/**
      * The wrapped Jedis instance.
      */
 	private RedisManager cache;
+	
+	/**
+	 * The Redis key prefix for the sessions 
+	 */
+	private String keyPrefix = "shiro_redis_session:";
+	
+	/**
+	 * Returns the Redis session keys
+	 * prefix.
+	 * @return The prefix
+	 */
+	public String getKeyPrefix() {
+		return keyPrefix;
+	}
 
+	/**
+	 * Sets the Redis sessions key 
+	 * prefix.
+	 * @param keyPrefix The prefix
+	 */
+	public void setKeyPrefix(String keyPrefix) {
+		this.keyPrefix = keyPrefix;
+	}
+	
 	/**
 	 * 通过一个JedisManager实例构造RedisCache
 	 */
@@ -43,13 +56,28 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	}
 	
 	/**
+	 * Constructs a cache instance with the specified
+	 * Redis manager and using a custom key prefix.
+	 * @param cache The cache manager instance
+	 * @param prefix The Redis key prefix
+	 */
+	public RedisCache(RedisManager cache, 
+				String prefix){
+		 
+		this( cache );
+		
+		// set the prefix
+		this.keyPrefix = prefix;
+	}
+	
+	/**
 	 * 获得byte[]型的key
 	 * @param key
 	 * @return
 	 */
 	private byte[] getByteKey(K key){
 		if(key instanceof String){
-			String preKey = this.SHIRO_REDIS_CACHE + key;
+			String preKey = this.keyPrefix + key;
     		return preKey.getBytes();
     	}else{
     		return SerializeUtils.serialize(key);
@@ -121,7 +149,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	@Override
 	public Set<K> keys() {
 		try {
-            Set<byte[]> keys = cache.keys(this.SHIRO_REDIS_CACHE + "*");
+            Set<byte[]> keys = cache.keys(this.keyPrefix + "*");
             if (CollectionUtils.isEmpty(keys)) {
             	return Collections.emptySet();
             }else{
@@ -139,7 +167,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	@Override
 	public Collection<V> values() {
 		try {
-            Set<byte[]> keys = cache.keys(this.SHIRO_REDIS_CACHE + "*");
+            Set<byte[]> keys = cache.keys(this.keyPrefix + "*");
             if (!CollectionUtils.isEmpty(keys)) {
                 List<V> values = new ArrayList<V>(keys.size());
                 for (byte[] key : keys) {

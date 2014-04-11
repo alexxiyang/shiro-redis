@@ -13,6 +13,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<junit>4.11</junit>
+		<slf4j>1.7.5</slf4j>
 	</properties>
 
 	<licenses>
@@ -22,6 +24,8 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+
+
 	<dependencies>
 		<dependency>
 			<groupId>redis.clients</groupId>
@@ -38,7 +42,30 @@
 			<artifactId>shiro-core</artifactId>
 			<version>1.2.1</version>
 		</dependency>
+
+		<!-- Testing -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.7.7</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.2</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
+
+
 	<developers>
 		<developer>
 			<id>alexxiyang</id>

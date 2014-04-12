@@ -1,6 +1,5 @@
 package org.crazycake.shiro;
 
-import java.io.Serializable;
 import java.util.Set;
 
 import redis.clients.jedis.Jedis;

@@ -1,45 +1,72 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.crazycake</groupId>
-  <artifactId>shiro-redis</artifactId>
-  <version>1.1.0-RELEASE</version>
-  <packaging>jar</packaging>
+	<groupId>org.crazycake</groupId>
+	<artifactId>shiro-redis</artifactId>
+	<version>1.1.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 
-  <name>shiro-redis</name>
-  <description>shiro only provide the support of ehcache and concurrentHashMap. Here is an implement of redis cache can be used by shiro. Hope it will help you!</description>
-  <url>https://github.com/alexxiyang/shiro-redis</url>
+	<name>shiro-redis</name>
+	<description>shiro only provide the support of ehcache and concurrentHashMap. Here is an implement of redis cache can be used by shiro. Hope it will help you!</description>
+	<url>https://github.com/alexxiyang/shiro-redis</url>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-	
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-  <dependencies>
-    <dependency>
-    	<groupId>redis.clients</groupId>
-    	<artifactId>jedis</artifactId>
-    	<version>2.0.0</version>
-    </dependency>
-    <dependency>
-    	<groupId>org.slf4j</groupId>
-    	<artifactId>slf4j-api</artifactId>
-    	<version>1.7.2</version>
-    </dependency>
-    <dependency>
-    	<groupId>org.apache.shiro</groupId>
-    	<artifactId>shiro-core</artifactId>
-    	<version>1.2.1</version>
-    </dependency>
-  </dependencies>
-  <developers>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<junit>4.11</junit>
+		<slf4j>1.7.5</slf4j>
+	</properties>
+
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+
+	<dependencies>
+		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+			<version>2.4.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-core</artifactId>
+			<version>1.2.1</version>
+		</dependency>
+
+		<!-- Testing -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.7.7</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.2</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+
+	<developers>
 		<developer>
 			<id>alexxiyang</id>
 			<name>Alex Yang</name>
@@ -64,7 +91,7 @@
 	<build>
 		<finalName>shiro-redis</finalName>
 	</build>
-	
+
 	<profiles>
 		<profile>
 			<id>release-sign-artifacts</id>
@@ -82,21 +109,17 @@
 
 			<build>
 				<plugins>
-					<!--
-						Enable signing of the artifacts For gpg:sign-and-deploy-file it's
-						necessary to have a <server> with the repositoryId provided or
-						id="remote-repository" defined in settings.xml (it contains the
-						repository's login, psw) Signing: mvn gpg:sign-and-deploy-file
-						-DpomFile=target/myapp-1.0.pom \ > -Dfile=target/myapp-1.0.jar \ >
-						-Durl=http://oss.sonatype.org/content/repositories/malyvelky/ \ >
-						-DrepositoryId=sonatype_oss Note normally it uses the defaul key
-						but we can ovveride it by either setting the property gpg.keyname
-						(done in this POM) or by providing -Dkeyname=66AE163A on the
-						command line. OR directly w/ gpg: gpg -u 66AE163A - -sign -
-						-detach-sign -a target/dbunit-embeddedderby-parenttest.jar Note:
-						"mvn gpg:sign" results in NPE with v 1.o-a.-4, use "mvn package
-						gpg:sign" instead; see the issue MGPG-18
-					-->
+					<!-- Enable signing of the artifacts For gpg:sign-and-deploy-file it's 
+						necessary to have a <server> with the repositoryId provided or id="remote-repository" 
+						defined in settings.xml (it contains the repository's login, psw) Signing: 
+						mvn gpg:sign-and-deploy-file -DpomFile=target/myapp-1.0.pom \ > -Dfile=target/myapp-1.0.jar 
+						\ > -Durl=http://oss.sonatype.org/content/repositories/malyvelky/ \ > -DrepositoryId=sonatype_oss 
+						Note normally it uses the defaul key but we can ovveride it by either setting 
+						the property gpg.keyname (done in this POM) or by providing -Dkeyname=66AE163A 
+						on the command line. OR directly w/ gpg: gpg -u 66AE163A - -sign - -detach-sign 
+						-a target/dbunit-embeddedderby-parenttest.jar Note: "mvn gpg:sign" results 
+						in NPE with v 1.o-a.-4, use "mvn package gpg:sign" instead; see the issue 
+						MGPG-18 -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>

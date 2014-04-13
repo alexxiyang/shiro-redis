@@ -6,9 +6,17 @@ shiro only provide the support of ehcache and concurrentHashMap. Here is an impl
 How to use it?
 ===========
 
-* Download shiro-redis.jar in bin folder and add it into your classpath.
-* Add depende'.
-
+You can chose these 2 ways to include shiro-redis into your project
+1. directly download jar file
+Download shiro-redis.jar in bin folder and add it into your classpath.
+2. add maven dependency
+------------------------------------
+    <dependency>
+  		<groupId>org.crazycake</groupId>
+  		<artifactId>shiro-redis</artifactId>
+  		<version>2.4.2-RELEASE</version>
+  	</dependency>
+------------------------------------
 Edit shiro.ini
 
 ```properties
@@ -31,6 +39,8 @@ securityManager.sessionManager = $sessionManager
 #============redisCacheManager===========
 cacheManager = org.crazycake.shiro.RedisCacheManager
 cacheManager.redisManager = $redisManager
+#custom your redis key prefix, if you doesn't define this parameter shiro-redis will use 'shiro_redis_session:' as default prefix
+shiroCacheManager.keyPrefix = users:security:authz:
 securityManager.cacheManager = $cacheManager
 ```
 

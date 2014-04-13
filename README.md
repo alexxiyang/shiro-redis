@@ -7,7 +7,9 @@ How to use it?
 ===========
 
 You can chose these 2 ways to include shiro-redis into your project
-
+* directly download jar file
+Download shiro-redis.jar in bin folder and add it into your classpath.
+* add maven dependency
 
 ```xml
     <dependency>
@@ -15,7 +17,7 @@ You can chose these 2 ways to include shiro-redis into your project
   		<artifactId>shiro-redis</artifactId>
   		<version>2.4.2-RELEASE</version>
   	</dependency>
-```xml
+```
 
 Edit shiro.ini
 

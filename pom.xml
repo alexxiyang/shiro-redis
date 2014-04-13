@@ -109,6 +109,15 @@
 
 			<build>
 				<plugins>
+					<plugin>
+					  <groupId>org.apache.maven.plugins</groupId>
+					  <artifactId>maven-compiler-plugin</artifactId>
+					  <version>2.1</version>
+					  <configuration>
+						<source>1.6</source>
+						<target>1.6</target>
+					  </configuration>
+					</plugin>
 					<!-- Enable signing of the artifacts For gpg:sign-and-deploy-file it's 
 						necessary to have a <server> with the repositoryId provided or id="remote-repository" 
 						defined in settings.xml (it contains the repository's login, psw) Signing: 
@@ -133,17 +142,6 @@
 								</goals>
 							</execution>
 						</executions>
-					</plugin>
-					<plugin>
-						<artifactId>maven-compiler-plugin</artifactId>
-						<version>2.0.2</version>
-						<configuration>
-							<source>1.6</source>
-							<target>1.6</target>
-							<encoding>UTF-8</encoding>
-							<optimise>true</optimise>
-							<compilerArgument>-nowarn</compilerArgument>
-						</configuration>
 					</plugin>
 				</plugins>
 			</build>

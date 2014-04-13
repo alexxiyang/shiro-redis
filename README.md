@@ -6,8 +6,8 @@ shiro only provide the support of ehcache and concurrentHashMap. Here is an impl
 How to use it?
 ===========
 
-1. Download shiro-redis.jar in bin folder and add it into your classpath.
-2. Add depende'.
+* Download shiro-redis.jar in bin folder and add it into your classpath.
+* Add depende'.
 
 Edit shiro.ini
 

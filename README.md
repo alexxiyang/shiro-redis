@@ -7,9 +7,9 @@ How to use it?
 ===========
 
 You can chose these 2 ways to include shiro-redis into your project
-1. directly download jar file
++ directly download jar file
 Download shiro-redis.jar in bin folder and add it into your classpath.
-2. add maven dependency
++ add maven dependency
 ------------------------------------
     <dependency>
   		<groupId>org.crazycake</groupId>

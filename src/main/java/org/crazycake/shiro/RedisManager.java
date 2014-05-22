@@ -15,6 +15,11 @@ public class RedisManager {
 	// 0 - never expire
 	private int expire = 0;
 	
+	//timeout for jedis try to connect to redis server, not expire time! In milliseconds
+	private int timeout = 0;
+	
+	private String password = "";
+	
 	private static JedisPool jedisPool = null;
 	
 	public RedisManager(){
@@ -26,7 +31,14 @@ public class RedisManager {
 	 */
 	public void init(){
 		if(jedisPool == null){
-			jedisPool = new JedisPool(new JedisPoolConfig(), host, port);
+			if(password != null && !"".equals(password)){
+				jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout, password);
+			}else if(timeout != 0){
+				jedisPool = new JedisPool(new JedisPoolConfig(), host, port,timeout);
+			}else{
+				jedisPool = new JedisPool(new JedisPoolConfig(), host, port);
+			}
+			
 		}
 	}
 	
@@ -162,6 +174,22 @@ public class RedisManager {
 
 	public void setExpire(int expire) {
 		this.expire = expire;
+	}
+
+	public int getTimeout() {
+		return timeout;
+	}
+
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 	
 	

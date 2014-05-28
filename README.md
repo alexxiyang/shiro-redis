@@ -7,8 +7,7 @@ How to use it?
 ===========
 
 You can chose these 2 ways to include shiro-redis into your project
-* directly download jar file
-Download shiro-redis.jar in bin folder and add it into your classpath.
+* use "git clone https://github.com/alexxiyang/shiro-redis.git" to clone project to your local workspace and build jar file by your self
 * add maven dependency
 
 ```xml

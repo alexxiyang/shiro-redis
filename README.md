@@ -6,16 +6,16 @@ shiro only provide the support of ehcache and concurrentHashMap. Here is an impl
 How to use it?
 ===========
 
-You can chose these 2 ways to include shiro-redis into your project
-* directly download jar file
+You can choose these 2 ways to include shiro-redis into your project
+* compiler jar with source code from https://github.com/alexxiyang/shiro-redis.git
 Download shiro-redis.jar in bin folder and add it into your classpath.
-* add maven dependency
+* add maven dependency 
 
 ```xml
     <dependency>
   		<groupId>org.crazycake</groupId>
   		<artifactId>shiro-redis</artifactId>
-  		<version>2.4.2-RELEASE</version>
+  		<version>2.4.2.1-RELEASE</version>
   	</dependency>
 ```
 
@@ -30,6 +30,10 @@ redisManager.host = 127.0.0.1
 redisManager.port = 6379
 #optional, default value:0 .The expire time is in second
 redisManager.expire = 30
+#optional, timeout for jedis try to connect to redis server(In milliseconds), not equals to expire time! 
+redisManager.timeout = 0
+#optional, password for redis server
+redisManager.password = 
 
 #============redisSessionDAO=============
 redisSessionDAO = org.crazycake.shiro.RedisSessionDAO

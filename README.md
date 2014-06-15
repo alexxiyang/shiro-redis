@@ -1,4 +1,4 @@
-shiro-redis
+# shiro-redis
 
 [![Build Status](https://travis-ci.org/alexxiyang/shiro-redis.svg?branch=master)](https://travis-ci.org/alexxiyang/shiro-redis)
 

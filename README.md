@@ -20,7 +20,11 @@ You can choose these 2 ways to include shiro-redis into your project
   	</dependency>
 ```
 
-Edit shiro.ini
+How to configure ?
+===========
+You can choose 2 ways : shiro.ini or spring-*.xml
+
+shiro.ini:
 
 ```properties
 #redisManager
@@ -51,6 +55,82 @@ shiroCacheManager.keyPrefix = users:security:authz:
 securityManager.cacheManager = $cacheManager
 ```
 
+spring.xml:
+```xml
+<!-- shiro filter -->
+<bean id="ShiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+	<property name="securityManager" ref="securityManager"/>
+	
+	<!--
+	<property name="loginUrl" value="/login.jsp"/>
+	<property name="successUrl" value="/home.jsp"/>  
+	<property name="unauthorizedUrl" value="/unauthorized.jsp"/>
+	-->
+	<!-- The 'filters' property is not necessary since any declared javax.servlet.Filter bean  -->
+	<!-- defined will be automatically acquired and available via its beanName in chain        -->
+	<!-- definitions, but you can perform instance overrides or name aliases here if you like: -->
+	<!-- <property name="filters">
+		<util:map>
+			<entry key="anAlias" value-ref="someFilter"/>
+		</util:map>
+	</property> -->
+	<property name="filterChainDefinitions">
+		<value>
+			/login.jsp = anon
+			/user/** = anon
+			/register/** = anon
+			/unauthorized.jsp = anon
+			/css/** = anon
+			/js/** = anon
+			
+			/** = authc
+		</value>
+	</property>
+</bean>
+
+<!-- shiro securityManager -->
+<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+
+	<!-- Single realm app.  If you have multiple realms, use the 'realms' property instead. -->
+	
+	<!-- sessionManager -->
+	<property name="sessionManager" ref="sessionManager" />
+	
+	<!-- cacheManager -->
+	<property name="cacheManager" ref="cacheManager" />
+	
+	<!-- By default the servlet container sessions will be used.  Uncomment this line
+		 to use shiro's native sessions (see the JavaDoc for more): -->
+	<!-- <property name="sessionMode" value="native"/> -->
+</bean>
+<bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>	
+
+<!-- shiro redisManager -->
+<bean id="redisManager" class="org.crazycake.shiro.RedisManager">
+	<property name="host" value="127.0.0.1"/>
+	<property name="port" value="6379"/>
+	<property name="expire" value="1800"/>
+	<!-- optional properties:
+	<property name="timeout" value="10000"/>
+	<property name="password" value="123456"/>
+	-->
+</bean>
+
+<!-- redisSessionDAO -->
+<bean id="redisSessionDAO" class="org.crazycake.shiro.RedisSessionDAO">
+	<property name="redisManager" ref="redisManager" />
+</bean>
+
+<!-- sessionManager -->
+<bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+	<property name="sessionDAO" ref="redisSessionDAO" />
+</bean>
+
+<!-- cacheManager -->
+<bean id="cacheManager" class="org.crazycake.shiro.RedisCacheManager">
+	<property name="redisManager" ref="redisManager" />
+</bean>
+```
 
 If you found any bugs
 ===========

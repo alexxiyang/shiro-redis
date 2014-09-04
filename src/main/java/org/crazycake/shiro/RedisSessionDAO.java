@@ -10,6 +10,7 @@ import org.apache.shiro.session.UnknownSessionException;
 import org.apache.shiro.session.mgt.eis.AbstractSessionDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.util.SafeEncoder;
 
 public class RedisSessionDAO extends AbstractSessionDAO {
 
@@ -40,7 +41,7 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 			return;
 		}
 		
-		byte[] key = getByteKey(session.getId());
+		String key = getByteKey(session.getId());
 		byte[] value = SerializeUtils.serialize(session);
 		session.setTimeout(redisManager.getExpire()*1000);		
 		this.redisManager.set(key, value, redisManager.getExpire());
@@ -63,7 +64,7 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 		Set<byte[]> keys = redisManager.keys(this.keyPrefix + "*");
 		if(keys != null && keys.size()>0){
 			for(byte[] key:keys){
-				Session s = (Session)SerializeUtils.deserialize(redisManager.get(key));
+				Session s = (Session)SerializeUtils.deserialize(redisManager.get(SafeEncoder.encode(key)));
 				sessions.add(s);
 			}
 		}
@@ -95,9 +96,9 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	 * @param key
 	 * @return
 	 */
-	private byte[] getByteKey(Serializable sessionId){
+	private String getByteKey(Serializable sessionId){
 		String preKey = this.keyPrefix + sessionId;
-		return preKey.getBytes();
+		return preKey;
 	}
 
 	public RedisManager getRedisManager() {

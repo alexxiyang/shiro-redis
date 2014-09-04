@@ -4,7 +4,7 @@
 
 	<groupId>org.crazycake</groupId>
 	<artifactId>shiro-redis</artifactId>
-	<version>2.4.2.1-RELEASE</version>
+	<version>2.4.2.3</version>
 	<packaging>jar</packaging>
 
 	<name>shiro-redis</name>
@@ -21,6 +21,7 @@
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
@@ -81,6 +82,7 @@
 		<developerConnection>scm:git:https://github.com/alexxiyang/shiro-redis.git</developerConnection>
 		<url>https://github.com/alexxiyang/shiro-redis.git</url>
 	</scm>
+    <!--
 	<distributionManagement>
 		<repository>
 			<id>nexus-releases</id>
@@ -88,6 +90,7 @@
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
+    -->
 	<build>
 		<finalName>shiro-redis</finalName>
 		<plugins>
@@ -153,4 +156,12 @@
 		</profile>
 
 	</profiles>
+
+    <distributionManagement>
+        <repository>
+            <id>easyway</id>
+            <url>http://192.168.70.105:8981/nexus/content/repositories/easyway</url>
+        </repository>
+</distributionManagement>
+
 </project>

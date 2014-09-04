@@ -12,6 +12,7 @@ import org.apache.shiro.cache.CacheException;
 import org.apache.shiro.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.util.SafeEncoder;
 
 public class RedisCache<K, V> implements Cache<K, V> {
 	
@@ -75,12 +76,12 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	 * @param key
 	 * @return
 	 */
-	private byte[] getByteKey(K key){
+	private String getByteKey(K key){
 		if(key instanceof String){
 			String preKey = this.keyPrefix + key;
-    		return preKey.getBytes();
+    		return preKey;
     	}else{
-    		return SerializeUtils.serialize(key);
+    		return SafeEncoder.encode(SerializeUtils.serialize(key));
     	}
 	}
  	

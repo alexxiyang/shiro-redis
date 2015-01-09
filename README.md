@@ -51,7 +51,7 @@ securityManager.sessionManager = $sessionManager
 cacheManager = org.crazycake.shiro.RedisCacheManager
 cacheManager.redisManager = $redisManager
 #custom your redis key prefix, if you doesn't define this parameter shiro-redis will use 'shiro_redis_session:' as default prefix
-shiroCacheManager.keyPrefix = users:security:authz:
+cacheManager.keyPrefix = users:security:authz:
 securityManager.cacheManager = $cacheManager
 ```
 

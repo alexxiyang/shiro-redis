@@ -1,14 +1,18 @@
 package org.crazycake.shiro;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.JedisSentinelPool;
+import redis.clients.util.Pool;
 
 public class RedisManager {
 	
-	private String host = "127.0.0.1";
+  private String host = "127.0.0.1";
 	
 	private int port = 6379;
 	
@@ -20,9 +24,41 @@ public class RedisManager {
 	
 	private String password = "";
 	
-	private static JedisPool jedisPool = null;
+	private static Pool<Jedis> jedisPool = null;
 	
-	public RedisManager(){
+	private String sentinels = null;
+
+	private String sentinelClusterName = null;
+
+	/**
+   * @return the sentinelClusterName
+   */
+  public String getSentinelClusterName() {
+    return sentinelClusterName;
+  }
+
+  /**
+   * @param sentinelClusterName the sentinelClusterName to set
+   */
+  public void setSentinelClusterName(String sentinelClusterName) {
+    this.sentinelClusterName = sentinelClusterName;
+  }
+
+  /**
+   * @return the sentinels
+   */
+  public String getSentinels() {
+    return sentinels;
+  }
+
+  /**
+   * @param sentinels the sentinels to set
+   */
+  public void setSentinels(String sentinels) {
+    this.sentinels = sentinels;
+  }
+
+  public RedisManager(){
 		
 	}
 	
@@ -30,12 +66,17 @@ public class RedisManager {
 	 * 初始化方法
 	 */
 	public void init(){
-		if(jedisPool == null){
-			if(password != null && !"".equals(password)){
+	  if (jedisPool == null) {
+	    if ( sentinels != null && !"".equals(sentinels) && sentinelClusterName != null && !"".equals(sentinelClusterName) ) {
+	      String[] shosts = sentinels.split("[,\\s]+");
+	      Set<String> sentinelHostPorts = new HashSet<String>();
+	      Collections.addAll(sentinelHostPorts, shosts);
+	      jedisPool = new JedisSentinelPool(sentinelClusterName,sentinelHostPorts);
+	    } else if (password != null && !"".equals(password)){
 				jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout, password);
-			}else if(timeout != 0){
+			} else if (timeout != 0){
 				jedisPool = new JedisPool(new JedisPoolConfig(), host, port,timeout);
-			}else{
+			} else {
 				jedisPool = new JedisPool(new JedisPoolConfig(), host, port);
 			}
 			
@@ -191,7 +232,5 @@ public class RedisManager {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
-	
-	
+
 }

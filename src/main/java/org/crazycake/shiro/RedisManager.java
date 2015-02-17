@@ -5,6 +5,7 @@ import java.util.Set;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.util.SafeEncoder;
 
 public class RedisManager {
 	
@@ -47,11 +48,11 @@ public class RedisManager {
 	 * @param key
 	 * @return
 	 */
-	public byte[] get(byte[] key){
+	public byte[] get(String key){
 		byte[] value = null;
 		Jedis jedis = jedisPool.getResource();
 		try{
-			value = jedis.get(key);
+			value = jedis.get(SafeEncoder.encode(key));
 		}finally{
 			jedisPool.returnResource(jedis);
 		}
@@ -64,10 +65,10 @@ public class RedisManager {
 	 * @param value
 	 * @return
 	 */
-	public byte[] set(byte[] key,byte[] value){
+	public byte[] set(String key,byte[] value){
 		Jedis jedis = jedisPool.getResource();
 		try{
-			jedis.set(key,value);
+			jedis.set(SafeEncoder.encode(key),value);
 			if(this.expire != 0){
 				jedis.expire(key, this.expire);
 		 	}
@@ -84,10 +85,11 @@ public class RedisManager {
 	 * @param expire
 	 * @return
 	 */
-	public byte[] set(byte[] key,byte[] value,int expire){
+	public byte[] set(String key,byte[] value,int expire){
 		Jedis jedis = jedisPool.getResource();
 		try{
-			jedis.set(key,value);
+
+			jedis.set(SafeEncoder.encode(key),value);
 			if(expire != 0){
 				jedis.expire(key, expire);
 		 	}
@@ -101,10 +103,10 @@ public class RedisManager {
 	 * del
 	 * @param key
 	 */
-	public void del(byte[] key){
+	public void del(String key){
 		Jedis jedis = jedisPool.getResource();
 		try{
-			jedis.del(key);
+			jedis.del(SafeEncoder.encode(key));
 		}finally{
 			jedisPool.returnResource(jedis);
 		}
@@ -145,7 +147,7 @@ public class RedisManager {
 		Set<byte[]> keys = null;
 		Jedis jedis = jedisPool.getResource();
 		try{
-			keys = jedis.keys(pattern.getBytes());
+			keys = jedis.keys(SafeEncoder.encode(pattern));
 		}finally{
 			jedisPool.returnResource(jedis);
 		}

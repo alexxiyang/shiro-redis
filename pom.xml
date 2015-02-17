@@ -1,14 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.crazycake</groupId>
 	<artifactId>shiro-redis</artifactId>
-	<version>2.4.2.1-RELEASE</version>
+	<version>2.4.2.3</version>
 	<packaging>jar</packaging>
 
 	<name>shiro-redis</name>
-	<description>shiro only provide the support of ehcache and concurrentHashMap. Here is an implement of redis cache can be used by shiro. Hope it will help you!</description>
+	<description>shiro only provide the support of ehcache and concurrentHashMap. Here is an implement of redis cache
+		can be used by shiro. Hope it will help you!
+	</description>
 	<url>https://github.com/alexxiyang/shiro-redis</url>
 
 	<properties>
@@ -21,6 +23,7 @@
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
@@ -43,6 +46,7 @@
 			<version>1.2.1</version>
 		</dependency>
 
+
 		<!-- Testing -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -63,6 +67,12 @@
 			<scope>test</scope>
 		</dependency>
 
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava-jdk5</artifactId>
+			<version>17.0</version>
+		</dependency>
 	</dependencies>
 
 
@@ -81,6 +91,7 @@
 		<developerConnection>scm:git:https://github.com/alexxiyang/shiro-redis.git</developerConnection>
 		<url>https://github.com/alexxiyang/shiro-redis.git</url>
 	</scm>
+
 	<distributionManagement>
 		<repository>
 			<id>nexus-releases</id>
@@ -88,6 +99,7 @@
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
+
 	<build>
 		<finalName>shiro-redis</finalName>
 		<plugins>
@@ -116,22 +128,23 @@
 			</activation>
 
 			<properties>
-				<gpg.keyname>D2CB8A03</gpg.keyname>	<!-- GPG Key ID to use for signing -->
+				<gpg.keyname>D2CB8A03</gpg.keyname>
+				<!-- GPG Key ID to use for signing -->
 				<release.username>alexxiyang</release.username>
 			</properties>
 
 			<build>
 				<plugins>
-					<!-- Enable signing of the artifacts For gpg:sign-and-deploy-file it's 
-						necessary to have a <server> with the repositoryId provided or id="remote-repository" 
-						defined in settings.xml (it contains the repository's login, psw) Signing: 
-						mvn gpg:sign-and-deploy-file -DpomFile=target/myapp-1.0.pom \ > -Dfile=target/myapp-1.0.jar 
-						\ > -Durl=http://oss.sonatype.org/content/repositories/malyvelky/ \ > -DrepositoryId=sonatype_oss 
-						Note normally it uses the defaul key but we can ovveride it by either setting 
-						the property gpg.keyname (done in this POM) or by providing -Dkeyname=66AE163A 
-						on the command line. OR directly w/ gpg: gpg -u 66AE163A - -sign - -detach-sign 
-						-a target/dbunit-embeddedderby-parenttest.jar Note: "mvn gpg:sign" results 
-						in NPE with v 1.o-a.-4, use "mvn package gpg:sign" instead; see the issue 
+					<!-- Enable signing of the artifacts For gpg:sign-and-deploy-file it's
+						necessary to have a <server> with the repositoryId provided or id="remote-repository"
+						defined in settings.xml (it contains the repository's login, psw) Signing:
+						mvn gpg:sign-and-deploy-file -DpomFile=target/myapp-1.0.pom \ > -Dfile=target/myapp-1.0.jar
+						\ > -Durl=http://oss.sonatype.org/content/repositories/malyvelky/ \ > -DrepositoryId=sonatype_oss
+						Note normally it uses the defaul key but we can ovveride it by either setting
+						the property gpg.keyname (done in this POM) or by providing -Dkeyname=66AE163A
+						on the command line. OR directly w/ gpg: gpg -u 66AE163A - -sign - -detach-sign
+						-a target/dbunit-embeddedderby-parenttest.jar Note: "mvn gpg:sign" results
+						in NPE with v 1.o-a.-4, use "mvn package gpg:sign" instead; see the issue
 						MGPG-18 -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
@@ -153,4 +166,6 @@
 		</profile>
 
 	</profiles>
+
+	
 </project>

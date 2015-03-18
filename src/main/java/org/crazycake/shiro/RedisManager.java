@@ -12,7 +12,7 @@ import redis.clients.util.Pool;
 
 public class RedisManager {
 	
-  private String host = "127.0.0.1";
+	private String host = "127.0.0.1";
 	
 	private int port = 6379;
 	
@@ -68,7 +68,7 @@ public class RedisManager {
 	 * 初始化方法
 	 */
 	public void init(){
-		if (jedisPool == null) {
+		if(jedisPool == null){
 			if (sentinels != null && !"".equals(sentinels)
 					&& sentinelClusterName != null
 					&& !"".equals(sentinelClusterName)) {
@@ -76,11 +76,11 @@ public class RedisManager {
 				Set<String> sentinelHostPorts = new HashSet<String>();
 				Collections.addAll(sentinelHostPorts, shosts);
 				jedisPool = new JedisSentinelPool(sentinelClusterName, sentinelHostPorts);
-			} else if (password != null && !"".equals(password)) {
+			}else if(password != null && !"".equals(password)) {
 				jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout, password);
-			} else if (timeout != 0){
+			}else if(timeout != 0){
 				jedisPool = new JedisPool(new JedisPoolConfig(), host, port,timeout);
-			} else {
+			}else{
 				jedisPool = new JedisPool(new JedisPoolConfig(), host, port);
 			}
 			

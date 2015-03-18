@@ -31,34 +31,36 @@ public class RedisManager {
 	private String sentinelClusterName = null;
 
 	/**
-   * @return the sentinelClusterName
-   */
-  public String getSentinelClusterName() {
-    return sentinelClusterName;
-  }
+	 * @return the sentinelClusterName
+	 */
+	public String getSentinelClusterName() {
+		return sentinelClusterName;
+	}
 
-  /**
-   * @param sentinelClusterName the sentinelClusterName to set
-   */
-  public void setSentinelClusterName(String sentinelClusterName) {
-    this.sentinelClusterName = sentinelClusterName;
-  }
+	/**
+	 * @param sentinelClusterName
+	 *            the sentinelClusterName to set
+	 */
+	public void setSentinelClusterName(String sentinelClusterName) {
+		this.sentinelClusterName = sentinelClusterName;
+	}
 
-  /**
-   * @return the sentinels
-   */
-  public String getSentinels() {
-    return sentinels;
-  }
+	/**
+	 * @return the sentinels
+	 */
+	public String getSentinels() {
+		return sentinels;
+	}
 
-  /**
-   * @param sentinels the sentinels to set
-   */
-  public void setSentinels(String sentinels) {
-    this.sentinels = sentinels;
-  }
+	/**
+	 * @param sentinels
+	 *            the sentinels to set
+	 */
+	public void setSentinels(String sentinels) {
+		this.sentinels = sentinels;
+	}
 
-  public RedisManager(){
+	public RedisManager() {
 		
 	}
 	
@@ -66,13 +68,15 @@ public class RedisManager {
 	 * 初始化方法
 	 */
 	public void init(){
-	  if (jedisPool == null) {
-	    if ( sentinels != null && !"".equals(sentinels) && sentinelClusterName != null && !"".equals(sentinelClusterName) ) {
-	      String[] shosts = sentinels.split("[,\\s]+");
-	      Set<String> sentinelHostPorts = new HashSet<String>();
-	      Collections.addAll(sentinelHostPorts, shosts);
-	      jedisPool = new JedisSentinelPool(sentinelClusterName,sentinelHostPorts);
-	    } else if (password != null && !"".equals(password)){
+		if (jedisPool == null) {
+			if (sentinels != null && !"".equals(sentinels)
+					&& sentinelClusterName != null
+					&& !"".equals(sentinelClusterName)) {
+				String[] shosts = sentinels.split("[,\\s]+");
+				Set<String> sentinelHostPorts = new HashSet<String>();
+				Collections.addAll(sentinelHostPorts, shosts);
+				jedisPool = new JedisSentinelPool(sentinelClusterName, sentinelHostPorts);
+			} else if (password != null && !"".equals(password)) {
 				jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout, password);
 			} else if (timeout != 0){
 				jedisPool = new JedisPool(new JedisPoolConfig(), host, port,timeout);

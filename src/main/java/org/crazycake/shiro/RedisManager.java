@@ -69,7 +69,7 @@ public class RedisManager {
 	 */
 	public void init(){
 		if(jedisPool == null){
-			if (sentinels != null && !"".equals(sentinels)
+			if(sentinels != null && !"".equals(sentinels)
 					&& sentinelClusterName != null
 					&& !"".equals(sentinelClusterName)) {
 				String[] shosts = sentinels.split("[,\\s]+");

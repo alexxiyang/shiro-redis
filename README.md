@@ -39,6 +39,9 @@ redisManager.expire = 30
 redisManager.timeout = 0
 #optional, password for redis server
 redisManager.password = 
+#to connect via redis sentinel
+#redisManager.sentinels = 127.0.1.10:26379 127.0.1.11:26379 127.0.1.12:26379
+#redisManager.sentinelClusterName = myAuthCluster
 
 #============redisSessionDAO=============
 redisSessionDAO = org.crazycake.shiro.RedisSessionDAO
@@ -113,6 +116,8 @@ spring.xml:
 	<!-- optional properties:
 	<property name="timeout" value="10000"/>
 	<property name="password" value="123456"/>
+    <property name="sentinels" value="127.0.1.10:26379 127.0.1.11:26379 127.0.1.12:26379"/>
+    <property name="sentinelClusterName" value="myAuthCluster"/>
 	-->
 </bean>
 

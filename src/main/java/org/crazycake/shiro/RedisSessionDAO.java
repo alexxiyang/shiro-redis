@@ -35,15 +35,15 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	 * @throws UnknownSessionException
 	 */
 	private void saveSession(Session session) throws UnknownSessionException{
-		if(session == null || session.getId() == null){
-			logger.error("session or session id is null");
-			return;
-		}
-		
-		byte[] key = getByteKey(session.getId());
-		byte[] value = SerializeUtils.serialize(session);
-		session.setTimeout(redisManager.getExpire()*1000);		
-		this.redisManager.set(key, value, redisManager.getExpire());
+		if (session == null || session.getId() == null) {
+            logger.error("session or session id is null");
+            return;
+        }
+
+        byte[] key = getByteKey(session.getId());
+        byte[] value = SerializeUtils.serialize(session);
+        int expire = new Long(session.getTimeout()).intValue();
+        this.redisManager.set(key, value, (0 == expire ? redisManager.getExpire() : expire / 1000));
 	}
 
 	@Override

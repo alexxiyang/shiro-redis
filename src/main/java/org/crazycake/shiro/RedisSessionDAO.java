@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.apache.shiro.session.Session;
 import org.apache.shiro.session.UnknownSessionException;
+import org.apache.shiro.session.mgt.SimpleSession;
 import org.apache.shiro.session.mgt.eis.AbstractSessionDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,12 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	 * shiro-redis的session对象前缀
 	 */
 	private RedisManager redisManager;
+	
+	/**
+	 * 退出调用delete()是否直接删除session，默认true，不直接删除时
+	 * 仅清空session的attribute，而不删除session
+	 */
+	private boolean directlyDeleteSession=true;
 	
 	/**
 	 * The Redis key prefix for the sessions 
@@ -52,8 +59,38 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 			logger.error("session or session id is null");
 			return;
 		}
-		redisManager.del(this.getByteKey(session.getId()));
-
+		
+		if(directlyDeleteSession){
+		    redisManager.del(this.getByteKey(session.getId()));
+		    return;
+		}
+		
+		onlyClearSessionAttributes(session);
+	}
+	
+	/**
+	 * 仅清空session
+	 * @param session
+	 */
+	private void onlyClearSessionAttributes(Session session){
+	    Set<Object> keysSet = new HashSet<Object>();
+        for(Object key : session.getAttributeKeys()){
+            keysSet.add(key);
+        }
+        
+        for(Object key : keysSet){
+            session.removeAttribute(key);
+        }
+        
+        /**
+         * 将之前设置的停止时间戳，和预期去掉
+         */
+        if(session instanceof SimpleSession){
+            ((SimpleSession)session).setStopTimestamp(null);
+            ((SimpleSession)session).setExpired(false);
+        }
+        
+        this.saveSession(session);
 	}
 
 	@Override
@@ -130,6 +167,9 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	public void setKeyPrefix(String keyPrefix) {
 		this.keyPrefix = keyPrefix;
 	}
-	
+
+    public void setDirectlyDeleteSession(boolean directlyDeleteSession) {
+        this.directlyDeleteSession = directlyDeleteSession;
+    }
 	
 }

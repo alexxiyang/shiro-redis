@@ -15,6 +15,7 @@ public class RedisManagerTest {
 		redisManager.setPort(6379);
 		redisManager.setExpire(2);
 		redisManager.setTimeout(0);
+		redisManager.setDatabase(1);
 		redisManager.init();
 		
 		

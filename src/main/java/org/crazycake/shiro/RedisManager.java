@@ -1,26 +1,29 @@
 package org.crazycake.shiro;
 
-import java.util.Set;
-
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Protocol;
+
+import java.util.Set;
 
 public class RedisManager {
 	
 	private String host = "127.0.0.1";
 	
-	private int port = 6379;
+	private int port = Protocol.DEFAULT_PORT ;
 	
 	// 0 - never expire
 	private int expire = 0;
 	
 	//timeout for jedis try to connect to redis server, not expire time! In milliseconds
-	private int timeout = 0;
+	private int timeout = Protocol.DEFAULT_TIMEOUT;
 	
-	private String password = "";
+	private String password = null;
+
+	private int database = Protocol.DEFAULT_DATABASE;
 	
-	private static JedisPool jedisPool = null;
+	private volatile JedisPool jedisPool = null;
 	
 	public RedisManager(){
 		
@@ -30,15 +33,13 @@ public class RedisManager {
 	 * 初始化方法
 	 */
 	public void init(){
-		if(jedisPool == null){
-			if(password != null && !"".equals(password)){
-				jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout, password);
-			}else if(timeout != 0){
-				jedisPool = new JedisPool(new JedisPoolConfig(), host, port,timeout);
-			}else{
-				jedisPool = new JedisPool(new JedisPoolConfig(), host, port);
+		if (jedisPool == null) {
+			synchronized (this) {
+				if (jedisPool == null) {
+					jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout, password, database);
+				}
 			}
-			
+
 		}
 	}
 	
@@ -191,7 +192,12 @@ public class RedisManager {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
-	
-	
+
+	public int getDatabase() {
+		return database;
+	}
+
+	public void setDatabase(int database) {
+		this.database = database;
+	}
 }

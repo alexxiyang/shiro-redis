@@ -1,44 +1,41 @@
 package org.crazycake.shiro;
 
-import java.util.Set;
-
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Protocol;
+
+import java.util.Set;
 
 public class RedisManager {
 	
 	private String host = "127.0.0.1";
-	
-	private int port = 6379;
+
+	private int port = Protocol.DEFAULT_PORT ;
 	
 	// 0 - never expire
 	private int expire = 0;
 	
 	//timeout for jedis try to connect to redis server, not expire time! In milliseconds
-	private int timeout = 0;
+	private int timeout = Protocol.DEFAULT_TIMEOUT;
 	
-	private String password = "";
+	private String password;
+
+	private int database = Protocol.DEFAULT_DATABASE;
 	
-	private static JedisPool jedisPool = null;
-	
-	public RedisManager(){
-		
-	}
-	
-	/**
-	 * 初始化方法
-	 */
-	public void init(){
-		if(jedisPool == null){
-			if(password != null && !"".equals(password)){
-				jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout, password);
-			}else if(timeout != 0){
-				jedisPool = new JedisPool(new JedisPoolConfig(), host, port,timeout);
-			}else{
-				jedisPool = new JedisPool(new JedisPoolConfig(), host, port);
+	private volatile JedisPool jedisPool = null;
+
+	private void init() {
+		synchronized (this) {
+			if (jedisPool == null) {
+				jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout, password, database);
 			}
-			
+		}
+	}
+
+	private void checkAndInit() {
+		if (jedisPool == null) {
+			init();
 		}
 	}
 	
@@ -48,6 +45,10 @@ public class RedisManager {
 	 * @return
 	 */
 	public byte[] get(byte[] key){
+		checkAndInit();
+		if (key == null) {
+			return null;
+		}
 		byte[] value = null;
 		Jedis jedis = jedisPool.getResource();
 		try{
@@ -65,6 +66,10 @@ public class RedisManager {
 	 * @return
 	 */
 	public byte[] set(byte[] key,byte[] value){
+		checkAndInit();
+		if (key == null) {
+			return null;
+		}
 		Jedis jedis = jedisPool.getResource();
 		try{
 			jedis.set(key,value);
@@ -85,6 +90,10 @@ public class RedisManager {
 	 * @return
 	 */
 	public byte[] set(byte[] key,byte[] value,int expire){
+		checkAndInit();
+		if (key == null) {
+			return null;
+		}
 		Jedis jedis = jedisPool.getResource();
 		try{
 			jedis.set(key,value);
@@ -102,6 +111,10 @@ public class RedisManager {
 	 * @param key
 	 */
 	public void del(byte[] key){
+		checkAndInit();
+		if (key == null) {
+			return;
+		}
 		Jedis jedis = jedisPool.getResource();
 		try{
 			jedis.del(key);
@@ -114,6 +127,7 @@ public class RedisManager {
 	 * flush
 	 */
 	public void flushDB(){
+		checkAndInit();
 		Jedis jedis = jedisPool.getResource();
 		try{
 			jedis.flushDB();
@@ -126,6 +140,7 @@ public class RedisManager {
 	 * size
 	 */
 	public Long dbSize(){
+		checkAndInit();
 		Long dbSize = 0L;
 		Jedis jedis = jedisPool.getResource();
 		try{
@@ -138,14 +153,15 @@ public class RedisManager {
 
 	/**
 	 * keys
-	 * @param regex
+	 * @param pattern
 	 * @return
 	 */
-	public Set<byte[]> keys(String pattern){
+	public Set<byte[]> keys(byte[] pattern){
+		checkAndInit();
 		Set<byte[]> keys = null;
 		Jedis jedis = jedisPool.getResource();
 		try{
-			keys = jedis.keys(pattern.getBytes());
+			keys = jedis.keys(pattern);
 		}finally{
 			jedisPool.returnResource(jedis);
 		}
@@ -191,7 +207,12 @@ public class RedisManager {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
-	
-	
+
+	public int getDatabase() {
+		return database;
+	}
+
+	public void setDatabase(int database) {
+		this.database = database;
+	}
 }

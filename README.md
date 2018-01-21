@@ -1,110 +1,94 @@
-# shiro-redis
+shiro-redis
+=============
 
 [![Build Status](https://travis-ci.org/alexxiyang/shiro-redis.svg?branch=master)](https://travis-ci.org/alexxiyang/shiro-redis)
 
 
 shiro only provide the support of ehcache and concurrentHashMap. Here is an implement of redis cache can be used by shiro. Hope it will help you!
 
-How to use it?
-===========
+# Download
 
 You can choose these 2 ways to include shiro-redis into your project
 * use "git clone https://github.com/alexxiyang/shiro-redis.git" to clone project to your local workspace and build jar file by your self
 * add maven dependency 
 
 ```xml
-    <dependency>
-  		<groupId>org.crazycake</groupId>
-  		<artifactId>shiro-redis</artifactId>
-  		<version>2.4.2.1-RELEASE</version>
-  	</dependency>
+<dependency>
+    <groupId>org.crazycake</groupId>
+    <artifactId>shiro-redis</artifactId>
+    <version>2.4.6-SNAPSHOT</version>
+</dependency>
 ```
 
-How to configure ?
-===========
-You can choose 2 ways : shiro.ini or spring-*.xml
+# How to configure ?
+
+You can configure shiro-redis either in shiro.ini or in spring-*.xml
+
+## ini
+Here is the configuration for shiro.ini.
 
 shiro.ini:
 
 ```properties
-#redisManager
-redisManager = org.crazycake.shiro.RedisManager
-#optional if you don't specify host the default value is 127.0.0.1
-redisManager.host = 127.0.0.1
-#optional , default value: 6379
-redisManager.port = 6379
-#optional, default value:0 .The expire time is in second
-redisManager.expire = 30
-#optional, timeout for jedis try to connect to redis server(In milliseconds), not equals to expire time! 
-redisManager.timeout = 0
-#optional, password for redis server
-redisManager.password = 
+[main]
+#====================================
+# shiro-redis configuration [start]
+#====================================
 
-#============redisSessionDAO=============
+#===================================
+# Redis Manager
+#===================================
+# Create redisManager
+redisManager = org.crazycake.shiro.RedisManager
+# Redis host. If you don't specify host the default value is 127.0.0.1 (Optional)
+redisManager.host = 192.168.56.101
+# Redis port. Default value: 6379 (Optional)
+redisManager.port = 6379
+# Redis cache key/value expire time. Default value:0 .The expire time is in second (Optional)
+redisManager.expire = 600
+# Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
+redisManager.timeout = 0
+# Redis password.(Optional)
+#redisManager.password =
+# Redis database. Default value is 0(Optional)
+#redisManager.database = 0
+
+#====================================
+# Redis-based session configuration
+#====================================
+# Create redisSessionDAO
 redisSessionDAO = org.crazycake.shiro.RedisSessionDAO
+# Custom your redis key prefix for session management, if you doesn't define this parameter, shiro-redis will use 'shiro_redis_session:' as default prefix
+# Note: Remember to add colon at the end of prefix.
+redisSessionDAO.keyPrefix = shiro:session:
+# Use redisManager as cache manager
 redisSessionDAO.redisManager = $redisManager
 sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
 sessionManager.sessionDAO = $redisSessionDAO
 securityManager.sessionManager = $sessionManager
 
-#============redisCacheManager===========
+#=====================================
+# Redis-based cache configuration
+#=====================================
+# Create cacheManager
 cacheManager = org.crazycake.shiro.RedisCacheManager
+# Custom your redis key prefix for cache management, if you doesn't define this parameter, shiro-redis will use 'shiro_redis_session:' as default prefix
+# Note: Remember to add colon at the end of prefix.
+cacheManager.keyPrefix = shiro:cache:
+# Use redisManager as cache manager
 cacheManager.redisManager = $redisManager
-#custom your redis key prefix, if you doesn't define this parameter shiro-redis will use 'shiro_redis_session:' as default prefix
-cacheManager.keyPrefix = users:security:authz:
 securityManager.cacheManager = $cacheManager
+
+#=================================
+# shiro-redis configuration [end]
+#=================================
 ```
+Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-tutorial) for you to understand how to configure `shiro-redis` in `shiro.ini`.
+
+## Spring
 
 spring.xml:
 ```xml
-<!-- shiro filter -->
-<bean id="ShiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
-	<property name="securityManager" ref="securityManager"/>
-	
-	<!--
-	<property name="loginUrl" value="/login.jsp"/>
-	<property name="successUrl" value="/home.jsp"/>  
-	<property name="unauthorizedUrl" value="/unauthorized.jsp"/>
-	-->
-	<!-- The 'filters' property is not necessary since any declared javax.servlet.Filter bean  -->
-	<!-- defined will be automatically acquired and available via its beanName in chain        -->
-	<!-- definitions, but you can perform instance overrides or name aliases here if you like: -->
-	<!-- <property name="filters">
-		<util:map>
-			<entry key="anAlias" value-ref="someFilter"/>
-		</util:map>
-	</property> -->
-	<property name="filterChainDefinitions">
-		<value>
-			/login.jsp = anon
-			/user/** = anon
-			/register/** = anon
-			/unauthorized.jsp = anon
-			/css/** = anon
-			/js/** = anon
-			
-			/** = authc
-		</value>
-	</property>
-</bean>
-
-<!-- shiro securityManager -->
-<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
-
-	<!-- Single realm app.  If you have multiple realms, use the 'realms' property instead. -->
-	
-	<!-- sessionManager -->
-	<property name="sessionManager" ref="sessionManager" />
-	
-	<!-- cacheManager -->
-	<property name="cacheManager" ref="cacheManager" />
-	
-	<!-- By default the servlet container sessions will be used.  Uncomment this line
-		 to use shiro's native sessions (see the JavaDoc for more): -->
-	<!-- <property name="sessionMode" value="native"/> -->
-</bean>
-<bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>	
-
 <!-- shiro redisManager -->
 <bean id="redisManager" class="org.crazycake.shiro.RedisManager">
 	<property name="host" value="127.0.0.1"/>
@@ -113,6 +97,7 @@ spring.xml:
 	<!-- optional properties:
 	<property name="timeout" value="10000"/>
 	<property name="password" value="123456"/>
+	<property name="database" value="1"/>
 	-->
 </bean>
 
@@ -130,13 +115,55 @@ spring.xml:
 <bean id="cacheManager" class="org.crazycake.shiro.RedisCacheManager">
 	<property name="redisManager" ref="redisManager" />
 </bean>
+
+<!-- shiro securityManager -->
+<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+	<!-- sessionManager -->
+	<property name="sessionManager" ref="sessionManager" />
+	<!-- cacheManager -->
+	<property name="cacheManager" ref="cacheManager" />
+</bean>
+
+<!-- shiro filter -->
+<bean id="ShiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+	<property name="securityManager" ref="securityManager"/>
+	<!-- other shiro configuration -->
+</bean>
 ```
+
+## Serializer
+Since redis only accept `byte[]`, there comes to a serializer problem.
+Shiro-redis is using StringSerializer as key serializer and ObjectSerializer as value serializer.
+You can use your own custom serializer, as long as this custom serializer implemens `org.crazycake.shiro.RedisSerializer`
+
+For example, you need to change the charset of keySerializer.
+```properties
+#=====================================
+# Redis-based cache configuration
+#=====================================
+# Create cacheManager
+cacheManager = org.crazycake.shiro.RedisCacheManager
+# If you want change charset of keySerializer or use your own custom serializer, you need to define serializer first
+cacheManagerKeySerializer = org.crazycake.shiro.StringSerializer
+# Refer to https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html
+# UTF-8, UTF-16, UTF-32, ISO-8859-1, GBK, Big5, etc
+cacheManagerKeySerializer.charset = UTF-16
+cacheManager.keySerializer = $cacheManagerKeySerializer
+```
+
+These 4 Serializers are replaceable:
+- cacheManager.keySerializer
+- cacheManager.valueSerializer
+- redisSessionDAO.keySerializer
+- redisSessionDAO.valueSerializer
+
 
 > NOTE
 > Shiro-redis don't support SimpleAuthenticationInfo created by this constructor `org.apache.shiro.authc.SimpleAuthenticationInfo.SimpleAuthenticationInfo(Object principal, Object hashedCredentials, ByteSource credentialsSalt, String realmName)`.
 > Please use `org.apache.shiro.authc.SimpleAuthenticationInfo.SimpleAuthenticationInfo(Object principal, Object hashedCredentials, String realmName)` instead.
 
-If you found any bugs
-===========
+# If you found any bugs
 
-Please send email to idante@qq.com
+Please send email to alexxiyang@gmail.com
+
+可以用中文

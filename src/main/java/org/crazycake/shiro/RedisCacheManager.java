@@ -1,65 +1,41 @@
 package org.crazycake.shiro;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheException;
 import org.apache.shiro.cache.CacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 public class RedisCacheManager implements CacheManager {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(RedisCacheManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(RedisCacheManager.class);
 
 	// fast lookup by name map
 	private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
+	private RedisSerializer keySerializer = new StringSerializer();
+	private RedisSerializer valueSerializer = new ObjectSerializer();
 
 	private RedisManager redisManager;
 
 	/**
 	 * The Redis key prefix for caches 
 	 */
-	private String keyPrefix = "shiro_redis_cache:";
-	
-	/**
-	 * Returns the Redis session keys
-	 * prefix.
-	 * @return The prefix
-	 */
-	public String getKeyPrefix() {
-		return keyPrefix;
-	}
+	private String keyPrefix = "shiro:cache:";
 
-	/**
-	 * Sets the Redis sessions key 
-	 * prefix.
-	 * @param keyPrefix The prefix
-	 */
-	public void setKeyPrefix(String keyPrefix) {
-		this.keyPrefix = keyPrefix;
-	}
-	
 	@Override
 	public <K, V> Cache<K, V> getCache(String name) throws CacheException {
-		logger.debug("获取名称为: " + name + " 的RedisCache实例");
+		logger.debug("get cache, name=" + name);
 		
-		Cache c = caches.get(name);
+		Cache cache = caches.get(name);
 		
-		if (c == null) {
-
-			// initialize the Redis manager instance
-			redisManager.init();
-			
-			// create a new cache instance
-			c = new RedisCache<K, V>(redisManager, keyPrefix);
-			
-			// add it to the cache collection
-			caches.put(name, c);
+		if (cache == null) {
+			cache = new RedisCache<K, V>(redisManager, keySerializer, valueSerializer, keyPrefix);
+			caches.put(name, cache);
 		}
-		return c;
+		return cache;
 	}
 
 	public RedisManager getRedisManager() {
@@ -70,4 +46,27 @@ public class RedisCacheManager implements CacheManager {
 		this.redisManager = redisManager;
 	}
 
+	public String getKeyPrefix() {
+		return keyPrefix;
+	}
+
+	public void setKeyPrefix(String keyPrefix) {
+		this.keyPrefix = keyPrefix;
+	}
+
+	public RedisSerializer getKeySerializer() {
+		return keySerializer;
+	}
+
+	public void setKeySerializer(RedisSerializer keySerializer) {
+		this.keySerializer = keySerializer;
+	}
+
+	public RedisSerializer getValueSerializer() {
+		return valueSerializer;
+	}
+
+	public void setValueSerializer(RedisSerializer valueSerializer) {
+		this.valueSerializer = valueSerializer;
+	}
 }

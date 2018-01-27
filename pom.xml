@@ -4,7 +4,7 @@
 
 	<groupId>org.crazycake</groupId>
 	<artifactId>shiro-redis</artifactId>
-	<version>2.4.6-SNAPSHOT</version>
+	<version>2.4.6</version>
 	<packaging>jar</packaging>
 
 	<name>shiro-redis</name>
@@ -15,6 +15,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<junit>4.11</junit>
 		<slf4j>1.7.5</slf4j>
+		<gpg.keyname>4DD0EC63</gpg.keyname>	<!-- GPG Key ID to use for signing -->
+		<release.username>alexxiyang</release.username>
 	</properties>
 
 	<licenses>
@@ -71,17 +73,15 @@
 			<version>1.9.5</version>
 			<scope>test</scope>
 		</dependency>
-
-
 	</dependencies>
-
 
 	<developers>
 		<developer>
 			<id>alexxiyang</id>
 			<name>Alex Yang</name>
-			<email>idante@qq.com</email>
-			<timezone>GMT+8</timezone>
+			<email>alexxiyang@gmail.com</email>
+			<timezone>GMT-7</timezone>
+			<organizationUrl>https://github.com/alexxiyang</organizationUrl>
 			<roles>
 			</roles>
 		</developer>
@@ -92,9 +92,12 @@
 		<url>https://github.com/alexxiyang/shiro-redis.git</url>
 	</scm>
 	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
 		<repository>
-			<id>nexus-releases</id>
-			<name>Nexus Release Repository</name>
+			<id>ossrh</id>
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
@@ -111,55 +114,57 @@
 					<compilerArgument>-nowarn</compilerArgument>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.7</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.6</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>release-sign-artifacts</id>
-			<activation>
-				<property>
-					<name>performRelease</name>
-					<value>true</value>
-				</property>
-			</activation>
-
-			<properties>
-				<gpg.keyname>D2CB8A03</gpg.keyname>	<!-- GPG Key ID to use for signing -->
-				<release.username>alexxiyang</release.username>
-			</properties>
-
-			<build>
-				<plugins>
-					<!-- Enable signing of the artifacts For gpg:sign-and-deploy-file it's 
-						necessary to have a <server> with the repositoryId provided or id="remote-repository" 
-						defined in settings.xml (it contains the repository's login, psw) Signing: 
-						mvn gpg:sign-and-deploy-file -DpomFile=target/myapp-1.0.pom \ > -Dfile=target/myapp-1.0.jar 
-						\ > -Durl=http://oss.sonatype.org/content/repositories/malyvelky/ \ > -DrepositoryId=sonatype_oss 
-						Note normally it uses the defaul key but we can ovveride it by either setting 
-						the property gpg.keyname (done in this POM) or by providing -Dkeyname=66AE163A 
-						on the command line. OR directly w/ gpg: gpg -u 66AE163A - -sign - -detach-sign 
-						-a target/dbunit-embeddedderby-parenttest.jar Note: "mvn gpg:sign" results 
-						in NPE with v 1.o-a.-4, use "mvn package gpg:sign" instead; see the issue 
-						MGPG-18 -->
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.4</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-
-		</profile>
-
-	</profiles>
 </project>

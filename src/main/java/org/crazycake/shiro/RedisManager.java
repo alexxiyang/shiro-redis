@@ -12,11 +12,12 @@ public class RedisManager {
 	private String host = "127.0.0.1";
 
 	private int port = Protocol.DEFAULT_PORT ;
+
+	private static final int DEFAULT_EXPIRE = 3600;
+	// expire time in seconds
+	private int expire = DEFAULT_EXPIRE;
 	
-	// 0 - never expire
-	private int expire = 0;
-	
-	//timeout for jedis try to connect to redis server, not expire time! In milliseconds
+	// timeout for jedis try to connect to redis server, not expire time! In milliseconds
 	private int timeout = Protocol.DEFAULT_TIMEOUT;
 	
 	private String password;
@@ -54,7 +55,7 @@ public class RedisManager {
 		try{
 			value = jedis.get(key);
 		}finally{
-			jedisPool.returnResource(jedis);
+			jedis.close();
 		}
 		return value;
 	}
@@ -77,7 +78,7 @@ public class RedisManager {
 				jedis.expire(key, this.expire);
 		 	}
 		}finally{
-			jedisPool.returnResource(jedis);
+			jedis.close();
 		}
 		return value;
 	}
@@ -101,7 +102,7 @@ public class RedisManager {
 				jedis.expire(key, expire);
 		 	}
 		}finally{
-			jedisPool.returnResource(jedis);
+			jedis.close();
 		}
 		return value;
 	}
@@ -119,20 +120,7 @@ public class RedisManager {
 		try{
 			jedis.del(key);
 		}finally{
-			jedisPool.returnResource(jedis);
-		}
-	}
-	
-	/**
-	 * flush
-	 */
-	public void flushDB(){
-		checkAndInit();
-		Jedis jedis = jedisPool.getResource();
-		try{
-			jedis.flushDB();
-		}finally{
-			jedisPool.returnResource(jedis);
+			jedis.close();
 		}
 	}
 	
@@ -146,7 +134,7 @@ public class RedisManager {
 		try{
 			dbSize = jedis.dbSize();
 		}finally{
-			jedisPool.returnResource(jedis);
+			jedis.close();
 		}
 		return dbSize;
 	}
@@ -163,7 +151,7 @@ public class RedisManager {
 		try{
 			keys = jedis.keys(pattern);
 		}finally{
-			jedisPool.returnResource(jedis);
+			jedis.close();
 		}
 		return keys;
 	}

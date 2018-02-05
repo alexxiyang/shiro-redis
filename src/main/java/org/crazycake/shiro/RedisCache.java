@@ -2,6 +2,7 @@ package org.crazycake.shiro;
 
 import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheException;
+import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,9 +77,13 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	@Override
 	public V remove(K key) throws CacheException {
 		logger.debug("remove key [" + key + "]");
+        if (key == null) {
+            return null;
+        }
 		try {
-            V previous = get(key);
-			Object redisCacheKey = getRedisCacheKey(key);
+            Object redisCacheKey = getRedisCacheKey(key);
+            byte[] rawValue = redisManager.get(keySerializer.serialize(redisCacheKey));
+            V previous = (V) valueSerializer.deserialize(rawValue);
             redisManager.del(keySerializer.serialize(redisCacheKey));
             return previous;
         } catch (SerializationException e) {
@@ -92,18 +97,67 @@ public class RedisCache<K, V> implements Cache<K, V> {
 		}
 		Object redisKey = key;
 		if (keySerializer instanceof StringSerializer) {
-            redisKey = key.toString();
-        }
+			redisKey = getStringRedisKey(key);
+		}
         if (redisKey instanceof String) {
 		    return this.keyPrefix + (String)redisKey;
         }
 		return redisKey;
 	}
 
-	@Override
+	private Object getStringRedisKey(K key) {
+		Object redisKey;
+		if (key instanceof PrincipalCollection) {
+			redisKey = getRedisKeyFromPrincipalCollection((PrincipalCollection) key);
+        } else {
+			redisKey = key.toString();
+		}
+		return redisKey;
+	}
+
+	private Object getRedisKeyFromPrincipalCollection(PrincipalCollection key) {
+        Object redisKey;
+		List<String> realmNames = getRealmNames(key);
+		Collections.sort(realmNames);
+        redisKey = joinRealmNames(realmNames);
+        return redisKey;
+    }
+
+	private List<String> getRealmNames(PrincipalCollection key) {
+		List<String> realmArr = new ArrayList<String>();
+		Set<String> realmNames = key.getRealmNames();
+		for (String realmName: realmNames) {
+            realmArr.add(realmName);
+        }
+		return realmArr;
+	}
+
+	private Object joinRealmNames(List<String> realmArr) {
+        Object redisKey;
+        StringBuilder redisKeyBuilder = new StringBuilder();
+        for (int i = 0; i < realmArr.size(); i++) {
+            String s = realmArr.get(i);
+            redisKeyBuilder.append(s);
+        }
+        redisKey = redisKeyBuilder.toString();
+        return redisKey;
+    }
+
+    @Override
 	public void clear() throws CacheException {
 		logger.debug("clear cache");
-        redisManager.flushDB();
+        Set<byte[]> keys = null;
+        try {
+            keys = redisManager.keys(keySerializer.serialize(this.keyPrefix + "*"));
+        } catch (SerializationException e) {
+            logger.error("get keys error", e);
+        }
+        if (keys == null || keys.size() == 0) {
+            return;
+        }
+        for (byte[] key: keys) {
+            redisManager.del(key);
+        }
 	}
 
 	@Override

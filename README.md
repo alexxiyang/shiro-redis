@@ -44,7 +44,7 @@ redisManager = org.crazycake.shiro.RedisManager
 redisManager.host = 192.168.56.101
 # Redis port. Default value: 6379 (Optional)
 redisManager.port = 6379
-# Redis cache key/value expire time. Default value:0 .The expire time is in second (Optional)
+# Redis cache key/value expire time. Default value: 3600 .The expire time is in second (Optional)
 redisManager.expire = 600
 # Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
 redisManager.timeout = 0

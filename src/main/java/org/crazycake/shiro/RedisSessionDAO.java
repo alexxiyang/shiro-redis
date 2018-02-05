@@ -20,6 +20,8 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	private String keyPrefix = DEFAULT_SESSION_KEY_PREFIX;
 	private RedisSerializer keySerializer = new StringSerializer();
 	private RedisSerializer valueSerializer = new ObjectSerializer();
+
+	private static ThreadLocal threadLocalSession = new ThreadLocal();
 	
 	@Override
 	public void update(Session session) throws UnknownSessionException {
@@ -99,8 +101,14 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 			return null;
 		}
 		Session s = null;
+		if (threadLocalSession.get() != null) {
+			s = (Session) threadLocalSession.get();
+			return s;
+		}
+		logger.debug("read session from redis");
 		try {
 			s = (Session)valueSerializer.deserialize(redisManager.get(keySerializer.serialize(getRedisSessionKey(sessionId))));
+			// threadLocalSession.set(s);
 		} catch (SerializationException e) {
 			logger.error("read session error. settionId=" + sessionId);
 		}

@@ -74,11 +74,6 @@ public class RedisManagerTest {
     }
 
     @Test
-    public void testFlushDB() {
-        redisManager.flushDB();
-    }
-
-    @Test
     public void testDbSize() {
         Long actualDbSize = redisManager.dbSize();
         assertThat(actualDbSize, is(3L));

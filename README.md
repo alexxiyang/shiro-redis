@@ -119,10 +119,12 @@ spring.xml:
 
 <!-- securityManager -->
 <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
-    <property name="realm" ref="exampleRealm"/>
-    <property name="rememberMeManager.cipherKey" value="kPH+bIxk5D2deZiIxcaaaA==" />
     <property name="sessionManager" ref="sessionManager" />
     <property name="cacheManager" ref="cacheManager" />
+
+    <!-- other configurations -->
+    <property name="realm" ref="exampleRealm"/>
+    <property name="rememberMeManager.cipherKey" value="kPH+bIxk5D2deZiIxcaaaA==" />
 </bean>
 <!-- shiro-redis configuration [end] -->
 ```

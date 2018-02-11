@@ -89,47 +89,44 @@ Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-tutorial)
 
 spring.xml:
 ```xml
+<!-- shiro-redis configuration [start] -->
 <!-- shiro redisManager -->
 <bean id="redisManager" class="org.crazycake.shiro.RedisManager">
-	<property name="host" value="127.0.0.1"/>
-	<property name="port" value="6379"/>
-	<property name="expire" value="1800"/>
-	<!-- optional properties:
-	<property name="timeout" value="10000"/>
-	<property name="password" value="123456"/>
-	<property name="database" value="1"/>
-	-->
+    <property name="host" value="127.0.0.1"/>
+    <property name="port" value="6379"/>
+    <property name="expire" value="1800"/>
+    <!-- optional properties:
+    <property name="timeout" value="10000"/>
+    <property name="password" value="123456"/>
+    <property name="database" value="1"/>
+    -->
 </bean>
 
-<!-- redisSessionDAO -->
+<!-- Redis-based session configuration -->
 <bean id="redisSessionDAO" class="org.crazycake.shiro.RedisSessionDAO">
-	<property name="redisManager" ref="redisManager" />
+    <property name="redisManager" ref="redisManager" />
+    <property name="keyPrefix" value="shiro:session:" />
 </bean>
-
-<!-- sessionManager -->
 <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
-	<property name="sessionDAO" ref="redisSessionDAO" />
+    <property name="sessionDAO" ref="redisSessionDAO" />
 </bean>
 
-<!-- cacheManager -->
+<!-- Redis-based cache configuration -->
 <bean id="cacheManager" class="org.crazycake.shiro.RedisCacheManager">
-	<property name="redisManager" ref="redisManager" />
+    <property name="redisManager" ref="redisManager" />
+    <property name="keyPrefix" value="shiro:cache:" />
 </bean>
 
-<!-- shiro securityManager -->
+<!-- securityManager -->
 <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
-	<!-- sessionManager -->
-	<property name="sessionManager" ref="sessionManager" />
-	<!-- cacheManager -->
-	<property name="cacheManager" ref="cacheManager" />
+    <property name="realm" ref="exampleRealm"/>
+    <property name="rememberMeManager.cipherKey" value="kPH+bIxk5D2deZiIxcaaaA==" />
+    <property name="sessionManager" ref="sessionManager" />
+    <property name="cacheManager" ref="cacheManager" />
 </bean>
-
-<!-- shiro filter -->
-<bean id="ShiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
-	<property name="securityManager" ref="securityManager"/>
-	<!-- other shiro configuration -->
-</bean>
+<!-- shiro-redis configuration [end] -->
 ```
+Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-spring-tutorial) for you to understand how to configure `shiro-redis` in spring configuration file.
 
 ## Serializer
 Since redis only accept `byte[]`, there comes to a serializer problem.

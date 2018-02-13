@@ -7,7 +7,7 @@ import redis.clients.jedis.Protocol;
 
 import java.util.Set;
 
-public class RedisManager {
+public class RedisManager implements IRedisManager{
 	
 	private String host = "127.0.0.1";
 

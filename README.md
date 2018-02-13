@@ -83,6 +83,28 @@ securityManager.cacheManager = $cacheManager
 # shiro-redis configuration [end]
 #=================================
 ```
+
+
+If you use redis cluster, config like this :
+
+```properties
+# Create redisManager
+redisManager = org.crazycake.shiro.RedisClusterManager
+# Redis host and port list
+redisManager.host = 192.168.21.3:7000,192.168.21.3:7001,192.168.21.3:7002,192.168.21.3:7003,192.168.21.3:7004,192.168.21.3:7005
+# Redis cache key/value expire time. Default value:0 .The expire time is in second (Optional)
+redisManager.expire = 600
+# Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
+redisManager.timeout = 2000
+# timeout for jedis try to read data from redis server
+redisManager.soTimeout = 2000
+# max attempts to connect to server
+redisManager.maxAttempts = 2
+# Redis password.(Optional)
+#redisManager.password = xxxx
+
+```
+
 Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-tutorial) for you to understand how to configure `shiro-redis` in `shiro.ini`.
 
 ## Spring

@@ -4,7 +4,7 @@
 
 	<groupId>org.crazycake</groupId>
 	<artifactId>shiro-redis</artifactId>
-	<version>2.6.8</version>
+	<version>2.6.10</version>
 	<packaging>jar</packaging>
 
 	<name>shiro-redis</name>

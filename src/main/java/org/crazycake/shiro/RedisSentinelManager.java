@@ -18,7 +18,7 @@ public class RedisSentinelManager extends BaseRedisManager implements IRedisMana
 
 	// timeout for jedis try to connect to redis server, not expire time! In milliseconds
 	private int timeout = Protocol.DEFAULT_TIMEOUT;
-	
+
 	private String password;
 
 	private int database = Protocol.DEFAULT_DATABASE;
@@ -42,7 +42,7 @@ public class RedisSentinelManager extends BaseRedisManager implements IRedisMana
 			init();
 		}
 	}
-	
+
 	public String getHost() {
 		return host;
 	}

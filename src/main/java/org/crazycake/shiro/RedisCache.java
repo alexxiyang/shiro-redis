@@ -39,7 +39,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	 * @param prefix The Redis key prefix
 	 */
 	public RedisCache(IRedisManager cache, RedisSerializer keySerializer, RedisSerializer valueSerializer,
-				String prefix){
+                      String prefix){
 		this( cache, keySerializer, valueSerializer );
 		this.keyPrefix = prefix;
 	}

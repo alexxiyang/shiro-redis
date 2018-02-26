@@ -31,7 +31,7 @@ public class RedisManager extends BaseRedisManager implements IRedisManager{
 			init();
 		}
 	}
-	
+
 	public String getHost() {
 		return host;
 	}

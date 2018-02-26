@@ -10,12 +10,19 @@ import java.util.Set;
 public class RedisManager extends JedisManager {
 
     private volatile JedisPool jedisPool = null;
+    private int port;
 
     private void init() {
         synchronized (this) {
             if (jedisPool == null) {
-                String[] hostAndPort = host.split(":");
-                jedisPool = new JedisPool(new JedisPoolConfig(), hostAndPort[0], Integer.parseInt(hostAndPort[1]), timeout, password, database);
+                if(port == 0){
+                    // support host:port config style
+                    String[] hostAndPort = host.split(":");
+                    jedisPool = new JedisPool(new JedisPoolConfig(), hostAndPort[0], Integer.parseInt(hostAndPort[1]), timeout, password, database);
+                }else{
+                    jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout, password, database);
+                }
+
             }
         }
     }
@@ -28,4 +35,19 @@ public class RedisManager extends JedisManager {
         return jedisPool.getResource();
     }
 
+    public JedisPool getJedisPool() {
+        return jedisPool;
+    }
+
+    public void setJedisPool(JedisPool jedisPool) {
+        this.jedisPool = jedisPool;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
 }

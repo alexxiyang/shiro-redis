@@ -38,31 +38,50 @@ Here is the configuration for shiro.ini.
 #===================================
 # Redis Manager
 #===================================
+
 # Create redisManager
 redisManager = org.crazycake.shiro.RedisManager
+
 # Redis host. If you don't specify host the default value is 127.0.0.1 (Optional)
 redisManager.host = 127.0.0.1
+
 # Redis port. Default value: 6379 (Optional)
 redisManager.port = 6379
+
 # Redis cache key/value expire time. Default value: 3600 .The expire time is in second (Optional)
 redisManager.expire = 1200
+
 # Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
 redisManager.timeout = 0
+
 # Redis password.(Optional)
-#redisManager.password =
+#
+# redisManager.password = <password>
+
 # Redis database. Default value is 0(Optional)
-#redisManager.database = 0
+#
+# redisManager.database = <database>
+
+# JedisPoolConfig (Optional)
+# Most of time, you don't need to set jedisPoolConfig
+#
+# jedisPoolConfig = redis.clients.jedis.JedisPoolConfig
+# jedisPoolConfig.<attribute> = <value>
+# redisManager.jedisPoolConfig = jedisPoolConfig
 
 #====================================
 # Redis-based session configuration
 #====================================
 # Create redisSessionDAO
 redisSessionDAO = org.crazycake.shiro.RedisSessionDAO
+
 # Custom your redis key prefix for session management, if you doesn't define this parameter, shiro-redis will use 'shiro_redis_session:' as default prefix
 # Note: Remember to add colon at the end of prefix.
 redisSessionDAO.keyPrefix = shiro:session:
+
 # Use redisManager as cache manager
 redisSessionDAO.redisManager = $redisManager
+
 sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
 sessionManager.sessionDAO = $redisSessionDAO
 securityManager.sessionManager = $sessionManager
@@ -72,9 +91,11 @@ securityManager.sessionManager = $sessionManager
 #=====================================
 # Create cacheManager
 cacheManager = org.crazycake.shiro.RedisCacheManager
+
 # Custom your redis key prefix for cache management, if you doesn't define this parameter, shiro-redis will use 'shiro_redis_session:' as default prefix
 # Note: Remember to add colon at the end of prefix.
 cacheManager.keyPrefix = shiro:cache:
+
 # Use redisManager as cache manager
 cacheManager.redisManager = $redisManager
 securityManager.cacheManager = $cacheManager
@@ -82,27 +103,6 @@ securityManager.cacheManager = $cacheManager
 #=================================
 # shiro-redis configuration [end]
 #=================================
-```
-
-If you use redis sentinel, config like this :
-
-```properties
-# Create redisManager
-redisManager = org.crazycake.shiro.RedisSentinelManager
-# Redis host. If you don't specify host the default value is 127.0.0.1 (Optional)
-redisManager.host = 192.168.0.192:26379,192.168.0.192:26380,192.168.0.192:26381
-# Redis cache key/value expire time. Default value:0 .The expire time is in second (Optional)
-redisManager.expire = 600
-# Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
-redisManager.timeout = 2000
-# timeout for jedis try to read data from redis server (Optional)
-redisManager.soTimeout = 2000
-# master name (Optional)
-# redisManager.masterName = mymaster
-# # Redis database. Default value is 0(Optional)
-# redisManager.database = 0
-# Redis password.(Optional)
-# redisManager.password = chenxing
 ```
 
 Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-tutorial) for you to understand how to configure `shiro-redis` in `shiro.ini`.
@@ -113,24 +113,39 @@ if you're using Redis Sentinel, please change the redisManager configuration int
 #===================================
 # Redis Manager
 #===================================
+
 # Create redisManager
 redisManager = org.crazycake.shiro.RedisSentinelManager
+
 # Sentinel host. If you don't specify host the default value is 127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381
 redisManager.host = 127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381
+
 # Sentinel master name
 redisManager.masterName = mymaster
+
 # Redis cache key/value expire time. Default value:0 .The expire time is in second (Optional)
 redisManager.expire = 1200
+
 # Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
-redisManager.timeout = 0
+redisManager.timeout = 2000
+
+# Timeout for jedis try to read data from redis server (Optional)
+redisManager.soTimeout = 2000
+
 # Redis password.(Optional)
-#redisManager.password =
+#
+# redisManager.password = <password>
+
 # Redis database. Default value is 0 (Optional)
-#redisManager.database = 0
-# JedisSentinelPool genericObjectPoolConfig (Optional)
-# Most of time, you don't need to set genericObjectPoolConfig.
-#genericObjectPoolConfig = org.apache.commons.pool2.impl.GenericObjectPoolConfig
-#redisManager.genericObjectPoolConfig = $genericObjectPoolConfig
+#
+# redisManager.database = <database>
+
+# JedisPoolConfig (Optional)
+# Most of time, you don't need to set jedisPoolConfig
+#
+# jedisPoolConfig = redis.clients.jedis.JedisPoolConfig
+# jedisPoolConfig.<attribute> = <value>
+# redisManager.jedisPoolConfig = jedisPoolConfig
 ```
 
 ## Spring
@@ -178,27 +193,25 @@ spring.xml:
 <!-- shiro-redis configuration [end] -->
 ```
 
+Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-spring-tutorial) for you to understand how to configure `shiro-redis` in spring configuration file.
+
+### Redis Sentinel
 If you use redis sentinel, config like this :
 ```xml
 <!-- shiro-redis configuration [start] -->
 <!-- shiro redisManager -->
 <bean id="redisManager" class="org.crazycake.shiro.RedisSentinelManager">
-    <property name="host" value="192.168.0.192:26379,192.168.0.192:26380,192.168.0.192:26381"/>
+    <property name="host" value="127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381"/>
+    <property name="masterName" value="mymaster"/>
     <property name="expire" value="1800"/>
     <!-- optional properties:
-    <property name="timeout" value="10000"/>
-    <property name="soTimeout" value="10000"/>
-    <property name="masterName" value="mymaster"/>
-    <property name="password" value="123456"/>
-    <property name="database" value="1"/>
+    <property name="timeout" value="2000"/>
+    <property name="soTimeout" value="2000"/>
+    <property name="password" value=""/>
+    <property name="database" value="0"/>
     -->
 </bean>
 ```
-
-
-Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-spring-tutorial) for you to understand how to configure `shiro-redis` in spring configuration file.
-
-> I'm too lazy to provide the spring.xml for sentinel, please change spring.xml based on shiro.ini configuration.
 
 ## Serializer
 Since redis only accept `byte[]`, there comes to a serializer problem.

@@ -1,6 +1,6 @@
 package org.crazycake.shiro;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisSentinelPool;
 import redis.clients.jedis.Protocol;
 
@@ -19,11 +19,14 @@ public class RedisSentinelManager extends BaseRedisManager implements IRedisMana
 	// timeout for jedis try to connect to redis server, not expire time! In milliseconds
 	private int timeout = Protocol.DEFAULT_TIMEOUT;
 
+	// timeout for jedis try to read data from redis server
+	private int soTimeout = Protocol.DEFAULT_TIMEOUT;
+
 	private String password;
 
 	private int database = Protocol.DEFAULT_DATABASE;
 
-	private GenericObjectPoolConfig genericObjectPoolConfig = new GenericObjectPoolConfig();
+	private JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
 
 	private void init() {
 		synchronized (this) {
@@ -31,7 +34,7 @@ public class RedisSentinelManager extends BaseRedisManager implements IRedisMana
 				String[] sentinelHosts = host.split(",\\s+");
 				Set<String> sentinels = new HashSet<String>();
 				Collections.addAll(sentinels, sentinelHosts);
-				jedisPool = new JedisSentinelPool(masterName, sentinels, genericObjectPoolConfig, timeout, password, database);
+				jedisPool = new JedisSentinelPool(masterName, sentinels, jedisPoolConfig, timeout, soTimeout, password, database);
 			}
 		}
 	}
@@ -85,11 +88,19 @@ public class RedisSentinelManager extends BaseRedisManager implements IRedisMana
 		this.masterName = masterName;
 	}
 
-	public GenericObjectPoolConfig getGenericObjectPoolConfig() {
-		return genericObjectPoolConfig;
+	public JedisPoolConfig getJedisPoolConfig() {
+		return jedisPoolConfig;
 	}
 
-	public void setGenericObjectPoolConfig(GenericObjectPoolConfig genericObjectPoolConfig) {
-		this.genericObjectPoolConfig = genericObjectPoolConfig;
+	public void setJedisPoolConfig(JedisPoolConfig jedisPoolConfig) {
+		this.jedisPoolConfig = jedisPoolConfig;
+	}
+
+	public int getSoTimeout() {
+		return soTimeout;
+	}
+
+	public void setSoTimeout(int soTimeout) {
+		this.soTimeout = soTimeout;
 	}
 }

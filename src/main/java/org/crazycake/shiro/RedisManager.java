@@ -17,10 +17,12 @@ public class RedisManager extends BaseRedisManager implements IRedisManager{
 
 	private int database = Protocol.DEFAULT_DATABASE;
 
+	private JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+
 	private void init() {
 		synchronized (this) {
 			if (jedisPool == null) {
-				jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout, password, database);
+				jedisPool = new JedisPool(jedisPoolConfig, host, port, timeout, password, database);
 			}
 		}
 	}
@@ -70,5 +72,13 @@ public class RedisManager extends BaseRedisManager implements IRedisManager{
 
 	public void setDatabase(int database) {
 		this.database = database;
+	}
+
+	public JedisPoolConfig getJedisPoolConfig() {
+		return jedisPoolConfig;
+	}
+
+	public void setJedisPoolConfig(JedisPoolConfig jedisPoolConfig) {
+		this.jedisPoolConfig = jedisPoolConfig;
 	}
 }

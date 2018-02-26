@@ -83,6 +83,28 @@ securityManager.cacheManager = $cacheManager
 # shiro-redis configuration [end]
 #=================================
 ```
+
+If you use redis sentinel, config like this :
+
+```properties
+# Create redisManager
+redisManager = org.crazycake.shiro.RedisSentinelManager
+# Redis host. If you don't specify host the default value is 127.0.0.1 (Optional)
+redisManager.host = 192.168.0.192:26379,192.168.0.192:26380,192.168.0.192:26381
+# Redis cache key/value expire time. Default value:0 .The expire time is in second (Optional)
+redisManager.expire = 600
+# Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
+redisManager.timeout = 2000
+# timeout for jedis try to read data from redis server (Optional)
+redisManager.soTimeout = 2000
+# master name (Optional)
+# redisManager.masterName = mymaster
+# # Redis database. Default value is 0(Optional)
+# redisManager.database = 0
+# Redis password.(Optional)
+# redisManager.password = chenxing
+```
+
 Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-tutorial) for you to understand how to configure `shiro-redis` in `shiro.ini`.
 
 ## Spring
@@ -128,6 +150,25 @@ spring.xml:
 </bean>
 <!-- shiro-redis configuration [end] -->
 ```
+
+If you use redis sentinel, config like this :
+```xml
+<!-- shiro-redis configuration [start] -->
+<!-- shiro redisManager -->
+<bean id="redisManager" class="org.crazycake.shiro.RedisSentinelManager">
+    <property name="host" value="192.168.0.192:26379,192.168.0.192:26380,192.168.0.192:26381"/>
+    <property name="expire" value="1800"/>
+    <!-- optional properties:
+    <property name="timeout" value="10000"/>
+    <property name="soTimeout" value="10000"/>
+    <property name="masterName" value="mymaster"/>
+    <property name="password" value="123456"/>
+    <property name="database" value="1"/>
+    -->
+</bean>
+```
+
+
 Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-spring-tutorial) for you to understand how to configure `shiro-redis` in spring configuration file.
 
 ## Serializer

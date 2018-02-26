@@ -16,14 +16,14 @@ public class RedisCache<K, V> implements Cache<K, V> {
 
 	private RedisSerializer keySerializer = new StringSerializer();
 	private RedisSerializer valueSerializer = new ObjectSerializer();
-	private RedisManager redisManager;
+	private IRedisManager redisManager;
 	private String keyPrefix = DEFAULT_CACHE_KEY_PREFIX;
 
 	/**
 	 * Construction
 	 * @param redisManager
 	 */
-	public RedisCache(RedisManager redisManager, RedisSerializer keySerializer, RedisSerializer valueSerializer){
+	public RedisCache(IRedisManager redisManager, RedisSerializer keySerializer, RedisSerializer valueSerializer){
 		 if (redisManager == null) {
 	         throw new IllegalArgumentException("Cache argument cannot be null.");
 	     }
@@ -38,8 +38,8 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	 * @param cache The cache manager instance
 	 * @param prefix The Redis key prefix
 	 */
-	public RedisCache(RedisManager cache, RedisSerializer keySerializer, RedisSerializer valueSerializer,
-				String prefix){
+	public RedisCache(IRedisManager cache, RedisSerializer keySerializer, RedisSerializer valueSerializer,
+                      String prefix){
 		this( cache, keySerializer, valueSerializer );
 		this.keyPrefix = prefix;
 	}

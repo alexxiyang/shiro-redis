@@ -16,7 +16,7 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	private static Logger logger = LoggerFactory.getLogger(RedisSessionDAO.class);
 	private static final String DEFAULT_SESSION_KEY_PREFIX = "shiro:session:";
 
-	private RedisManager redisManager;
+	private IRedisManager redisManager;
 	private String keyPrefix = DEFAULT_SESSION_KEY_PREFIX;
 	private RedisSerializer keySerializer = new StringSerializer();
 	private RedisSerializer valueSerializer = new ObjectSerializer();
@@ -119,11 +119,11 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 		return this.keyPrefix + sessionId;
 	}
 
-	public RedisManager getRedisManager() {
+	public IRedisManager getRedisManager() {
 		return redisManager;
 	}
 
-	public void setRedisManager(RedisManager redisManager) {
+	public void setRedisManager(IRedisManager redisManager) {
 		this.redisManager = redisManager;
 	}
 

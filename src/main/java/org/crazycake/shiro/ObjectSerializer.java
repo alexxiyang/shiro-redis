@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 
-public class ObjectSerializer implements RedisSerializer<Object>  {
+public class ObjectSerializer implements RedisSerializer<Object> {
     private static Logger logger = LoggerFactory.getLogger(ObjectSerializer.class);
 
     @Override

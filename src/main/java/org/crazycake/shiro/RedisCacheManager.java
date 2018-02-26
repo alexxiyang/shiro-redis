@@ -18,7 +18,7 @@ public class RedisCacheManager implements CacheManager {
 	private RedisSerializer keySerializer = new StringSerializer();
 	private RedisSerializer valueSerializer = new ObjectSerializer();
 
-	private RedisManager redisManager;
+	private IRedisManager redisManager;
 
 	/**
 	 * The Redis key prefix for caches 
@@ -38,11 +38,11 @@ public class RedisCacheManager implements CacheManager {
 		return cache;
 	}
 
-	public RedisManager getRedisManager() {
+	public IRedisManager getRedisManager() {
 		return redisManager;
 	}
 
-	public void setRedisManager(RedisManager redisManager) {
+	public void setRedisManager(IRedisManager redisManager) {
 		this.redisManager = redisManager;
 	}
 

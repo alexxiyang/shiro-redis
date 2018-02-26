@@ -16,7 +16,7 @@ You can choose these 2 ways to include shiro-redis into your project
 <dependency>
     <groupId>org.crazycake</groupId>
     <artifactId>shiro-redis</artifactId>
-    <version>2.6.16</version>
+    <version>2.8.0</version>
 </dependency>
 ```
 
@@ -24,10 +24,10 @@ You can choose these 2 ways to include shiro-redis into your project
 
 You can configure shiro-redis either in shiro.ini or in spring-*.xml
 
-## ini
+## shiro.ini
 Here is the configuration for shiro.ini.
 
-shiro.ini:
+### Redis Standalone
 
 ```properties
 [main]
@@ -41,11 +41,11 @@ shiro.ini:
 # Create redisManager
 redisManager = org.crazycake.shiro.RedisManager
 # Redis host. If you don't specify host the default value is 127.0.0.1 (Optional)
-redisManager.host = 192.168.56.101
+redisManager.host = 127.0.0.1
 # Redis port. Default value: 6379 (Optional)
 redisManager.port = 6379
 # Redis cache key/value expire time. Default value: 3600 .The expire time is in second (Optional)
-redisManager.expire = 600
+redisManager.expire = 1200
 # Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
 redisManager.timeout = 0
 # Redis password.(Optional)
@@ -85,8 +85,35 @@ securityManager.cacheManager = $cacheManager
 ```
 Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-tutorial) for you to understand how to configure `shiro-redis` in `shiro.ini`.
 
+### Redis Sentinel
+if you're using Redis Sentinel, please change the redisManager configuration into the following:
+```properties
+#===================================
+# Redis Manager
+#===================================
+# Create redisManager
+redisManager = org.crazycake.shiro.RedisSentinelManager
+# Sentinel host. If you don't specify host the default value is 127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381
+redisManager.host = 127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381
+# Sentinel master name
+redisManager.masterName = mymaster
+# Redis cache key/value expire time. Default value:0 .The expire time is in second (Optional)
+redisManager.expire = 1200
+# Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
+redisManager.timeout = 0
+# Redis password.(Optional)
+#redisManager.password =
+# Redis database. Default value is 0 (Optional)
+#redisManager.database = 0
+# JedisSentinelPool genericObjectPoolConfig (Optional)
+# Most of time, you don't need to set genericObjectPoolConfig.
+#genericObjectPoolConfig = org.apache.commons.pool2.impl.GenericObjectPoolConfig
+#redisManager.genericObjectPoolConfig = $genericObjectPoolConfig
+```
+
 ## Spring
 
+### Redis Standalone
 spring.xml:
 ```xml
 <!-- shiro-redis configuration [start] -->
@@ -129,6 +156,8 @@ spring.xml:
 <!-- shiro-redis configuration [end] -->
 ```
 Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-spring-tutorial) for you to understand how to configure `shiro-redis` in spring configuration file.
+
+> I'm too lazy to provide the spring.xml for sentinel, please change spring.xml based on shiro.ini configuration.
 
 ## Serializer
 Since redis only accept `byte[]`, there comes to a serializer problem.

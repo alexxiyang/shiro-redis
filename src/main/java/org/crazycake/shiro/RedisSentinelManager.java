@@ -31,7 +31,7 @@ public class RedisSentinelManager extends BaseRedisManager implements IRedisMana
 	private void init() {
 		synchronized (this) {
 			if (jedisPool == null) {
-				String[] sentinelHosts = host.split(",\\s+");
+				String[] sentinelHosts = host.split(",\\s*");
 				Set<String> sentinels = new HashSet<String>();
 				Collections.addAll(sentinels, sentinelHosts);
 				jedisPool = new JedisSentinelPool(masterName, sentinels, jedisPoolConfig, timeout, soTimeout, password, database);

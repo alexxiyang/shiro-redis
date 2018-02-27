@@ -69,6 +69,10 @@ redisManager.timeout = 0
 # jedisPoolConfig.<attribute> = <value>
 # redisManager.jedisPoolConfig = jedisPoolConfig
 
+# Scan count. Shiro-redis use Scan to get keys, so you can define the number of elements returned at every iteration. (Optional)
+#
+# redisManager.count = <count>
+
 #====================================
 # Redis-based session configuration
 #====================================
@@ -146,6 +150,10 @@ redisManager.soTimeout = 2000
 # jedisPoolConfig = redis.clients.jedis.JedisPoolConfig
 # jedisPoolConfig.<attribute> = <value>
 # redisManager.jedisPoolConfig = jedisPoolConfig
+
+# Scan count. Shiro-redis use Scan to get keys, so you can define the number of elements returned at every iteration. (Optional)
+#
+# redisManager.count = <count>
 ```
 
 ## Spring
@@ -163,6 +171,8 @@ spring.xml:
     <property name="timeout" value="10000"/>
     <property name="password" value="123456"/>
     <property name="database" value="1"/>
+    <property name="jedisPoolConfig" ref="jedisPoolConfig"/>
+    <property name="count" value="100"/>
     -->
 </bean>
 

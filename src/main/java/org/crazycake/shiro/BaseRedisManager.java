@@ -1,8 +1,11 @@
 package org.crazycake.shiro;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 import redis.clients.util.Pool;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public abstract class BaseRedisManager implements IRedisManager {
@@ -14,6 +17,10 @@ public abstract class BaseRedisManager implements IRedisManager {
     // expire time in seconds
     protected static final int DEFAULT_EXPIRE = 3600;
     protected int expire = DEFAULT_EXPIRE;
+
+    // the number of elements returned at every iteration
+    protected static final int DEFAULT_COUNT = 100;
+    protected int count = DEFAULT_COUNT;
 
     /**
      * get value from redis
@@ -121,20 +128,31 @@ public abstract class BaseRedisManager implements IRedisManager {
 
     /**
      * keys
+     *
      * @param pattern
      * @return
      */
-    @Override
-    public Set<byte[]> keys(byte[] pattern){
-        checkAndInit();
+    public Set<byte[]> keys(byte[] pattern) {
         Set<byte[]> keys = null;
         Jedis jedis = jedisPool.getResource();
+
         try{
-            keys = jedis.keys(pattern);
+            keys = new HashSet<byte[]>();
+            ScanParams params = new ScanParams();
+            params.count(count);
+            params.match(pattern);
+            byte[] cursor = ScanParams.SCAN_POINTER_START_BINARY;
+            ScanResult<byte[]> scanResult;
+            do{
+                scanResult = jedis.scan(cursor,params);
+                keys.addAll(scanResult.getResult());
+                cursor = scanResult.getCursorAsBytes();
+            }while(scanResult.getStringCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
         }finally{
             jedis.close();
         }
         return keys;
+
     }
 
     @Override
@@ -144,5 +162,13 @@ public abstract class BaseRedisManager implements IRedisManager {
 
     public void setExpire(int expire) {
         this.expire = expire;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
     }
 }

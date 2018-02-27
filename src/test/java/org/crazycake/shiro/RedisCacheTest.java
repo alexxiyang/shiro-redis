@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 
 public class RedisCacheTest {
 
-    private RedisManager redisManager;
+    private RedisSingletonManager redisManager;
     private RedisCache<String, FakeSession> redisCache;
     private String testKey;
     private StringSerializer keySerializer;
@@ -46,7 +46,7 @@ public class RedisCacheTest {
         testValues.add(paulSession);
         billySession = new FakeSession(3, "billy");
         testValues.add(billySession);
-        redisManager = mock(RedisManager.class);
+        redisManager = mock(RedisSingletonManager.class);
         when(redisManager.dbSize()).thenReturn(2L);
         when(redisManager.get(keySerializer.serialize(testPrefix + testKey))).thenReturn(valueSerializer.serialize(testValue));
         when(redisManager.keys(keySerializer.serialize(testPrefix + "*"))).thenReturn(testSet);

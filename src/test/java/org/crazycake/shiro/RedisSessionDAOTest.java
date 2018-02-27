@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 
 public class RedisSessionDAOTest {
 
-    private RedisManager redisManager;
+    private RedisSingletonManager redisManager;
     private RedisSessionDAO redisSessionDAO;
     private StringSerializer keySerializer;
     private String testKey;
@@ -47,7 +47,7 @@ public class RedisSessionDAOTest {
         testValues.add(paulSession);
         billySession = new FakeSession(3, "billy");
         testValues.add(billySession);
-        redisManager = mock(RedisManager.class);
+        redisManager = mock(RedisSingletonManager.class);
         when(redisManager.dbSize()).thenReturn(2L);
         when(redisManager.get(keySerializer.serialize(testPrefix + testKey))).thenReturn(valueSeralizer.serialize(testValue));
         when(redisManager.keys(keySerializer.serialize(testPrefix + "*"))).thenReturn(testSet);

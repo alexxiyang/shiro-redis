@@ -3,11 +3,8 @@ package org.crazycake.shiro;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.Protocol;
 
-import java.util.Set;
-
-public class RedisManager extends JedisManager {
+public class RedisManager extends RedisSingletonManager {
 
     private volatile JedisPool jedisPool = null;
     private int port;
@@ -20,9 +17,8 @@ public class RedisManager extends JedisManager {
                     String[] hostAndPort = host.split(":");
                     jedisPool = new JedisPool(new JedisPoolConfig(), hostAndPort[0], Integer.parseInt(hostAndPort[1]), timeout, password, database);
                 }else{
-                    jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout, password, database);
+                    jedisPool = new JedisPool(new JedisPoolConfig(), ip, port, timeout, password, database);
                 }
-
             }
         }
     }

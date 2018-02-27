@@ -9,9 +9,11 @@ import redis.clients.jedis.*;
  * @create 2018-02-26 14:43
  **/
 
-public abstract class PropertiesRedisManager implements IRedisManager{
+public abstract class RedisPropertiesManager implements IRedisManager{
 
-    protected String host = "127.0.0.1:" + Protocol.DEFAULT_PORT ;
+    protected String ip = "127.0.0.1";
+
+    protected String host = ip + ":" + Protocol.DEFAULT_PORT ;
 
     protected static final int DEFAULT_EXPIRE = 3600;
 

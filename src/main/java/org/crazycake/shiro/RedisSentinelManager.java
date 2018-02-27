@@ -10,7 +10,7 @@ import java.util.Set;
  * @create 2018-02-26 11:16
  **/
 
-public class RedisSentinelManager extends JedisManager{
+public class RedisSentinelManager extends RedisSingletonManager {
 
     private String masterName = "mymaster";
 

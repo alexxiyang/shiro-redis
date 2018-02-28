@@ -108,7 +108,7 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 		logger.debug("read session from redis");
 		try {
 			s = (Session)valueSerializer.deserialize(redisManager.get(keySerializer.serialize(getRedisSessionKey(sessionId))));
-			// threadLocalSession.set(s);
+			threadLocalSession.set(s);
 		} catch (SerializationException e) {
 			logger.error("read session error. settionId=" + sessionId);
 		}

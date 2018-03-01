@@ -86,6 +86,12 @@ redisSessionDAO.keyPrefix = shiro:session:
 # Use redisManager as cache manager
 redisSessionDAO.redisManager = $redisManager
 
+# doReadSession be called about 10 times when login. Save Session in ThreadLocal to resolve this problem. sessionInMemoryTimeout is expiration of Session in ThreadLocal.
+# The default value is 1000 milliseconds (1s)
+# Most of time, you don't need to change it.
+#
+# redisSessionDAO.sessionInMemoryTimeout = 2000
+
 sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
 sessionManager.sessionDAO = $redisSessionDAO
 securityManager.sessionManager = $sessionManager

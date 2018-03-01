@@ -7,21 +7,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class RedisSessionDAO extends AbstractSessionDAO {
 
 	private static Logger logger = LoggerFactory.getLogger(RedisSessionDAO.class);
+
 	private static final String DEFAULT_SESSION_KEY_PREFIX = "shiro:session:";
+	private String keyPrefix = DEFAULT_SESSION_KEY_PREFIX;
+
+	private static final long DEFAULT_SESSION_IN_MEMORY_TIMEOUT = 1000L;
+	/**
+	 * doReadSession be called about 10 times when login. Save Session in ThreadLocal to resolve this problem. sessionInMemoryTimeout is expiration of Session in ThreadLocal. The default value is 1000 milliseconds (1s). Most of time, you don't need to change it.
+	 */
+	private long sessionInMemoryTimeout = DEFAULT_SESSION_IN_MEMORY_TIMEOUT;
 
 	private IRedisManager redisManager;
-	private String keyPrefix = DEFAULT_SESSION_KEY_PREFIX;
 	private RedisSerializer keySerializer = new StringSerializer();
 	private RedisSerializer valueSerializer = new ObjectSerializer();
-
-	private static ThreadLocal threadLocalSession = new ThreadLocal();
+	private static ThreadLocal sessionsInThread = new ThreadLocal();
 	
 	@Override
 	public void update(Session session) throws UnknownSessionException {
@@ -100,18 +104,55 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 			logger.warn("session id is null");
 			return null;
 		}
-		Session s = null;
-		if (threadLocalSession.get() != null) {
-			s = (Session) threadLocalSession.get();
+		Session s = getSessionFromThreadLocal(sessionId);
+
+		if (s != null) {
 			return s;
 		}
+
 		logger.debug("read session from redis");
 		try {
 			s = (Session)valueSerializer.deserialize(redisManager.get(keySerializer.serialize(getRedisSessionKey(sessionId))));
-			threadLocalSession.set(s);
+			setSessionToThreadLocal(sessionId, s);
 		} catch (SerializationException e) {
 			logger.error("read session error. settionId=" + sessionId);
 		}
+		return s;
+	}
+
+	private void setSessionToThreadLocal(Serializable sessionId, Session s) {
+		Map<Serializable, SessionInMemory> sessionMap = (Map<Serializable, SessionInMemory>) sessionsInThread.get();
+		if (sessionMap == null) {
+            sessionMap = new HashMap<Serializable, SessionInMemory>();
+            sessionsInThread.set(sessionMap);
+        }
+		SessionInMemory sessionInMemory = new SessionInMemory();
+		sessionInMemory.setCreateTime(new Date());
+		sessionInMemory.setSession(s);
+		sessionMap.put(sessionId, sessionInMemory);
+	}
+
+	private Session getSessionFromThreadLocal(Serializable sessionId) {
+		Session s = null;
+
+		if (sessionsInThread.get() == null) {
+			return null;
+		}
+
+		Map<Serializable, SessionInMemory> sessionMap = (Map<Serializable, SessionInMemory>) sessionsInThread.get();
+		SessionInMemory sessionInMemory = sessionMap.get(sessionId);
+		if (sessionInMemory == null) {
+			return null;
+		}
+		Date now = new Date();
+		long duration = now.getTime() - sessionInMemory.getCreateTime().getTime();
+		if (duration < sessionInMemoryTimeout) {
+			s = sessionInMemory.getSession();
+			logger.debug("read session from memory");
+		} else {
+			sessionMap.remove(sessionId);
+		}
+
 		return s;
 	}
 
@@ -149,5 +190,13 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 
 	public void setValueSerializer(RedisSerializer valueSerializer) {
 		this.valueSerializer = valueSerializer;
+	}
+
+	public long getSessionInMemoryTimeout() {
+		return sessionInMemoryTimeout;
+	}
+
+	public void setSessionInMemoryTimeout(long sessionInMemoryTimeout) {
+		this.sessionInMemoryTimeout = sessionInMemoryTimeout;
 	}
 }

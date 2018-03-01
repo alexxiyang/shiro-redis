@@ -1,18 +1,20 @@
 package org.crazycake.shiro;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
-import redis.clients.util.Pool;
 
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Whether JedisPool or JedisSentinelPool is used, we are going to operate redis by acquiring Jedis objects. The subclass
+ * realizes the way to get Jedis objects by realizing the getJedis() method of JedisManager.
+ */
 public abstract class BaseRedisManager implements IRedisManager {
 
-    protected volatile Pool<Jedis> jedisPool = null;
-
-    protected abstract void checkAndInit();
+    protected abstract Jedis getJedis();
 
     // expire time in seconds
     protected static final int DEFAULT_EXPIRE = 3600;
@@ -22,6 +24,8 @@ public abstract class BaseRedisManager implements IRedisManager {
     protected static final int DEFAULT_COUNT = 100;
     protected int count = DEFAULT_COUNT;
 
+    protected JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+
     /**
      * get value from redis
      * @param key
@@ -29,12 +33,11 @@ public abstract class BaseRedisManager implements IRedisManager {
      */
     @Override
     public byte[] get(byte[] key){
-        checkAndInit();
         if (key == null) {
             return null;
         }
         byte[] value = null;
-        Jedis jedis = jedisPool.getResource();
+        Jedis jedis = getJedis();
         try{
             value = jedis.get(key);
         }finally{
@@ -51,11 +54,10 @@ public abstract class BaseRedisManager implements IRedisManager {
      */
     @Override
     public byte[] set(byte[] key,byte[] value){
-        checkAndInit();
         if (key == null) {
             return null;
         }
-        Jedis jedis = jedisPool.getResource();
+        Jedis jedis = getJedis();
         try{
             jedis.set(key,value);
             if(this.getExpire() != 0){
@@ -76,11 +78,10 @@ public abstract class BaseRedisManager implements IRedisManager {
      */
     @Override
     public byte[] set(byte[] key,byte[] value,int expire){
-        checkAndInit();
         if (key == null) {
             return null;
         }
-        Jedis jedis = jedisPool.getResource();
+        Jedis jedis = getJedis();
         try{
             jedis.set(key,value);
             if(expire != 0){
@@ -98,11 +99,10 @@ public abstract class BaseRedisManager implements IRedisManager {
      */
     @Override
     public void del(byte[] key){
-        checkAndInit();
         if (key == null) {
             return;
         }
-        Jedis jedis = jedisPool.getResource();
+        Jedis jedis = getJedis();
         try{
             jedis.del(key);
         }finally{
@@ -115,9 +115,8 @@ public abstract class BaseRedisManager implements IRedisManager {
      */
     @Override
     public Long dbSize(){
-        checkAndInit();
         Long dbSize = 0L;
-        Jedis jedis = jedisPool.getResource();
+        Jedis jedis = getJedis();
         try{
             dbSize = jedis.dbSize();
         }finally{
@@ -134,7 +133,7 @@ public abstract class BaseRedisManager implements IRedisManager {
      */
     public Set<byte[]> keys(byte[] pattern) {
         Set<byte[]> keys = null;
-        Jedis jedis = jedisPool.getResource();
+        Jedis jedis = getJedis();
 
         try{
             keys = new HashSet<byte[]>();
@@ -170,5 +169,13 @@ public abstract class BaseRedisManager implements IRedisManager {
 
     public void setCount(int count) {
         this.count = count;
+    }
+
+    public JedisPoolConfig getJedisPoolConfig() {
+        return jedisPoolConfig;
+    }
+
+    public void setJedisPoolConfig(JedisPoolConfig jedisPoolConfig) {
+        this.jedisPoolConfig = jedisPoolConfig;
     }
 }

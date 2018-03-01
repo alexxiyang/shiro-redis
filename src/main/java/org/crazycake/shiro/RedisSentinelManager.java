@@ -1,5 +1,6 @@
 package org.crazycake.shiro;
 
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisSentinelPool;
 import redis.clients.jedis.Protocol;
@@ -26,7 +27,15 @@ public class RedisSentinelManager extends BaseRedisManager implements IRedisMana
 
 	private int database = Protocol.DEFAULT_DATABASE;
 
-	private JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+	private JedisSentinelPool jedisPool;
+
+	@Override
+	protected Jedis getJedis() {
+		if(jedisPool == null){
+			init();
+		}
+		return jedisPool.getResource();
+	}
 
 	private void init() {
 		synchronized (this) {
@@ -34,15 +43,8 @@ public class RedisSentinelManager extends BaseRedisManager implements IRedisMana
 				String[] sentinelHosts = host.split(",\\s*");
 				Set<String> sentinels = new HashSet<String>();
 				Collections.addAll(sentinels, sentinelHosts);
-				jedisPool = new JedisSentinelPool(masterName, sentinels, jedisPoolConfig, timeout, soTimeout, password, database);
+				jedisPool = new JedisSentinelPool(masterName, sentinels, new JedisPoolConfig(), timeout, soTimeout, password, database);
 			}
-		}
-	}
-
-	@Override
-	protected void checkAndInit() {
-		if (jedisPool == null) {
-			init();
 		}
 	}
 
@@ -88,14 +90,6 @@ public class RedisSentinelManager extends BaseRedisManager implements IRedisMana
 		this.masterName = masterName;
 	}
 
-	public JedisPoolConfig getJedisPoolConfig() {
-		return jedisPoolConfig;
-	}
-
-	public void setJedisPoolConfig(JedisPoolConfig jedisPoolConfig) {
-		this.jedisPoolConfig = jedisPoolConfig;
-	}
-
 	public int getSoTimeout() {
 		return soTimeout;
 	}
@@ -103,4 +97,5 @@ public class RedisSentinelManager extends BaseRedisManager implements IRedisMana
 	public void setSoTimeout(int soTimeout) {
 		this.soTimeout = soTimeout;
 	}
+
 }

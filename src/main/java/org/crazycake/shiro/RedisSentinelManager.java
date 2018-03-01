@@ -43,7 +43,7 @@ public class RedisSentinelManager extends BaseRedisManager implements IRedisMana
 				String[] sentinelHosts = host.split(",\\s*");
 				Set<String> sentinels = new HashSet<String>();
 				Collections.addAll(sentinels, sentinelHosts);
-				jedisPool = new JedisSentinelPool(masterName, sentinels, new JedisPoolConfig(), timeout, soTimeout, password, database);
+				jedisPool = new JedisSentinelPool(masterName, sentinels, jedisPoolConfig, timeout, soTimeout, password, database);
 			}
 		}
 	}
@@ -55,8 +55,6 @@ public class RedisSentinelManager extends BaseRedisManager implements IRedisMana
 	public void setHost(String host) {
 		this.host = host;
 	}
-
-
 
 	public int getTimeout() {
 		return timeout;

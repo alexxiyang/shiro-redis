@@ -26,9 +26,9 @@ public class RedisManager extends BaseRedisManager implements IRedisManager{
 				if(host.contains(":")){
 					// support host:port config style
 					String[] hostAndPort = host.split(":");
-					jedisPool = new JedisPool(new JedisPoolConfig(), hostAndPort[0], Integer.parseInt(hostAndPort[1]), timeout, password, database);
+					jedisPool = new JedisPool(jedisPoolConfig, hostAndPort[0], Integer.parseInt(hostAndPort[1]), timeout, password, database);
 				}else{
-					jedisPool = new JedisPool(new JedisPoolConfig(), host, port, timeout, password, database);
+					jedisPool = new JedisPool(jedisPoolConfig, host, port, timeout, password, database);
 				}
 			}
 		}

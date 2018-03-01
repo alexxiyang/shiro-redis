@@ -1,6 +1,7 @@
 package org.crazycake.shiro;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 
@@ -22,6 +23,8 @@ public abstract class BaseRedisManager implements IRedisManager {
     // the number of elements returned at every iteration
     protected static final int DEFAULT_COUNT = 100;
     protected int count = DEFAULT_COUNT;
+
+    protected JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
 
     /**
      * get value from redis
@@ -168,4 +171,11 @@ public abstract class BaseRedisManager implements IRedisManager {
         this.count = count;
     }
 
+    public JedisPoolConfig getJedisPoolConfig() {
+        return jedisPoolConfig;
+    }
+
+    public void setJedisPoolConfig(JedisPoolConfig jedisPoolConfig) {
+        this.jedisPoolConfig = jedisPoolConfig;
+    }
 }

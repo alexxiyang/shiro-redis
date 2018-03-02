@@ -1,5 +1,6 @@
 package org.crazycake.shiro;
 
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Protocol;
@@ -19,21 +20,28 @@ public class RedisManager extends BaseRedisManager implements IRedisManager{
 
 	private int database = Protocol.DEFAULT_DATABASE;
 
-	private JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+	private JedisPool jedisPool;
 
 	private void init() {
 		synchronized (this) {
 			if (jedisPool == null) {
-				jedisPool = new JedisPool(jedisPoolConfig, host, port, timeout, password, database);
+				if(host.contains(":")){
+					// support host:port config style
+					String[] hostAndPort = host.split(":");
+					jedisPool = new JedisPool(jedisPoolConfig, hostAndPort[0], Integer.parseInt(hostAndPort[1]), timeout, password, database);
+				}else{
+					jedisPool = new JedisPool(jedisPoolConfig, host, port, timeout, password, database);
+				}
 			}
 		}
 	}
 
 	@Override
-	protected void checkAndInit() {
+	protected Jedis getJedis() {
 		if (jedisPool == null) {
 			init();
 		}
+		return jedisPool.getResource();
 	}
 
 	public String getHost() {
@@ -76,11 +84,11 @@ public class RedisManager extends BaseRedisManager implements IRedisManager{
 		this.database = database;
 	}
 
-	public JedisPoolConfig getJedisPoolConfig() {
-		return jedisPoolConfig;
+	public JedisPool getJedisPool() {
+		return jedisPool;
 	}
 
-	public void setJedisPoolConfig(JedisPoolConfig jedisPoolConfig) {
-		this.jedisPoolConfig = jedisPoolConfig;
+	public void setJedisPool(JedisPool jedisPool) {
+		this.jedisPool = jedisPool;
 	}
 }

@@ -5,9 +5,11 @@ import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Protocol;
 
 public class RedisManager extends BaseRedisManager implements IRedisManager{
-	
-	private String host = "127.0.0.1";
 
+	private static final String DEFAULT_HOST = "127.0.0.1:6379";
+	private String host = DEFAULT_HOST;
+
+	@Deprecated
 	private int port = Protocol.DEFAULT_PORT ;
 	
 	// timeout for jedis try to connect to redis server, not expire time! In milliseconds

@@ -16,7 +16,7 @@ You can choose these 2 ways to include shiro-redis into your project
 <dependency>
     <groupId>org.crazycake</groupId>
     <artifactId>shiro-redis</artifactId>
-    <version>2.8.0</version>
+    <version>2.8.2</version>
 </dependency>
 ```
 
@@ -42,17 +42,15 @@ Here is the configuration for shiro.ini.
 # Create redisManager
 redisManager = org.crazycake.shiro.RedisManager
 
-# Redis host. If you don't specify host the default value is 127.0.0.1 (Optional)
-redisManager.host = 127.0.0.1
-
-# Redis port. Default value: 6379 (Optional)
-redisManager.port = 6379
+# Redis host. If you don't specify host the default value is 127.0.0.1:6379
+redisManager.host = 127.0.0.1:6379
 
 # Redis cache key/value expire time. Default value: 3600 .The expire time is in second (Optional)
 redisManager.expire = 1200
 
 # Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
-redisManager.timeout = 0
+#
+# redisManager.timeout = <timeout>
 
 # Redis password.(Optional)
 #
@@ -76,6 +74,7 @@ redisManager.timeout = 0
 #====================================
 # Redis-based session configuration
 #====================================
+
 # Create redisSessionDAO
 redisSessionDAO = org.crazycake.shiro.RedisSessionDAO
 
@@ -90,15 +89,18 @@ redisSessionDAO.redisManager = $redisManager
 # The default value is 1000 milliseconds (1s)
 # Most of time, you don't need to change it.
 #
-# redisSessionDAO.sessionInMemoryTimeout = 2000
+# redisSessionDAO.sessionInMemoryTimeout = <timeout>
 
 sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
+
 sessionManager.sessionDAO = $redisSessionDAO
+
 securityManager.sessionManager = $sessionManager
 
 #=====================================
 # Redis-based cache configuration
 #=====================================
+
 # Create cacheManager
 cacheManager = org.crazycake.shiro.RedisCacheManager
 
@@ -108,6 +110,7 @@ cacheManager.keyPrefix = shiro:cache:
 
 # Use redisManager as cache manager
 cacheManager.redisManager = $redisManager
+
 securityManager.cacheManager = $cacheManager
 
 #=================================
@@ -137,10 +140,12 @@ redisManager.masterName = mymaster
 redisManager.expire = 1200
 
 # Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
-redisManager.timeout = 2000
+#
+# redisManager.timeout = <timeout>
 
 # Timeout for jedis try to read data from redis server (Optional)
-redisManager.soTimeout = 2000
+#
+# redisManager.soTimeout = <soTimeout>
 
 # Redis password.(Optional)
 #
@@ -170,10 +175,9 @@ spring.xml:
 <!-- shiro-redis configuration [start] -->
 <!-- shiro redisManager -->
 <bean id="redisManager" class="org.crazycake.shiro.RedisManager">
-    <property name="host" value="127.0.0.1"/>
-    <property name="port" value="6379"/>
-    <property name="expire" value="1800"/>
+    <property name="host" value="127.0.0.1:6379"/>
     <!-- optional properties:
+    <property name="expire" value="1800"/>
     <property name="timeout" value="10000"/>
     <property name="password" value="123456"/>
     <property name="database" value="1"/>
@@ -219,12 +223,13 @@ If you use redis sentinel, config like this :
 <bean id="redisManager" class="org.crazycake.shiro.RedisSentinelManager">
     <property name="host" value="127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381"/>
     <property name="masterName" value="mymaster"/>
-    <property name="expire" value="1800"/>
     <!-- optional properties:
+    <property name="expire" value="1800"/>
     <property name="timeout" value="2000"/>
     <property name="soTimeout" value="2000"/>
     <property name="password" value=""/>
     <property name="database" value="0"/>
+    <property name="count" value="100"/>
     -->
 </bean>
 ```

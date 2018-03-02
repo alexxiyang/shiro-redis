@@ -104,6 +104,17 @@ securityManager.sessionManager = $sessionManager
 # Create cacheManager
 cacheManager = org.crazycake.shiro.RedisCacheManager
 
+# If you want change charset of keySerializer or use your own custom serializer, you need to define serializer first
+#
+# cacheManagerKeySerializer = org.crazycake.shiro.StringSerializer
+
+# Refer to https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html
+# UTF-8, UTF-16, UTF-32, ISO-8859-1, GBK, Big5, etc
+#
+# cacheManagerKeySerializer.charset = UTF-8
+
+# cacheManager.keySerializer = $cacheManagerKeySerializer
+
 # Custom your redis key prefix for cache management, if you doesn't define this parameter, shiro-redis will use 'shiro_redis_session:' as default prefix
 # Note: Remember to add colon at the end of prefix.
 cacheManager.keyPrefix = shiro:cache:
@@ -241,17 +252,16 @@ You can use your own custom serializer, as long as this custom serializer implem
 
 For example, you need to change the charset of keySerializer.
 ```properties
-#=====================================
-# Redis-based cache configuration
-#=====================================
-# Create cacheManager
-cacheManager = org.crazycake.shiro.RedisCacheManager
 # If you want change charset of keySerializer or use your own custom serializer, you need to define serializer first
-cacheManagerKeySerializer = org.crazycake.shiro.StringSerializer
+#
+# cacheManagerKeySerializer = org.crazycake.shiro.StringSerializer
+
 # Refer to https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html
 # UTF-8, UTF-16, UTF-32, ISO-8859-1, GBK, Big5, etc
-cacheManagerKeySerializer.charset = UTF-16
-cacheManager.keySerializer = $cacheManagerKeySerializer
+#
+# cacheManagerKeySerializer.charset = UTF-8
+
+# cacheManager.keySerializer = $cacheManagerKeySerializer
 ```
 
 These 4 Serializers are replaceable:

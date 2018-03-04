@@ -67,7 +67,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 		logger.debug("put key [" + key + "]");
 		try {
 			Object redisCacheKey = getRedisCacheKey(key);
-			redisManager.set(keySerializer.serialize(redisCacheKey), valueSerializer.serialize(value));
+			redisManager.set(keySerializer.serialize(redisCacheKey), valueSerializer.serialize(value), redisManager.getExpire());
 			return value;
 		} catch (SerializationException e) {
 			throw new CacheException(e);

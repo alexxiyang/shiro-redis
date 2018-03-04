@@ -26,12 +26,12 @@ public class RedisCacheManagerTest {
         Cache cache1 = redisCacheManager.getCache("testCache1");
         assertThat(cache,is(cache1));
 
-        redisCacheManager.setKeyPrefix("testRedisManager1");
+        redisCacheManager.setKeyPrefix("testRedisManager1:");
         Cache cache2 = redisCacheManager.getCache("testCache2");
         assertThat(cache2.getClass().getName(), is("org.crazycake.shiro.RedisCache"));
 
         RedisCache redisCache2 = (RedisCache) cache2;
-        assertThat(redisCache2.getKeyPrefix(), is("testRedisManager1"));
+        assertThat(redisCache2.getKeyPrefix(), is("testRedisManager1:testCache2:"));
     }
 
 }

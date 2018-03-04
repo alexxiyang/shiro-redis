@@ -26,15 +26,6 @@ public interface IRedisManager {
     public byte[] set(byte[] key, byte[] value);
 
     /**
-     * set
-     * @param key
-     * @param value
-     * @param expire
-     * @return
-     */
-    public byte[] set(byte[] key, byte[] value, int expire);
-
-    /**
      * del
      * @param key
      */

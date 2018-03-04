@@ -70,30 +70,6 @@ public abstract class BaseRedisManager implements IRedisManager {
     }
 
     /**
-     * set
-     * @param key
-     * @param value
-     * @param expire
-     * @return
-     */
-    @Override
-    public byte[] set(byte[] key,byte[] value,int expire){
-        if (key == null) {
-            return null;
-        }
-        Jedis jedis = getJedis();
-        try{
-            jedis.set(key,value);
-            if(expire != 0){
-                jedis.expire(key, expire);
-            }
-        }finally{
-            jedis.close();
-        }
-        return value;
-    }
-
-    /**
      * del
      * @param key
      */

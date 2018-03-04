@@ -53,7 +53,7 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 		}
 
 		session.setTimeout(redisManager.getExpire()*1000);		
-		this.redisManager.set(key, value, redisManager.getExpire());
+		this.redisManager.set(key, value);
 	}
 
 	@Override

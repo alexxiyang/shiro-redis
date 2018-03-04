@@ -12,12 +12,11 @@ import java.util.*;
 public class RedisCache<K, V> implements Cache<K, V> {
 	
 	private static Logger logger = LoggerFactory.getLogger(RedisCache.class);
-	private static final String DEFAULT_CACHE_KEY_PREFIX = "shiro:cache:";
 
 	private RedisSerializer keySerializer = new StringSerializer();
 	private RedisSerializer valueSerializer = new ObjectSerializer();
 	private IRedisManager redisManager;
-	private String keyPrefix = DEFAULT_CACHE_KEY_PREFIX;
+	private String keyPrefix = "";
 
 	/**
 	 * Construction

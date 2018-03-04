@@ -23,7 +23,8 @@ public class RedisCacheManager implements CacheManager {
 	/**
 	 * The Redis key prefix for caches 
 	 */
-	private String keyPrefix = "shiro:cache:";
+	public static final String DEFAULT_CACHE_KEY_PREFIX = "shiro:cache:";
+	private String keyPrefix = DEFAULT_CACHE_KEY_PREFIX;
 
 	@Override
 	public <K, V> Cache<K, V> getCache(String name) throws CacheException {

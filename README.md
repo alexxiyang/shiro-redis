@@ -154,9 +154,6 @@ redisManager.host = 127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381
 # Sentinel master name
 redisManager.masterName = mymaster
 
-# Redis cache key/value expire time. Default value:0 .The expire time is in second (Optional)
-redisManager.expire = 1200
-
 # Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
 #
 # redisManager.timeout = <timeout>
@@ -195,7 +192,6 @@ spring.xml:
 <bean id="redisManager" class="org.crazycake.shiro.RedisManager">
     <property name="host" value="127.0.0.1:6379"/>
     <!-- optional properties:
-    <property name="expire" value="1800"/>
     <property name="timeout" value="10000"/>
     <property name="password" value="123456"/>
     <property name="database" value="1"/>
@@ -207,6 +203,7 @@ spring.xml:
 <!-- Redis-based session configuration -->
 <bean id="redisSessionDAO" class="org.crazycake.shiro.RedisSessionDAO">
     <property name="redisManager" ref="redisManager" />
+    <property name="expire" value="1800"/>
     <property name="keyPrefix" value="shiro:session:" />
 </bean>
 <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
@@ -216,6 +213,7 @@ spring.xml:
 <!-- Redis-based cache configuration -->
 <bean id="cacheManager" class="org.crazycake.shiro.RedisCacheManager">
     <property name="redisManager" ref="redisManager" />
+    <property name="expire" value="1800"/>
     <property name="keyPrefix" value="shiro:cache:" />
 </bean>
 
@@ -241,9 +239,8 @@ If you use redis sentinel, config like this :
 <bean id="redisManager" class="org.crazycake.shiro.RedisSentinelManager">
     <property name="host" value="127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381"/>
     <property name="masterName" value="mymaster"/>
-    <!-- optional properties:
-    <property name="expire" value="1800"/>
-    <property name="timeout" value="2000"/>
+    <!-- optional properties:、
+    <property name="timeout" value="2000"/>
     <property name="soTimeout" value="2000"/>
     <property name="password" value=""/>
     <property name="database" value="0"/>

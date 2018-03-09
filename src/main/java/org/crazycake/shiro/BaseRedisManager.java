@@ -18,6 +18,10 @@ public abstract class BaseRedisManager implements IRedisManager {
 
     // expire time in seconds
     protected static final int DEFAULT_EXPIRE = 3600;
+    /**
+     * Setting different expire times at RedisCacheManager or RedisSessionDAO instead of setting a global expire time for all redis cache.
+     */
+    @Deprecated
     protected int expire = DEFAULT_EXPIRE;
 
     // the number of elements returned at every iteration
@@ -53,15 +57,15 @@ public abstract class BaseRedisManager implements IRedisManager {
      * @return
      */
     @Override
-    public byte[] set(byte[] key,byte[] value){
+    public byte[] set(byte[] key,byte[] value, int expire){
         if (key == null) {
             return null;
         }
         Jedis jedis = getJedis();
         try{
             jedis.set(key,value);
-            if(this.getExpire() != 0){
-                jedis.expire(key, this.getExpire());
+            if(expire != 0){
+                jedis.expire(key, expire);
             }
         }finally{
             jedis.close();
@@ -130,7 +134,7 @@ public abstract class BaseRedisManager implements IRedisManager {
 
     }
 
-    @Override
+    @Deprecated
     public int getExpire() {
         return expire;
     }

@@ -17,30 +17,25 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	private RedisSerializer valueSerializer = new ObjectSerializer();
 	private IRedisManager redisManager;
 	private String keyPrefix = "";
+	private int expire = 0;
 
 	/**
 	 * Construction
 	 * @param redisManager
 	 */
-	public RedisCache(IRedisManager redisManager, RedisSerializer keySerializer, RedisSerializer valueSerializer){
+	public RedisCache(IRedisManager redisManager, RedisSerializer keySerializer, RedisSerializer valueSerializer, String prefix, int expire){
 		 if (redisManager == null) {
 	         throw new IllegalArgumentException("Cache argument cannot be null.");
 	     }
 	     this.redisManager = redisManager;
 		 this.keySerializer = keySerializer;
 		 this.valueSerializer = valueSerializer;
-	}
-	
-	/**
-	 * Constructs a cache instance with the specified
-	 * Redis manager and using a custom key prefix.
-	 * @param cache The cache manager instance
-	 * @param prefix The Redis key prefix
-	 */
-	public RedisCache(IRedisManager cache, RedisSerializer keySerializer, RedisSerializer valueSerializer,
-                      String prefix){
-		this( cache, keySerializer, valueSerializer );
-		this.keyPrefix = prefix;
+		 if (prefix != null && !"".equals(prefix)) {
+			 this.keyPrefix = prefix;
+		 }
+		 if (expire != -1) {
+		 	this.expire = expire;
+		 }
 	}
  	
 	@Override
@@ -66,7 +61,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 		logger.debug("put key [" + key + "]");
 		try {
 			Object redisCacheKey = getRedisCacheKey(key);
-			redisManager.set(keySerializer.serialize(redisCacheKey), valueSerializer.serialize(value));
+			redisManager.set(keySerializer.serialize(redisCacheKey), valueSerializer.serialize(value), expire);
 			return value;
 		} catch (SerializationException e) {
 			throw new CacheException(e);

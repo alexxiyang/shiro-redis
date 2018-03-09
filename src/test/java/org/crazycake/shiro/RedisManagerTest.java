@@ -58,8 +58,12 @@ public class RedisManagerTest {
 
     @Test
     public void testSet() {
-        redisManager.set(testKey, testValue);
-        redisManager.set(null, null);
+        redisManager.set(testKey, testValue, 0);
+        redisManager.set(null, null, 0);
+        redisManager.set(testKey, testValue, 0);
+        verify(jedis, times(0)).expire(testKey, 0);
+        redisManager.set(testKey, testValue, 700);
+        verify(jedis, times(1)).expire(testKey, 700);
     }
 
     @Test

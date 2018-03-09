@@ -45,9 +45,6 @@ redisManager = org.crazycake.shiro.RedisManager
 # Redis host. If you don't specify host the default value is 127.0.0.1:6379
 redisManager.host = 127.0.0.1:6379
 
-# Redis cache key/value expire time. Default value: 3600 .The expire time is in second (Optional)
-redisManager.expire = 1200
-
 # Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
 #
 # redisManager.timeout = <timeout>
@@ -78,9 +75,15 @@ redisManager.expire = 1200
 # Create redisSessionDAO
 redisSessionDAO = org.crazycake.shiro.RedisSessionDAO
 
+# Redis cache key/value expire time. Default value: 1800 .The expire time is in second.
+# Note: Shiro session default timeout is 1800s. Make sure expire time is longer than session timeout.  (Optional)
+#
+# redisManager.expire = <expire>
+
 # Custom your redis key prefix for session management, if you doesn't define this parameter, shiro-redis will use 'shiro_redis_session:' as default prefix
 # Note: Remember to add colon at the end of prefix.
-redisSessionDAO.keyPrefix = shiro:session:
+#
+# redisSessionDAO.keyPrefix = <session keyprefix>
 
 # Use redisManager as cache manager
 redisSessionDAO.redisManager = $redisManager
@@ -103,6 +106,10 @@ securityManager.sessionManager = $sessionManager
 
 # Create cacheManager
 cacheManager = org.crazycake.shiro.RedisCacheManager
+
+# Redis cache key/value expire time. Default value: 1800 .The expire time is in second. (Optional)
+#
+# cacheManager.expire = <expire>
 
 # If you want change charset of keySerializer or use your own custom serializer, you need to define serializer first
 #

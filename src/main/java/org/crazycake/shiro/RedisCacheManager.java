@@ -20,6 +20,10 @@ public class RedisCacheManager implements CacheManager {
 
 	private IRedisManager redisManager;
 
+	// expire time in seconds
+	private static final int DEFAULT_EXPIRE = 1800;
+	private int expire = DEFAULT_EXPIRE;
+
 	/**
 	 * The Redis key prefix for caches 
 	 */
@@ -33,7 +37,7 @@ public class RedisCacheManager implements CacheManager {
 		Cache cache = caches.get(name);
 		
 		if (cache == null) {
-			cache = new RedisCache<K, V>(redisManager, keySerializer, valueSerializer, keyPrefix + name + ":");
+			cache = new RedisCache<K, V>(redisManager, keySerializer, valueSerializer, keyPrefix + name + ":", expire);
 			caches.put(name, cache);
 		}
 		return cache;
@@ -69,5 +73,13 @@ public class RedisCacheManager implements CacheManager {
 
 	public void setValueSerializer(RedisSerializer valueSerializer) {
 		this.valueSerializer = valueSerializer;
+	}
+
+	public int getExpire() {
+		return expire;
+	}
+
+	public void setExpire(int expire) {
+		this.expire = expire;
 	}
 }

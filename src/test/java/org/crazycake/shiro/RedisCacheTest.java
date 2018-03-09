@@ -53,22 +53,20 @@ public class RedisCacheTest {
         when(redisManager.get(keySerializer.serialize(testPrefix + "tom"))).thenReturn(valueSerializer.serialize(tomSession));
         when(redisManager.get(keySerializer.serialize(testPrefix + "paul"))).thenReturn(valueSerializer.serialize(paulSession));
         when(redisManager.get(keySerializer.serialize(testPrefix + "billy"))).thenReturn(valueSerializer.serialize(billySession));
-        redisCache = new RedisCache<String, FakeSession>(redisManager, keySerializer, valueSerializer, testPrefix);
+        redisCache = new RedisCache<String, FakeSession>(redisManager, keySerializer, valueSerializer, testPrefix, 1);
     }
 
     @Test
     public void testRedisCache() {
         try {
-            new RedisCache<String, String>(null, keySerializer, valueSerializer);
+            new RedisCache<String, String>(null, keySerializer, valueSerializer, "abc:", 1);
             fail("Excepted exception to be thrown");
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage(),is("Cache argument cannot be null."));
         }
 
-        new RedisCache(new RedisManager(), keySerializer, valueSerializer);
-
-        RedisCache rc = new RedisCache(new RedisManager(), keySerializer, valueSerializer, "testPrefix");
-        assertThat(rc.getKeyPrefix(), is("testPrefix"));
+        RedisCache rc = new RedisCache(new RedisManager(), keySerializer, valueSerializer, "abc", 1);
+        assertThat(rc.getKeyPrefix(), is("abc"));
     }
 
     @Test

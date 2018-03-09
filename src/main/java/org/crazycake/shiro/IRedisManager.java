@@ -23,7 +23,7 @@ public interface IRedisManager {
      * @param value
      * @return
      */
-    public byte[] set(byte[] key, byte[] value);
+    public byte[] set(byte[] key, byte[] value, int expire);
 
     /**
      * del
@@ -42,11 +42,5 @@ public interface IRedisManager {
      * @return
      */
     public Set<byte[]> keys(byte[] pattern);
-
-    /**
-     * expire time
-     * @return
-     */
-    public int getExpire();
 
 }

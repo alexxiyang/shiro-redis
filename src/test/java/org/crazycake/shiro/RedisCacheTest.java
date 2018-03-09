@@ -8,8 +8,7 @@ import java.util.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class RedisCacheTest {
 
@@ -25,6 +24,7 @@ public class RedisCacheTest {
     private FakeSession tomSession;
     private FakeSession paulSession;
     private FakeSession billySession;
+    private byte[] nullValueByte;
 
     @Before
     public void setUp() throws SerializationException, NoSuchFieldException, IllegalAccessException {
@@ -54,6 +54,8 @@ public class RedisCacheTest {
         when(redisManager.get(keySerializer.serialize(testPrefix + "paul"))).thenReturn(valueSerializer.serialize(paulSession));
         when(redisManager.get(keySerializer.serialize(testPrefix + "billy"))).thenReturn(valueSerializer.serialize(billySession));
         redisCache = new RedisCache<String, FakeSession>(redisManager, keySerializer, valueSerializer, testPrefix, 1);
+
+        nullValueByte = new byte[0];
     }
 
     @Test
@@ -90,6 +92,7 @@ public class RedisCacheTest {
     @Test
     public void testPut() {
         redisCache.put(null, null);
+        verify(redisManager, times(1)).set(null, nullValueByte, 1);
         redisCache.put(null, new FakeSession());
         redisCache.put(testKey, testValue);
     }

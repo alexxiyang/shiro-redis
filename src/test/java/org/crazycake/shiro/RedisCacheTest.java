@@ -3,7 +3,9 @@ package org.crazycake.shiro;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
@@ -13,49 +15,35 @@ import static org.mockito.Mockito.*;
 public class RedisCacheTest {
 
     private RedisManager redisManager;
-    private RedisCache<String, FakeSession> redisCache;
-    private String testKey;
+    private RedisCache<String, FakeAuth> redisCache;
     private StringSerializer keySerializer;
     private ObjectSerializer valueSerializer;
-    private FakeSession testValue;
     private String testPrefix;
-    private Set<byte[]> testSet;
-    private Collection<FakeSession> testValues;
-    private FakeSession tomSession;
-    private FakeSession paulSession;
-    private FakeSession billySession;
-    private byte[] nullValueByte;
+
+    private String tomKey;
+    private byte[] tomKeyBytes;
+    private String paulKey;
+    private String billyKey;
 
     @Before
     public void setUp() throws SerializationException, NoSuchFieldException, IllegalAccessException {
-        testPrefix = "testPrefix:";
-        testKey = "testKey";
-        testValue = new FakeSession();
-        testValue.setId(3);
-        testValue.setName("jack");
         keySerializer = new StringSerializer();
         valueSerializer = new ObjectSerializer();
-        testSet = new HashSet<byte[]>();
-        testSet.add(keySerializer.serialize(testPrefix + "tom"));
-        testSet.add(keySerializer.serialize(testPrefix + "paul"));
-        testSet.add(keySerializer.serialize(testPrefix + "billy"));
-        testValues = new ArrayList<FakeSession>();
-        tomSession = new FakeSession(1, "tom");
-        testValues.add(tomSession);
-        paulSession = new FakeSession(2, "paul");
-        testValues.add(paulSession);
-        billySession = new FakeSession(3, "billy");
-        testValues.add(billySession);
         redisManager = mock(RedisManager.class);
-        when(redisManager.dbSize()).thenReturn(2L);
-        when(redisManager.get(keySerializer.serialize(testPrefix + testKey))).thenReturn(valueSerializer.serialize(testValue));
-        when(redisManager.keys(keySerializer.serialize(testPrefix + "*"))).thenReturn(testSet);
-        when(redisManager.get(keySerializer.serialize(testPrefix + "tom"))).thenReturn(valueSerializer.serialize(tomSession));
-        when(redisManager.get(keySerializer.serialize(testPrefix + "paul"))).thenReturn(valueSerializer.serialize(paulSession));
-        when(redisManager.get(keySerializer.serialize(testPrefix + "billy"))).thenReturn(valueSerializer.serialize(billySession));
-        redisCache = new RedisCache<String, FakeSession>(redisManager, keySerializer, valueSerializer, testPrefix, 1);
+        testPrefix = "testPrefix:";
+        redisCache = new RedisCache<String, FakeAuth>(redisManager, keySerializer, valueSerializer, testPrefix, 1);
 
-        nullValueByte = new byte[0];
+        Set<byte[]> testSet;
+        testSet = new HashSet<byte[]>();
+        tomKey = testPrefix + "tom";
+        tomKeyBytes = keySerializer.serialize(tomKey);
+        testSet.add(tomKeyBytes);
+        paulKey = testPrefix + "paul";
+        testSet.add(keySerializer.serialize(paulKey));
+        billyKey = testPrefix + "billy";
+        testSet.add(keySerializer.serialize(billyKey));
+        byte[] testKeysBytes = keySerializer.serialize(testPrefix + "*");
+        when(redisManager.keys(testKeysBytes)).thenReturn(testSet);
     }
 
     @Test
@@ -64,7 +52,21 @@ public class RedisCacheTest {
             new RedisCache<String, String>(null, keySerializer, valueSerializer, "abc:", 1);
             fail("Excepted exception to be thrown");
         } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage(),is("Cache argument cannot be null."));
+            assertThat(e.getMessage(),is("redisManager cannot be null."));
+        }
+
+        try {
+            new RedisCache<String, String>(new RedisManager(), null, valueSerializer, "abc:", 1);
+            fail("Excepted exception to be thrown");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage(),is("keySerializer cannot be null."));
+        }
+
+        try {
+            new RedisCache<String, String>(new RedisManager(), keySerializer, null, "abc:", 1);
+            fail("Excepted exception to be thrown");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage(),is("valueSerializer cannot be null."));
         }
 
         RedisCache rc = new RedisCache(new RedisManager(), keySerializer, valueSerializer, "abc", 1);
@@ -73,45 +75,72 @@ public class RedisCacheTest {
 
     @Test
     public void testSize() {
+        when(redisManager.dbSize()).thenReturn(2L);
         assertThat(redisCache.size(), is(2));
     }
 
     @Test
-    public void testGet() {
-        FakeSession actualValue = redisCache.get(testKey);
-        assertThat(actualValue.getId(), is(3));
-        assertThat(actualValue.getName(), is("jack"));
+    public void testGet() throws SerializationException {
+        FakeAuth nullValue = redisCache.get(null);
+        assertThat(nullValue, nullValue());
 
-        FakeSession nullValue = redisCache.get(null);
-        assertThat(nullValue, is(nullValue()));
+        byte[] adminKeyBytes = keySerializer.serialize(testPrefix + "admin");
+        FakeAuth adminFakeAuth = new FakeAuth(1, "admin");
+        byte[] adminValueBytes = valueSerializer.serialize(adminFakeAuth);
+        when(redisManager.get(adminKeyBytes)).thenReturn(adminValueBytes);
 
-        FakeSession nonExistValue = redisCache.get("nonExistKey");
+        FakeAuth actualValue = redisCache.get("admin");
+        assertThat(actualValue.getId(), is(1));
+        assertThat(actualValue.getRole(), is("admin"));
+
+        FakeAuth nonExistValue = redisCache.get("nonExistKey");
         assertThat(nonExistValue, is(nullValue));
     }
 
     @Test
-    public void testPut() {
+    public void testPut() throws SerializationException {
         redisCache.put(null, null);
-        verify(redisManager, times(1)).set(null, nullValueByte, 1);
-        redisCache.put(null, new FakeSession());
+        verify(redisManager, times(0)).set(null, null, 1);
+
+        FakeAuth emptyFakeAuth = new FakeAuth();
+        byte[] emptyFakeAuthBytes = valueSerializer.serialize(emptyFakeAuth);
+        redisCache.put(null, emptyFakeAuth);
+        verify(redisManager, times(0)).set(null, emptyFakeAuthBytes, 1);
+
+        String testKey = "jack";
+        byte[] testKeyBytes = keySerializer.serialize(testPrefix + testKey);
+        redisCache.put(testKey, null);
+        verify(redisManager, times(1)).set(testKeyBytes, null, 1);
+
+        FakeAuth testValue = new FakeAuth(2, "user");
+        byte[] testValueBytes = valueSerializer.serialize(testValue);
         redisCache.put(testKey, testValue);
+        verify(redisManager, times(1)).set(testKeyBytes, testValueBytes, 1);
     }
 
     @Test
-    public void testRemove() {
-        redisCache.remove(null);
-        FakeSession actualValue = redisCache.remove(testKey);
+    public void testRemove() throws SerializationException {
+        FakeAuth nullValue = redisCache.remove(null);
+        assertThat(nullValue, is(nullValue()));
+
+        String testKey = "billy";
+        byte[] testKeyBytes = keySerializer.serialize(testPrefix + testKey);
+        FakeAuth testValue = new FakeAuth(3, "client");
+        byte[] testValueBytes = valueSerializer.serialize(testValue);
+        when(redisManager.get(testKeyBytes)).thenReturn(testValueBytes);
+        FakeAuth actualValue = redisCache.remove(testKey);
         assertThat(actualValue.getId(), is(3));
-        assertThat(actualValue.getName(), is("jack"));
+        assertThat(actualValue.getRole(), is("client"));
     }
 
     @Test
-    public void testClear() {
+    public void testClear() throws SerializationException {
         redisCache.clear();
+        verify(redisManager, times(1)).del(tomKeyBytes);
     }
 
     @Test
-    public void testKeys() {
+    public void testKeys() throws SerializationException {
         Set<String> keys = redisCache.keys();
         assertThat(keys.size(), is(3));
         assertThat(keys, hasItem(testPrefix + "tom"));
@@ -120,14 +149,20 @@ public class RedisCacheTest {
     }
 
     @Test
-    public void testValues() {
-        Collection<FakeSession> values = redisCache.values();
+    public void testValues() throws SerializationException {
+        FakeAuth tomFakeAuth = new FakeAuth(1, "admin");
+        mockRedisManagerGet(tomKey, tomFakeAuth);
+        FakeAuth paulFakeAuth = new FakeAuth(2, "client");
+        mockRedisManagerGet(paulKey, paulFakeAuth);
+        FakeAuth billyFakeAuth = new FakeAuth(3, "user");
+        mockRedisManagerGet(billyKey, billyFakeAuth);
+        Collection<FakeAuth> values = redisCache.values();
         assertThat(values.size(), is(3));
-        for (Iterator<FakeSession> iterator = values.iterator(); iterator.hasNext(); ) {
-            FakeSession next = iterator.next();
-            if (next.getId() == 2) {
-                assertThat(next.getName(), is("paul"));
-            }
-        }
+    }
+
+    private void mockRedisManagerGet(String key, FakeAuth value) throws SerializationException {
+        byte[] keyByte = keySerializer.serialize(key);
+        byte[] valueByte = valueSerializer.serialize(value);
+        when(redisManager.get(keyByte)).thenReturn(valueByte);
     }
 }

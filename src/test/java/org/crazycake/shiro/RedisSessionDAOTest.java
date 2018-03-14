@@ -2,68 +2,75 @@ package org.crazycake.shiro;
 
 import org.apache.shiro.session.Session;
 import org.apache.shiro.session.UnknownSessionException;
-import org.apache.shiro.session.mgt.SimpleSession;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.Serializable;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class RedisSessionDAOTest {
 
     private RedisManager redisManager;
     private RedisSessionDAO redisSessionDAO;
     private StringSerializer keySerializer;
-    private String testKey;
-    private String testPrefix;private Set<byte[]> testSet;
-    private SimpleSession testValue;
-    private Collection<FakeSession> testValues;
-    private FakeSession tomSession;
-    private FakeSession paulSession;
-    private FakeSession billySession;
+
+    private String testPrefix;
     private ObjectSerializer valueSeralizer;
 
     @Before
     public void setUp() throws SerializationException {
         keySerializer = new StringSerializer();
         valueSeralizer = new ObjectSerializer();
-        testKey = "testKey";
         testPrefix = "testPrefix:";
-        testValue = new SimpleSession();
-        testValue.setId(3);
-        testSet = new HashSet<byte[]>();
-        testSet.add(keySerializer.serialize(testPrefix + "tom"));
-        testSet.add(keySerializer.serialize(testPrefix + "paul"));
-        testSet.add(keySerializer.serialize(testPrefix + "billy"));
-        testValues = new ArrayList<FakeSession>();
-        tomSession = new FakeSession(1, "tom");
-        testValues.add(tomSession);
-        paulSession = new FakeSession(2, "paul");
-        testValues.add(paulSession);
-        billySession = new FakeSession(3, "billy");
-        testValues.add(billySession);
         redisManager = mock(RedisManager.class);
-        when(redisManager.dbSize()).thenReturn(2L);
-        when(redisManager.get(keySerializer.serialize(testPrefix + testKey))).thenReturn(valueSeralizer.serialize(testValue));
-        when(redisManager.keys(keySerializer.serialize(testPrefix + "*"))).thenReturn(testSet);
-        when(redisManager.get(keySerializer.serialize(testPrefix + "tom"))).thenReturn(valueSeralizer.serialize(tomSession));
-        when(redisManager.get(keySerializer.serialize(testPrefix + "paul"))).thenReturn(valueSeralizer.serialize(paulSession));
-        when(redisManager.get(keySerializer.serialize(testPrefix + "billy"))).thenReturn(valueSeralizer.serialize(billySession));
         redisSessionDAO = new RedisSessionDAO();
         redisSessionDAO.setRedisManager(redisManager);
         redisSessionDAO.setKeyPrefix(testPrefix);
+        redisSessionDAO.setExpire(1);
     }
 
     @Test
-    public void testUpdate() {
-        redisSessionDAO.update(testValue);
+    public void testDoCreate() throws SerializationException {
+        try {
+            redisSessionDAO.doCreate(null);
+            fail();
+        } catch (UnknownSessionException e) {
+            assertThat(e.getMessage(), is("session is null"));
+        }
+        verify(redisManager, times(0)).set(any((new byte[0]).getClass()), any((new byte[0]).getClass()), eq(1));
+
+        RedisSessionDAO prefixTestRedisSessionDao = new RedisSessionDAO();
+        prefixTestRedisSessionDao.setKeyPrefix("abc:");
+        prefixTestRedisSessionDao.setRedisManager(redisManager);
+        prefixTestRedisSessionDao.setExpire(2);
+        FakeSession fakeSession = new FakeSession(1, "Tom");
+        String sessionId = (String)prefixTestRedisSessionDao.doCreate(fakeSession);
+        verify(redisManager, times(0)).set(eq(keySerializer.serialize("abc:" + sessionId)), any((new byte[0]).getClass()), eq(2));
+    }
+
+    @Test
+    public void testUpdate() throws SerializationException {
+        FakeSession testSession = new FakeSession(1, "jack");
+        byte[] testSessionKeyBytes = keySerializer.serialize(testPrefix + "1");
+        byte[] testSessionValueBytes = valueSeralizer.serialize(testSession);
+        redisSessionDAO.update(testSession);
+        verify(redisManager, times(1)).set(testSessionKeyBytes, testSessionValueBytes, 1);
         try {
             redisSessionDAO.update(null);
+            fail();
+        } catch (UnknownSessionException e) {
+            assertThat(e.getMessage(), is("session or session id is null"));
+        }
+
+        try {
+            FakeSession nullIdSession = new FakeSession();
+            redisSessionDAO.update(nullIdSession);
             fail();
         } catch (UnknownSessionException e) {
             assertThat(e.getMessage(), is("session or session id is null"));
@@ -73,36 +80,52 @@ public class RedisSessionDAOTest {
     @Test
     public void testDelete() {
         redisSessionDAO.delete(null);
-        redisSessionDAO.delete(testValue);
+        verify(redisManager, times(0)).del(any((new byte[0]).getClass()));
+        FakeSession nullIdSession = new FakeSession();
+        redisSessionDAO.delete(nullIdSession);
+        verify(redisManager, times(0)).del(any((new byte[0]).getClass()));
+        FakeSession testSession = new FakeSession(2, "Tom");
+        redisSessionDAO.delete(testSession);
+        verify(redisManager, times(1)).del(any((new byte[0]).getClass()));
     }
 
     @Test
-    public void testDoCreate() {
-        redisSessionDAO.doCreate(testValue);
-        try {
-            redisSessionDAO.doCreate(null);
-            fail();
-        } catch (UnknownSessionException e) {
-            assertThat(e.getMessage(), is("session is null"));
-        }
+    public void testDoReadSession() throws NoSuchFieldException, IllegalAccessException {
+        Session nullSession = redisSessionDAO.doReadSession(null);
+        assertThat(nullSession, is(nullValue()));
+
+        RedisSessionDAO redisSessionDAO2 = new RedisSessionDAO();
+        redisSessionDAO2.setRedisManager(redisManager);
+        redisSessionDAO2.setKeyPrefix(testPrefix);
+        redisSessionDAO2.setExpire(2);
+        ThreadLocal sessionsInThread = mock(ThreadLocal.class);
+        Map<Serializable, SessionInMemory> sessionMap = new HashMap<Serializable, SessionInMemory>();
+        SessionInMemory sessionInMemory = new SessionInMemory();
+        sessionInMemory.setSession(new FakeSession(1, "Billy"));
+        sessionInMemory.setCreateTime(new Date());
+        sessionMap.put("1", sessionInMemory);
+        when(sessionsInThread.get()).thenReturn(sessionMap);
+        TestUtils.setPrivateField(redisSessionDAO2, "sessionsInThread", sessionsInThread);
+        FakeSession actualSession = (FakeSession)redisSessionDAO2.doReadSession("1");
+        assertThat(actualSession.getId().toString(), is("1"));
+        assertThat(actualSession.getName(), is("Billy"));
+        verify(redisManager, times(0)).get(any((new byte[0]).getClass()));
     }
 
     @Test
-    public void testDoReadSession() {
-        Session actualSession = redisSessionDAO.doReadSession(testKey);
-        assertThat(actualSession.getId().toString(), is("3"));
-        redisSessionDAO.doReadSession(null);
-    }
+    public void testGetActiveSessions() throws SerializationException {
+        Set<byte[]> fakeKeys = new HashSet<byte[]>();
+        byte[] firstKeyBytes = keySerializer.serialize("1");
+        fakeKeys.add(firstKeyBytes);
+        byte[] secondKeyBytes = keySerializer.serialize("2");
+        fakeKeys.add(secondKeyBytes);
+        when(redisManager.keys(any((new byte[0]).getClass()))).thenReturn(fakeKeys);
+        FakeSession firstSession = new FakeSession(1, "Tom");
+        when(redisManager.get(firstKeyBytes)).thenReturn(valueSeralizer.serialize(firstSession));
+        FakeSession secondSession = new FakeSession(2, "Billy");
+        when(redisManager.get(secondKeyBytes)).thenReturn(valueSeralizer.serialize(secondSession));
 
-    @Test
-    public void testGetActiveSessions() {
         Collection<Session> activeSessions = redisSessionDAO.getActiveSessions();
-        assertThat(activeSessions.size(), is(3));
-        for (Iterator<Session> iterator = activeSessions.iterator(); iterator.hasNext(); ) {
-            FakeSession next = (FakeSession)iterator.next();
-            if (next.getId() == 2) {
-                assertThat(next.getName(), is("paul"));
-            }
-        }
+        assertThat(activeSessions.size(), is(2));
     }
 }

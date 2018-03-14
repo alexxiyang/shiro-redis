@@ -2,12 +2,13 @@ package org.crazycake.shiro;
 
 import org.apache.shiro.session.InvalidSessionException;
 import org.apache.shiro.session.Session;
+import org.apache.shiro.session.mgt.SimpleSession;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 
-public class FakeSession implements Serializable, Session{
+public class FakeSession extends SimpleSession implements Serializable, Session{
     private Integer id;
     private String name;
 

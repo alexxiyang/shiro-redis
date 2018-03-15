@@ -64,7 +64,7 @@ public abstract class BaseRedisManager implements IRedisManager {
         Jedis jedis = getJedis();
         try{
             jedis.set(key,value);
-            if(expire != 0){
+            if(expire > 0){
                 jedis.expire(key, expire);
             }
         }finally{

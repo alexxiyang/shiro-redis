@@ -7,10 +7,12 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -19,10 +21,7 @@ public class RedisManagerTest {
     private RedisManager redisManager;
     private JedisPool jedisPool;
     private Jedis jedis;
-    private byte[] testKey;
-    private byte[] testValue;
     private String testPrefix;
-    private Set<byte[]> testSet;
     private StringSerializer keySerializer;
     private ObjectSerializer valueSerializer;
 
@@ -31,16 +30,7 @@ public class RedisManagerTest {
         testPrefix = "testPrefix";
         keySerializer = new StringSerializer();
         valueSerializer = new ObjectSerializer();
-        testKey = keySerializer.serialize("testKey");
-        testValue = valueSerializer.serialize(new FakeSession(1, "jack"));
         jedis = mock(Jedis.class);
-        when(jedis.get(testKey)).thenReturn(testValue);
-        when(jedis.dbSize()).thenReturn(3L);
-        testSet = new HashSet<byte[]>();
-        testSet.add(keySerializer.serialize(testPrefix + "tom"));
-        testSet.add(keySerializer.serialize(testPrefix + "paul"));
-        testSet.add(keySerializer.serialize(testPrefix + "billy"));
-        when(jedis.keys(keySerializer.serialize(testPrefix + "*"))).thenReturn(testSet);
         jedisPool = mock(JedisPool.class);
         when(jedisPool.getResource()).thenReturn(jedis);
         redisManager = new RedisManager();
@@ -49,35 +39,58 @@ public class RedisManagerTest {
     }
 
     @Test
-    public void testGet() {
-        byte[] actualValue = redisManager.get(testKey);
-        assertThat(actualValue, is(testValue));
+    public void testGet() throws SerializationException {
         byte[] nullValue = redisManager.get(null);
         assertThat(nullValue, is(nullValue));
+        verify(jedis, times(0)).get(any((new byte[0]).getClass()));
+
+        byte[] testKey = keySerializer.serialize("1");
+        byte[] testValue = valueSerializer.serialize("abc");
+        when(jedis.get(testKey)).thenReturn(testValue);
+        byte[] actualValue = redisManager.get(testKey);
+        assertThat(actualValue, is(testValue));
+        verify(jedis, times(1)).get(testKey);
+        verify(jedis, times(1)).close();
     }
 
     @Test
-    public void testSet() {
-        redisManager.set(testKey, testValue, 0);
+    public void testSet() throws SerializationException {
         redisManager.set(null, null, 0);
-        redisManager.set(testKey, testValue, 0);
-        verify(jedis, times(0)).expire(testKey, 0);
+        verify(jedis, times(0)).set(any((new byte[0]).getClass()), any((new byte[0]).getClass()));
+        verify(jedis, times(0)).expire(any((new byte[0]).getClass()), any(int.class));
+
+        byte[] testKey = keySerializer.serialize("1");
+        redisManager.set(testKey, null, 0);
+        verify(jedis, times(1)).set(any((new byte[0]).getClass()), any((new byte[0]).getClass()));
+        verify(jedis, times(0)).expire(any((new byte[0]).getClass()), any(int.class));
+
+        byte[] testValue = valueSerializer.serialize("abc");
         redisManager.set(testKey, testValue, 700);
-        verify(jedis, times(1)).expire(testKey, 700);
+        verify(jedis, times(2)).set(any((new byte[0]).getClass()), any((new byte[0]).getClass()));
+        verify(jedis, times(1)).expire(any((new byte[0]).getClass()), any(int.class));
+
+        redisManager.set(testKey, testValue, -1);
+        verify(jedis, times(3)).set(any((new byte[0]).getClass()), any((new byte[0]).getClass()));
+        verify(jedis, times(1)).expire(any((new byte[0]).getClass()), any(int.class));
     }
 
     @Test
     public void testDel() throws SerializationException {
         redisManager.del(null);
-        verify(jedis, times(0)).del("");
+        verify(jedis, times(0)).del(any((new byte[0]).getClass()));
         redisManager.del(keySerializer.serialize("1"));
-        verify(jedis, times(1)).del(keySerializer.serialize("1"));
+        verify(jedis, times(1)).del(any((new byte[0]).getClass()));
     }
 
     @Test
     public void testDbSize() {
+        when(jedis.dbSize()).thenReturn(3L);
         Long actualDbSize = redisManager.dbSize();
         assertThat(actualDbSize, is(3L));
+
+        when(jedis.dbSize()).thenReturn(null);
+        actualDbSize = redisManager.dbSize();
+        assertThat(actualDbSize, is(nullValue()));
     }
 
     @Test
@@ -85,7 +98,12 @@ public class RedisManagerTest {
         ScanResult<byte[]> scanResult = mock(ScanResult.class);
         when(jedis.scan(any(byte[].class), any(ScanParams.class))).thenReturn(scanResult);
         when(scanResult.getStringCursor()).thenReturn("0");
+        List<byte[]> testResults = new ArrayList<byte[]>();
+        testResults.add(keySerializer.serialize("1"));
+        testResults.add(keySerializer.serialize("2"));
+        testResults.add(keySerializer.serialize("3"));
+        when(scanResult.getResult()).thenReturn(testResults);
         Set<byte[]> keys = redisManager.keys(keySerializer.serialize(testPrefix + "*"));
-        assertThat(keys.size(), is(0));
+        assertThat(keys.size(), is(3));
     }
 }

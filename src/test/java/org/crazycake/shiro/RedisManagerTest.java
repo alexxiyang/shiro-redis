@@ -62,16 +62,16 @@ public class RedisManagerTest {
         byte[] testKey = keySerializer.serialize("1");
         redisManager.set(testKey, null, 0);
         verify(jedis, times(1)).set(any((new byte[0]).getClass()), any((new byte[0]).getClass()));
-        verify(jedis, times(0)).expire(any((new byte[0]).getClass()), any(int.class));
+        verify(jedis, times(1)).expire(any((new byte[0]).getClass()), any(int.class));
 
         byte[] testValue = valueSerializer.serialize("abc");
         redisManager.set(testKey, testValue, 700);
         verify(jedis, times(2)).set(any((new byte[0]).getClass()), any((new byte[0]).getClass()));
-        verify(jedis, times(1)).expire(any((new byte[0]).getClass()), any(int.class));
+        verify(jedis, times(2)).expire(any((new byte[0]).getClass()), any(int.class));
 
         redisManager.set(testKey, testValue, -1);
         verify(jedis, times(3)).set(any((new byte[0]).getClass()), any((new byte[0]).getClass()));
-        verify(jedis, times(1)).expire(any((new byte[0]).getClass()), any(int.class));
+        verify(jedis, times(2)).expire(any((new byte[0]).getClass()), any(int.class));
     }
 
     @Test

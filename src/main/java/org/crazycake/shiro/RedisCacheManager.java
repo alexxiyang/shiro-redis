@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class RedisCacheManager implements CacheManager {
 
-	private static final Logger logger = LoggerFactory.getLogger(RedisCacheManager.class);
+	private final Logger logger = LoggerFactory.getLogger(RedisCacheManager.class);
 
 	// fast lookup by name map
 	private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
@@ -25,7 +25,7 @@ public class RedisCacheManager implements CacheManager {
 	private int expire = DEFAULT_EXPIRE;
 
 	/**
-	 * The Redis key prefix for caches 
+	 * The Redis key prefix for caches
 	 */
 	public static final String DEFAULT_CACHE_KEY_PREFIX = "shiro:cache:";
 	private String keyPrefix = DEFAULT_CACHE_KEY_PREFIX;
@@ -33,9 +33,9 @@ public class RedisCacheManager implements CacheManager {
 	@Override
 	public <K, V> Cache<K, V> getCache(String name) throws CacheException {
 		logger.debug("get cache, name=" + name);
-		
+
 		Cache cache = caches.get(name);
-		
+
 		if (cache == null) {
 			cache = new RedisCache<K, V>(redisManager, keySerializer, valueSerializer, keyPrefix + name + ":", expire);
 			caches.put(name, cache);

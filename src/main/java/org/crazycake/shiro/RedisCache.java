@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 public class RedisCache<K, V> implements Cache<K, V> {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(RedisCache.class);
 
 	private RedisSerializer keySerializer = new StringSerializer();
@@ -23,7 +23,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	 * Construction
 	 * @param redisManager
 	 */
-	public RedisCache(IRedisManager redisManager, RedisSerializer keySerializer, RedisSerializer valueSerializer, String prefix, int expire){
+	public RedisCache(IRedisManager redisManager, RedisSerializer keySerializer, RedisSerializer valueSerializer, String prefix, int expire) {
 		 if (redisManager == null) {
 	         throw new IllegalArgumentException("redisManager cannot be null.");
 	     }
@@ -43,7 +43,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 		 	this.expire = expire;
 		 }
 	}
- 	
+
 	@Override
 	public V get(K key) throws CacheException {
 		logger.debug("get key [" + key + "]");
@@ -107,7 +107,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 			redisKey = getStringRedisKey(key);
 		}
         if (redisKey instanceof String) {
-		    return this.keyPrefix + (String)redisKey;
+		    return this.keyPrefix + (String) redisKey;
         }
 		return redisKey;
 	}
@@ -189,9 +189,9 @@ public class RedisCache<K, V> implements Cache<K, V> {
 		}
 
 		Set<K> convertedKeys = new HashSet<K>();
-		for(byte[] key:keys){
+		for (byte[] key:keys) {
 			try {
-				convertedKeys.add((K)keySerializer.deserialize(key));
+				convertedKeys.add((K) keySerializer.deserialize(key));
 			} catch (SerializationException e) {
 				logger.error("deserialize keys error", e);
 			}
@@ -209,7 +209,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 			return Collections.emptySet();
 		}
 
-		if(CollectionUtils.isEmpty(keys)) {
+		if (CollectionUtils.isEmpty(keys)) {
 			return Collections.emptySet();
 		}
 
@@ -217,7 +217,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 		for (byte[] key : keys) {
 			V value = null;
 			try {
-				value = (V)valueSerializer.deserialize(redisManager.get(key));
+				value = (V) valueSerializer.deserialize(redisManager.get(key));
 			} catch (SerializationException e) {
 				logger.error("deserialize values= error", e);
 			}

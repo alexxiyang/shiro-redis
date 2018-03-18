@@ -1,7 +1,6 @@
 package org.crazycake.shiro;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisSentinelPool;
 import redis.clients.jedis.Protocol;
 
@@ -9,7 +8,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class RedisSentinelManager extends BaseRedisManager implements IRedisManager{
+public class RedisSentinelManager extends BaseRedisManager implements IRedisManager {
 
 	private static final String DEFAULT_HOST = "127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381";
 	private String host = DEFAULT_HOST;
@@ -31,7 +30,7 @@ public class RedisSentinelManager extends BaseRedisManager implements IRedisMana
 
 	@Override
 	protected Jedis getJedis() {
-		if(jedisPool == null){
+		if (jedisPool == null) {
 			init();
 		}
 		return jedisPool.getResource();
@@ -43,7 +42,7 @@ public class RedisSentinelManager extends BaseRedisManager implements IRedisMana
 				String[] sentinelHosts = host.split(",\\s*");
 				Set<String> sentinels = new HashSet<String>();
 				Collections.addAll(sentinels, sentinelHosts);
-				jedisPool = new JedisSentinelPool(masterName, sentinels, jedisPoolConfig, timeout, soTimeout, password, database);
+				jedisPool = new JedisSentinelPool(masterName, sentinels, getJedisPoolConfig(), timeout, soTimeout, password, database);
 			}
 		}
 	}

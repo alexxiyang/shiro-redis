@@ -18,7 +18,10 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 
 	private static final long DEFAULT_SESSION_IN_MEMORY_TIMEOUT = 1000L;
 	/**
-	 * doReadSession be called about 10 times when login. Save Session in ThreadLocal to resolve this problem. sessionInMemoryTimeout is expiration of Session in ThreadLocal. The default value is 1000 milliseconds (1s). Most of time, you don't need to change it.
+	 * doReadSession be called about 10 times when login.
+	 * Save Session in ThreadLocal to resolve this problem. sessionInMemoryTimeout is expiration of Session in ThreadLocal.
+	 * The default value is 1000 milliseconds (1s).
+	 * Most of time, you don't need to change it.
 	 */
 	private long sessionInMemoryTimeout = DEFAULT_SESSION_IN_MEMORY_TIMEOUT;
 
@@ -29,6 +32,8 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	 * Please make sure expire is longer than sesion.getTimeout()
 	 */
 	private int expire = DEFAULT_EXPIRE;
+
+	private static final int MILLISECONDS_IN_A_SECOND = 1000;
 
 	private IRedisManager redisManager;
 	private RedisSerializer keySerializer = new StringSerializer();
@@ -45,8 +50,8 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	 * @param session
 	 * @throws UnknownSessionException
 	 */
-	private void saveSession(Session session) throws UnknownSessionException{
-		if(session == null || session.getId() == null){
+	private void saveSession(Session session) throws UnknownSessionException {
+		if (session == null || session.getId() == null) {
 			logger.error("session or session id is null");
 			throw new UnknownSessionException("session or session id is null");
 		}
@@ -59,15 +64,19 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 			logger.error("serialize session error. session id=" + session.getId());
 			throw new UnknownSessionException(e);
 		}
-		if (expire * 1000 < session.getTimeout()) {
-			logger.warn("Redis session expire time: " + (expire * 1000) + " is less than Session timeout: " + session.getTimeout() + " . It may cause some problems.");
+		if (expire * MILLISECONDS_IN_A_SECOND < session.getTimeout()) {
+			logger.warn("Redis session expire time: "
+					+ (expire * MILLISECONDS_IN_A_SECOND)
+					+ " is less than Session timeout: "
+					+ session.getTimeout()
+					+ " . It may cause some problems.");
 		}
 		this.redisManager.set(key, value, expire);
 	}
 
 	@Override
 	public void delete(Session session) {
-		if(session == null || session.getId() == null){
+		if (session == null || session.getId() == null) {
 			logger.error("session or session id is null");
 			return;
 		}
@@ -83,9 +92,9 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 		Set<Session> sessions = new HashSet<Session>();
 		try {
 			Set<byte[]> keys = redisManager.keys(this.keySerializer.serialize(this.keyPrefix + "*"));
-			if(keys != null && keys.size()>0){
-				for(byte[] key:keys){
-					Session s = (Session)valueSerializer.deserialize(redisManager.get(key));
+			if (keys != null && keys.size() > 0) {
+				for (byte[] key:keys) {
+					Session s = (Session) valueSerializer.deserialize(redisManager.get(key));
 					sessions.add(s);
 				}
 			}
@@ -97,7 +106,7 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 
 	@Override
 	protected Serializable doCreate(Session session) {
-		if(session == null){
+		if (session == null) {
 			logger.error("session is null");
 			throw new UnknownSessionException("session is null");
 		}
@@ -109,7 +118,7 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 
 	@Override
 	protected Session doReadSession(Serializable sessionId) {
-		if(sessionId == null){
+		if (sessionId == null) {
 			logger.warn("session id is null");
 			return null;
 		}
@@ -121,7 +130,7 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 
 		logger.debug("read session from redis");
 		try {
-			s = (Session)valueSerializer.deserialize(redisManager.get(keySerializer.serialize(getRedisSessionKey(sessionId))));
+			s = (Session) valueSerializer.deserialize(redisManager.get(keySerializer.serialize(getRedisSessionKey(sessionId))));
 			setSessionToThreadLocal(sessionId, s);
 		} catch (SerializationException e) {
 			logger.error("read session error. settionId=" + sessionId);

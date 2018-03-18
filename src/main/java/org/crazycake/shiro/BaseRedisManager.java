@@ -9,42 +9,60 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Whether JedisPool or JedisSentinelPool is used, we are going to operate redis by acquiring Jedis objects. The subclass
- * realizes the way to get Jedis objects by realizing the getJedis() method of JedisManager.
+ * Abstract class of RedisManager.
  */
 public abstract class BaseRedisManager implements IRedisManager {
 
+    /**
+     * We are going to operate redis by acquiring Jedis object.
+     * The subclass should realizes the way to get Jedis objects by implement the getJedis().
+     * @return Jedis
+     */
     protected abstract Jedis getJedis();
 
-    // expire time in seconds
-    protected static final int DEFAULT_EXPIRE = 3600;
     /**
-     * Setting different expire times at RedisCacheManager or RedisSessionDAO instead of setting a global expire time for all redis cache.
+     * Expire time in seconds.
+     */
+    protected static final int DEFAULT_EXPIRE = -1;
+
+    /**
+     * Setting different expire times by using {@link org.crazycake.shiro.RedisCacheManager#setExpire(int)}
+     * or {@link org.crazycake.shiro.RedisSessionDAO#setExpire(int)}
+     * instead of setting a global expire time for all redis cache.
      */
     @Deprecated
-    protected int expire = DEFAULT_EXPIRE;
+    private int expire = DEFAULT_EXPIRE;
 
-    // the number of elements returned at every iteration
+    /**
+     * Default value of count.
+     */
     protected static final int DEFAULT_COUNT = 100;
-    protected int count = DEFAULT_COUNT;
 
-    protected JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+    /**
+     * The number of elements returned at every iteration.
+     */
+    private int count = DEFAULT_COUNT;
+
+    /**
+     * JedisPoolConfig used to initialize JedisPool.
+     */
+    private JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
 
     /**
      * get value from redis
      * @param key
-     * @return
+     * @return value
      */
     @Override
-    public byte[] get(byte[] key){
+    public byte[] get(byte[] key) {
         if (key == null) {
             return null;
         }
         byte[] value = null;
         Jedis jedis = getJedis();
-        try{
+        try {
             value = jedis.get(key);
-        }finally{
+        } finally {
             jedis.close();
         }
         return value;
@@ -54,59 +72,62 @@ public abstract class BaseRedisManager implements IRedisManager {
      * set
      * @param key
      * @param value
-     * @return
+     * @param exipreTime
+     * @return value
      */
     @Override
-    public byte[] set(byte[] key,byte[] value, int expire){
+    public byte[] set(byte[] key, byte[] value, int exipreTime) {
         if (key == null) {
             return null;
         }
         Jedis jedis = getJedis();
-        try{
-            jedis.set(key,value);
-            if(expire >= 0){
-                jedis.expire(key, expire);
+        try {
+            jedis.set(key, value);
+            if (exipreTime >= 0) {
+                jedis.expire(key, exipreTime);
+            } else if (this.expire >= 0) {
+                jedis.expire(key, this.expire);
             }
-        }finally{
+         } finally {
             jedis.close();
         }
         return value;
     }
 
     /**
-     * del
+     * Delete a key-value pair.
      * @param key
      */
     @Override
-    public void del(byte[] key){
+    public void del(byte[] key) {
         if (key == null) {
             return;
         }
         Jedis jedis = getJedis();
-        try{
+        try {
             jedis.del(key);
-        }finally{
+        } finally {
             jedis.close();
         }
     }
 
     /**
-     * size
+     * Return the size of redis db.
      */
     @Override
-    public Long dbSize(){
+    public Long dbSize() {
         Long dbSize = 0L;
         Jedis jedis = getJedis();
-        try{
+        try {
             dbSize = jedis.dbSize();
-        }finally{
+        } finally {
             jedis.close();
         }
         return dbSize;
     }
 
     /**
-     * keys
+     * Return all the keys of Redis db. Filtered by pattern.
      *
      * @param pattern
      * @return
@@ -115,19 +136,19 @@ public abstract class BaseRedisManager implements IRedisManager {
         Set<byte[]> keys = null;
         Jedis jedis = getJedis();
 
-        try{
+        try {
             keys = new HashSet<byte[]>();
             ScanParams params = new ScanParams();
             params.count(count);
             params.match(pattern);
             byte[] cursor = ScanParams.SCAN_POINTER_START_BINARY;
             ScanResult<byte[]> scanResult;
-            do{
-                scanResult = jedis.scan(cursor,params);
+            do {
+                scanResult = jedis.scan(cursor, params);
                 keys.addAll(scanResult.getResult());
                 cursor = scanResult.getCursorAsBytes();
-            }while(scanResult.getStringCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
-        }finally{
+            } while (scanResult.getStringCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
+        } finally {
             jedis.close();
         }
         return keys;

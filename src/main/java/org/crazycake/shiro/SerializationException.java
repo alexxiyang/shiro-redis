@@ -1,6 +1,6 @@
 package org.crazycake.shiro;
 
-public class SerializationException extends Exception{
+public class SerializationException extends Exception {
     public SerializationException(String msg) {
         super(msg);
     }

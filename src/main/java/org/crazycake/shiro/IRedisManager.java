@@ -5,7 +5,6 @@ import java.util.Set;
 /**
  * redisManager interface
  *
- * @create 2018-02-13 23:58
  **/
 
 public interface IRedisManager {
@@ -15,7 +14,7 @@ public interface IRedisManager {
      * @param key
      * @return
      */
-    public byte[] get(byte[] key);
+    byte[] get(byte[] key);
 
     /**
      * set
@@ -23,24 +22,24 @@ public interface IRedisManager {
      * @param value
      * @return
      */
-    public byte[] set(byte[] key, byte[] value, int expire);
+    byte[] set(byte[] key, byte[] value, int expire);
 
     /**
      * del
      * @param key
      */
-    public void del(byte[] key);
+    void del(byte[] key);
 
     /**
      * size
      */
-    public Long dbSize();
+    Long dbSize();
 
     /**
      * keys
      * @param pattern
      * @return
      */
-    public Set<byte[]> keys(byte[] pattern);
+    Set<byte[]> keys(byte[] pattern);
 
 }

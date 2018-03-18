@@ -8,6 +8,8 @@ import java.io.*;
 public class ObjectSerializer implements RedisSerializer<Object> {
     private static Logger logger = LoggerFactory.getLogger(ObjectSerializer.class);
 
+    public static final int BYTE_ARRAY_OUTPUT_STREAM_SIZE = 128;
+
     @Override
     public byte[] serialize(Object object) throws SerializationException {
         byte[] result = new byte[0];
@@ -15,10 +17,10 @@ public class ObjectSerializer implements RedisSerializer<Object> {
         if (object == null) {
             return result;
         }
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(128);
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(BYTE_ARRAY_OUTPUT_STREAM_SIZE);
         if (!(object instanceof Serializable)) {
-            throw new SerializationException("requires a Serializable payload " +
-                    "but received an object of type [" + object.getClass().getName() + "]");
+            throw new SerializationException("requires a Serializable payload "
+                    + "but received an object of type [" + object.getClass().getName() + "]");
         }
         try {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteStream);

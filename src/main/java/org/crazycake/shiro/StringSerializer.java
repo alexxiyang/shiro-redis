@@ -1,5 +1,7 @@
 package org.crazycake.shiro;
 
+import org.crazycake.shiro.exception.SerializationException;
+
 import java.io.UnsupportedEncodingException;
 
 public class StringSerializer implements RedisSerializer<String> {

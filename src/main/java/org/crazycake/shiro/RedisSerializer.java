@@ -1,5 +1,7 @@
 package org.crazycake.shiro;
 
+import org.crazycake.shiro.exception.SerializationException;
+
 public interface RedisSerializer<T> {
 
     byte[] serialize(T t) throws SerializationException;

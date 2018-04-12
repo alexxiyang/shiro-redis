@@ -3,6 +3,7 @@ package org.crazycake.shiro;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.session.UnknownSessionException;
 import org.apache.shiro.session.mgt.eis.AbstractSessionDAO;
+import org.crazycake.shiro.exception.SerializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,5 +1,9 @@
 package org.crazycake.shiro;
 
+import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.crazycake.shiro.exception.PrincipalInstanceException;
+import org.crazycake.shiro.exception.SerializationException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -115,6 +119,30 @@ public class RedisCacheTest {
         FakeAuth testValue = new FakeAuth(2, "user");
         byte[] testValueBytes = valueSerializer.serialize(testValue);
         redisCache.put(testKey, testValue);
+        verify(redisManager, times(1)).set(testKeyBytes, testValueBytes, 1);
+    }
+
+    @Test
+    public void testPutPrincipalCollection() throws SerializationException {
+        RedisCache<PrincipalCollection, FakeAuth> principalRedisCache = new RedisCache<PrincipalCollection, FakeAuth>(redisManager, keySerializer, valueSerializer, testPrefix, 1);
+        FakeAuth testValue = new FakeAuth(3, "user");
+        byte[] testValueBytes = valueSerializer.serialize(testValue);
+        try {
+            SimplePrincipalCollection testKey = new SimplePrincipalCollection();
+            testKey.add(new Object(), "realm1");
+            principalRedisCache.put(testKey, testValue);
+            fail();
+        } catch (PrincipalInstanceException e) {
+            System.out.println(e.getMessage());
+            assertThat(e, is(notNullValue()));
+        }
+
+        SimplePrincipalCollection testKey = new SimplePrincipalCollection();
+        FakePrincipal fakePrincipal = new FakePrincipal();
+        fakePrincipal.setUsername("admin");
+        testKey.add(fakePrincipal, "realm1");
+        byte[] testKeyBytes = keySerializer.serialize(testPrefix + "admin");
+        principalRedisCache.put(testKey, testValue);
         verify(redisManager, times(1)).set(testKeyBytes, testValueBytes, 1);
     }
 

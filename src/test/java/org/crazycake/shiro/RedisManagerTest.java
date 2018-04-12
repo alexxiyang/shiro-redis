@@ -1,5 +1,6 @@
 package org.crazycake.shiro;
 
+import org.crazycake.shiro.exception.SerializationException;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;

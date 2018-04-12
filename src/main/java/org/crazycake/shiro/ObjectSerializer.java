@@ -1,5 +1,6 @@
 package org.crazycake.shiro;
 
+import org.crazycake.shiro.exception.SerializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

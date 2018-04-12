@@ -4,6 +4,8 @@ import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheException;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.CollectionUtils;
+import org.crazycake.shiro.exception.PrincipalInstanceException;
+import org.crazycake.shiro.exception.SerializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,34 +125,18 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	}
 
 	private Object getRedisKeyFromPrincipalCollection(PrincipalCollection key) {
-        Object redisKey;
-		List<String> realmNames = getRealmNames(key);
-		Collections.sort(realmNames);
-        redisKey = joinRealmNames(realmNames);
-        return redisKey;
-    }
-
-	private List<String> getRealmNames(PrincipalCollection key) {
-		List<String> realmArr = new ArrayList<String>();
-		Set<String> realmNames = key.getRealmNames();
-		for (String realmName: realmNames) {
-            realmArr.add(realmName);
+		Object redisKey;
+		PrincipalCollection principalCollection = key;
+		if (!(principalCollection.getPrimaryPrincipal() instanceof AuthCachePrincipal)) {
+            throw new PrincipalInstanceException();
         }
-		return realmArr;
+		AuthCachePrincipal principal = (AuthCachePrincipal) principalCollection.getPrimaryPrincipal();
+		redisKey = principal.getAuthCacheKey();
+		return redisKey;
 	}
 
-	private Object joinRealmNames(List<String> realmArr) {
-        Object redisKey;
-        StringBuilder redisKeyBuilder = new StringBuilder();
-        for (int i = 0; i < realmArr.size(); i++) {
-            String s = realmArr.get(i);
-            redisKeyBuilder.append(s);
-        }
-        redisKey = redisKeyBuilder.toString();
-        return redisKey;
-    }
 
-    @Override
+	@Override
 	public void clear() throws CacheException {
 		logger.debug("clear cache");
         Set<byte[]> keys = null;

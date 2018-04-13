@@ -182,6 +182,26 @@ redisManager.masterName = mymaster
 # redisManager.count = <count>
 ```
 
+If you use redis cluster, config like this :
+
+```properties
+# Create redisManager
+redisManager = org.crazycake.shiro.RedisClusterManager
+# Redis host and port list
+redisManager.host = 192.168.21.3:7000,192.168.21.3:7001,192.168.21.3:7002,192.168.21.3:7003,192.168.21.3:7004,192.168.21.3:7005
+# Redis cache key/value expire time. Default value:0 .The expire time is in second (Optional)
+redisManager.expire = 600
+# Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
+redisManager.timeout = 2000
+# timeout for jedis try to read data from redis server (Optional)
+redisManager.soTimeout = 2000 
+# max attempts to connect to server (Optional)
+redisManager.maxAttempts = 2
+# Redis password.(Optional)
+#redisManager.password = xxxx
+
+```
+
 ## Spring
 
 ### Redis Standalone
@@ -227,6 +247,22 @@ spring.xml:
     <property name="rememberMeManager.cipherKey" value="kPH+bIxk5D2deZiIxcaaaA==" />
 </bean>
 <!-- shiro-redis configuration [end] -->
+```
+
+If you use redis cluster, config like this :
+```xml
+<!-- shiro-redis configuration [start] -->
+<!-- shiro redisManager -->
+<bean id="redisManager" class="org.crazycake.shiro.RedisClusterManager">
+    <property name="host" value="192.168.21.3:7000,192.168.21.3:7001,192.168.21.3:7002,192.168.21.3:7003,192.168.21.3:7004,192.168.21.3:7005"/>
+    <property name="expire" value="1800"/>
+    <!-- optional properties:
+    <property name="timeout" value="10000"/>
+    <property name="soTimeout" value="10000"/>
+    <property name="maxAttempts" value="2"/>
+    <property name="password" value="123456"/>
+    -->
+</bean>
 ```
 
 Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-spring-tutorial) for you to understand how to configure `shiro-redis` in spring configuration file.

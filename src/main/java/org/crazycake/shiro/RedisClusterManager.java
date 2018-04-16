@@ -3,45 +3,42 @@ package org.crazycake.shiro;
 import redis.clients.jedis.*;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 public class RedisClusterManager implements IRedisManager {
 
-    protected String ip = "127.0.0.1";
-
-    protected String host = ip + ":" + Protocol.DEFAULT_PORT ;
-
-    protected static final int DEFAULT_EXPIRE = 3600;
-
-    // expire time in seconds
-    protected int expire = DEFAULT_EXPIRE;
+    private static final int DEFAULT_COUNT = 100;
+    private static final int DEFAULT_MAX_ATTEMPTS = 3;
+    private static final String DEFAULT_HOST = "127.0.0.1:7000,127.0.0.1:7001,127.0.0.1:7002";
+    private String host = DEFAULT_HOST;
 
     // timeout for jedis try to connect to redis server, not expire time! In milliseconds
-    protected int timeout = Protocol.DEFAULT_TIMEOUT;
+    private int timeout = Protocol.DEFAULT_TIMEOUT;
 
     // timeout for jedis try to read data from redis server
-    protected int soTimeout = Protocol.DEFAULT_TIMEOUT;
+    private int soTimeout = Protocol.DEFAULT_TIMEOUT;
 
-    // requirepass
-    protected String password;
+    private String password;
 
-    // default select database
-    protected int database = Protocol.DEFAULT_DATABASE;
+    private int database = Protocol.DEFAULT_DATABASE;
 
-    //scan numbers each time
-    protected int count = 100;
+    private int count = DEFAULT_COUNT;
 
+    private int maxAttempts = DEFAULT_MAX_ATTEMPTS;
 
-    // max attempts to connect to server
-    private int maxAttempts = 3;
+    /**
+     * JedisPoolConfig used to initialize JedisPool.
+     */
+    private JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
 
     private volatile JedisCluster jedisCluster = null;
 
     private void init() {
         synchronized (this) {
             if (jedisCluster == null) {
-                jedisCluster = new JedisCluster(getHostAndPortSet(), timeout, soTimeout, maxAttempts, password, new JedisPoolConfig());
+                jedisCluster = new JedisCluster(getHostAndPortSet(), timeout, soTimeout, maxAttempts, password, getJedisPoolConfig());
             }
         }
     }
@@ -71,24 +68,13 @@ public class RedisClusterManager implements IRedisManager {
         return getJedisCluster().get(key);
     }
 
-    public byte[] set(byte[] key, byte[] value) {
+    public byte[] set(byte[] key, byte[] value, int expireTime) {
         if (key == null) {
             return null;
         }
         getJedisCluster().set(key, value);
-        if (this.expire != 0) {
-            getJedisCluster().expire(key, this.expire);
-        }
-        return value;
-    }
-
-    public byte[] set(byte[] key, byte[] value, int expire) {
-        if (key == null) {
-            return null;
-        }
-        getJedisCluster().set(key, value);
-        if (this.expire != 0) {
-            getJedisCluster().expire(key, expire);
+        if (expireTime >= 0) {
+            getJedisCluster().expire(key, expireTime);
         }
         return value;
     }
@@ -119,17 +105,38 @@ public class RedisClusterManager implements IRedisManager {
 
     public Set<byte[]> keys(byte[] pattern) {
         Set<byte[]> keys = new HashSet<byte[]>();
-        ScanParams params = new ScanParams();
-        params.count(count);
-        params.match(pattern);
-        byte[] cursor = ScanParams.SCAN_POINTER_START_BINARY;
-        ScanResult<byte[]> scanResult;
-        do {
-            scanResult = getJedisCluster().scan(cursor, params);
-            keys.addAll(scanResult.getResult());
-            cursor = scanResult.getCursorAsBytes();
-        } while (scanResult.getStringCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
+        Map<String, JedisPool> clusterNodes = getJedisCluster().getClusterNodes();
+        Iterator<Map.Entry<String, JedisPool>> nodeIt = clusterNodes.entrySet().iterator();
+        while (nodeIt.hasNext()) {
+            Map.Entry<String, JedisPool> node = nodeIt.next();
+            Set<byte[]> nodeKeys = getKeysFromClusterNode(node.getValue(), pattern);
+            if (nodeKeys == null || nodeKeys.size() == 0) {
+                continue;
+            }
+            keys.addAll(nodeKeys);
+        }
 
+        return keys;
+    }
+
+    private Set<byte[]> getKeysFromClusterNode(JedisPool jedisPool, byte[] pattern) {
+        Set<byte[]> keys = new HashSet<byte[]>();
+        Jedis jedis = jedisPool.getResource();
+
+        try {
+            ScanParams params = new ScanParams();
+            params.count(count);
+            params.match(pattern);
+            byte[] cursor = ScanParams.SCAN_POINTER_START_BINARY;
+            ScanResult<byte[]> scanResult;
+            do {
+                scanResult = jedis.scan(cursor, params);
+                keys.addAll(scanResult.getResult());
+                cursor = scanResult.getCursorAsBytes();
+            } while (scanResult.getStringCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
+        } finally {
+            jedis.close();
+        }
         return keys;
     }
 
@@ -141,28 +148,12 @@ public class RedisClusterManager implements IRedisManager {
         this.maxAttempts = maxAttempts;
     }
 
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
     public String getHost() {
         return host;
     }
 
     public void setHost(String host) {
         this.host = host;
-    }
-
-    public int getExpire() {
-        return expire;
-    }
-
-    public void setExpire(int expire) {
-        this.expire = expire;
     }
 
     public int getTimeout() {
@@ -207,5 +198,13 @@ public class RedisClusterManager implements IRedisManager {
 
     public void setJedisCluster(JedisCluster jedisCluster) {
         this.jedisCluster = jedisCluster;
+    }
+
+    public JedisPoolConfig getJedisPoolConfig() {
+        return jedisPoolConfig;
+    }
+
+    public void setJedisPoolConfig(JedisPoolConfig jedisPoolConfig) {
+        this.jedisPoolConfig = jedisPoolConfig;
     }
 }

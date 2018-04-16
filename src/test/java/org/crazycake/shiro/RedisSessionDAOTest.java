@@ -3,6 +3,8 @@ package org.crazycake.shiro;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.session.UnknownSessionException;
 import org.crazycake.shiro.exception.SerializationException;
+import org.crazycake.shiro.serializer.ObjectSerializer;
+import org.crazycake.shiro.serializer.StringSerializer;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -26,14 +26,6 @@ public abstract class BaseRedisManager implements IRedisManager {
     protected static final int DEFAULT_EXPIRE = -1;
 
     /**
-     * Setting different expire times by using {@link org.crazycake.shiro.RedisCacheManager#setExpire(int)}
-     * or {@link org.crazycake.shiro.RedisSessionDAO#setExpire(int)}
-     * instead of setting a global expire time for all redis cache.
-     */
-    @Deprecated
-    private int expire = DEFAULT_EXPIRE;
-
-    /**
      * Default value of count.
      */
     protected static final int DEFAULT_COUNT = 100;
@@ -85,8 +77,6 @@ public abstract class BaseRedisManager implements IRedisManager {
             jedis.set(key, value);
             if (exipreTime >= 0) {
                 jedis.expire(key, exipreTime);
-            } else if (this.expire >= 0) {
-                jedis.expire(key, this.expire);
             }
          } finally {
             jedis.close();
@@ -133,11 +123,10 @@ public abstract class BaseRedisManager implements IRedisManager {
      * @return
      */
     public Set<byte[]> keys(byte[] pattern) {
-        Set<byte[]> keys = null;
+        Set<byte[]> keys = new HashSet<byte[]>();
         Jedis jedis = getJedis();
 
         try {
-            keys = new HashSet<byte[]>();
             ScanParams params = new ScanParams();
             params.count(count);
             params.match(pattern);
@@ -153,15 +142,6 @@ public abstract class BaseRedisManager implements IRedisManager {
         }
         return keys;
 
-    }
-
-    @Deprecated
-    public int getExpire() {
-        return expire;
-    }
-
-    public void setExpire(int expire) {
-        this.expire = expire;
     }
 
     public int getCount() {

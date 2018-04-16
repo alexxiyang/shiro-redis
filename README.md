@@ -20,9 +20,58 @@ You can choose these 2 ways to include shiro-redis into your project
 </dependency>
 ```
 
+# Before use
+Please make sure your principal class implements `org.crazycake.shiro.AuthCachePrincipal`. Because shiro-redis needs a unique key to store authorization object. You will need to implement `getAuthCacheKey()` method to provide the unique key. Best practice is using userId or userName as authCachedKey.
+
+
+For example:
+
+If you create SimpleAuthenticationInfo like the following:
+```java
+@Override
+protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+    UsernamePasswordToken usernamePasswordToken = (UsernamePasswordToken)token;
+    UserInfo userInfo = new UserInfo();
+    userInfo.setUsername(usernamePasswordToken.getUsername());
+    return new SimpleAuthenticationInfo(userInfo, "123456", getName());
+}
+```
+
+You need to make sure `UserInfo` implements `org.crazycake.shiro.AuthCachePrincipal`. Like this:
+```java
+public class UserInfo implements Serializable, AuthCachePrincipal{
+
+    private String username;
+
+    private Integer age;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+    @Override
+    public String getAuthCacheKey() {
+        return getUsername();
+    }
+}
+```
+
+
 # How to configure ?
 
-You can configure shiro-redis either in shiro.ini or in spring-*.xml
+You can configure shiro-redis either in `shiro.ini` or in `spring-*.xml`
 
 ## shiro.ini
 Here is the configuration for shiro.ini.
@@ -113,7 +162,7 @@ cacheManager = org.crazycake.shiro.RedisCacheManager
 
 # If you want change charset of keySerializer or use your own custom serializer, you need to define serializer first
 #
-# cacheManagerKeySerializer = org.crazycake.shiro.StringSerializer
+# cacheManagerKeySerializer = org.crazycake.shiro.serializer.StringSerializer
 
 # Refer to https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html
 # UTF-8, UTF-16, UTF-32, ISO-8859-1, GBK, Big5, etc
@@ -182,23 +231,31 @@ redisManager.masterName = mymaster
 # redisManager.count = <count>
 ```
 
-If you use redis cluster, config like this :
+### Redis Cluster
+If you're using redis cluster, here is an example of configuration :
 
 ```properties
 # Create redisManager
 redisManager = org.crazycake.shiro.RedisClusterManager
+
 # Redis host and port list
 redisManager.host = 192.168.21.3:7000,192.168.21.3:7001,192.168.21.3:7002,192.168.21.3:7003,192.168.21.3:7004,192.168.21.3:7005
-# Redis cache key/value expire time. Default value:0 .The expire time is in second (Optional)
-redisManager.expire = 600
+
 # Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
-redisManager.timeout = 2000
+#
+# redisManager.timeout = 2000
+
 # timeout for jedis try to read data from redis server (Optional)
-redisManager.soTimeout = 2000 
+#
+# redisManager.soTimeout = 2000
+
 # max attempts to connect to server (Optional)
-redisManager.maxAttempts = 2
+#
+# redisManager.maxAttempts = 3
+
 # Redis password.(Optional)
-#redisManager.password = xxxx
+#
+# redisManager.password = <password>
 
 ```
 
@@ -249,13 +306,33 @@ spring.xml:
 <!-- shiro-redis configuration [end] -->
 ```
 
-If you use redis cluster, config like this :
+Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-spring-tutorial) for you to understand how to configure `shiro-redis` in spring configuration file.
+
+### Redis Sentinel
+If you use redis sentinel, here is an example of configuration :
+```xml
+<!-- shiro-redis configuration [start] -->
+<!-- shiro redisManager -->
+<bean id="redisManager" class="org.crazycake.shiro.RedisSentinelManager">
+    <property name="host" value="127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381"/>
+    <property name="masterName" value="mymaster"/>
+    <!-- optional properties:、
+    <property name="timeout" value="2000"/>
+    <property name="soTimeout" value="2000"/>
+    <property name="password" value=""/>
+    <property name="database" value="0"/>
+    <property name="count" value="100"/>
+    -->
+</bean>
+```
+
+### Redis Cluster
+If you use redis cluster, here is an example of configuration :
 ```xml
 <!-- shiro-redis configuration [start] -->
 <!-- shiro redisManager -->
 <bean id="redisManager" class="org.crazycake.shiro.RedisClusterManager">
     <property name="host" value="192.168.21.3:7000,192.168.21.3:7001,192.168.21.3:7002,192.168.21.3:7003,192.168.21.3:7004,192.168.21.3:7005"/>
-    <property name="expire" value="1800"/>
     <!-- optional properties:
     <property name="timeout" value="10000"/>
     <property name="soTimeout" value="10000"/>
@@ -265,36 +342,16 @@ If you use redis cluster, config like this :
 </bean>
 ```
 
-Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-spring-tutorial) for you to understand how to configure `shiro-redis` in spring configuration file.
-
-### Redis Sentinel
-If you use redis sentinel, config like this :
-```xml
-<!-- shiro-redis configuration [start] -->
-<!-- shiro redisManager -->
-<bean id="redisManager" class="org.crazycake.shiro.RedisSentinelManager">
-    <property name="host" value="127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381"/>
-    <property name="masterName" value="mymaster"/>
-    <!-- optional properties:、
-    <property name="timeout" value="2000"/>
-    <property name="soTimeout" value="2000"/>
-    <property name="password" value=""/>
-    <property name="database" value="0"/>
-    <property name="count" value="100"/>
-    -->
-</bean>
-```
-
 ## Serializer
 Since redis only accept `byte[]`, there comes to a serializer problem.
 Shiro-redis is using StringSerializer as key serializer and ObjectSerializer as value serializer.
-You can use your own custom serializer, as long as this custom serializer implemens `org.crazycake.shiro.RedisSerializer`
+You can use your own custom serializer, as long as this custom serializer implemens `org.crazycake.shiro.serializer.RedisSerializer`
 
 For example, you need to change the charset of keySerializer.
 ```properties
 # If you want change charset of keySerializer or use your own custom serializer, you need to define serializer first
 #
-# cacheManagerKeySerializer = org.crazycake.shiro.StringSerializer
+# cacheManagerKeySerializer = org.crazycake.shiro.serializer.StringSerializer
 
 # Refer to https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html
 # UTF-8, UTF-16, UTF-32, ISO-8859-1, GBK, Big5, etc

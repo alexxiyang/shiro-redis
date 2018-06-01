@@ -46,11 +46,6 @@ public class FakeSession extends SimpleSession implements Serializable, Session{
     }
 
     @Override
-    public long getTimeout() throws InvalidSessionException {
-        return 0;
-    }
-
-    @Override
     public void setTimeout(long l) throws InvalidSessionException {
 
     }

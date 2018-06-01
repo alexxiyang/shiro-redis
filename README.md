@@ -20,6 +20,10 @@ You can choose these 2 ways to include shiro-redis into your project
 </dependency>
 ```
 
+> **Note:**\
+> Do not use version < 3.0.0\
+> **注意**：\
+> 请不要使用3.0.0以下版本
 # Before use
 Please make sure your principal class implements `org.crazycake.shiro.AuthCachePrincipal`. Because shiro-redis needs a unique key to store authorization object. You will need to implement `getAuthCacheKey()` method to provide the unique key. Best practice is using userId or userName as authCachedKey.
 
@@ -124,10 +128,14 @@ redisManager.host = 127.0.0.1:6379
 # Create redisSessionDAO
 redisSessionDAO = org.crazycake.shiro.RedisSessionDAO
 
-# Redis cache key/value expire time. Default value: 1800 .The expire time is in second.
-# Note: Shiro session default timeout is 1800s. Make sure expire time is longer than session timeout.  (Optional)
+# Redis cache key/value expire time. The expire time is in second.
+# Special values:
+# -1: no expire
+# -2: the same timeout with session
+# Default value: -2
+# Note: Make sure expire time is longer than session timeout.  (Optional)
 #
-# redisManager.expire = <expire>
+# redisSessionDAO.expire = <expire>
 
 # Custom your redis key prefix for session management, if you doesn't define this parameter, shiro-redis will use 'shiro_redis_session:' as default prefix
 # Note: Remember to add colon at the end of prefix.
@@ -280,7 +288,7 @@ spring.xml:
 <!-- Redis-based session configuration -->
 <bean id="redisSessionDAO" class="org.crazycake.shiro.RedisSessionDAO">
     <property name="redisManager" ref="redisManager" />
-    <property name="expire" value="1800"/>
+    <property name="expire" value="-2"/>
     <property name="keyPrefix" value="shiro:session:" />
 </bean>
 <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">

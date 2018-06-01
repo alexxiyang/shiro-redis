@@ -30,7 +30,8 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	private long sessionInMemoryTimeout = DEFAULT_SESSION_IN_MEMORY_TIMEOUT;
 
 	// expire time in seconds
-	private static final int DEFAULT_EXPIRE = 1800;
+	private static final int DEFAULT_EXPIRE = -2;
+	private static final int NO_EXPIRE = -1;
 
 	/**
 	 * Please make sure expire is longer than sesion.getTimeout()
@@ -68,7 +69,11 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 			logger.error("serialize session error. session id=" + session.getId());
 			throw new UnknownSessionException(e);
 		}
-		if (expire * MILLISECONDS_IN_A_SECOND < session.getTimeout()) {
+		if (expire == DEFAULT_EXPIRE) {
+			this.redisManager.set(key, value, (int) (session.getTimeout() / MILLISECONDS_IN_A_SECOND));
+			return;
+		}
+		if (expire != NO_EXPIRE && expire * MILLISECONDS_IN_A_SECOND < session.getTimeout()) {
 			logger.warn("Redis session expire time: "
 					+ (expire * MILLISECONDS_IN_A_SECOND)
 					+ " is less than Session timeout: "

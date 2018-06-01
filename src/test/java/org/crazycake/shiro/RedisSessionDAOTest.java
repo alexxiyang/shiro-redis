@@ -7,6 +7,7 @@ import org.crazycake.shiro.serializer.ObjectSerializer;
 import org.crazycake.shiro.serializer.StringSerializer;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.io.Serializable;
 import java.util.*;
@@ -55,6 +56,17 @@ public class RedisSessionDAOTest {
         FakeSession fakeSession = new FakeSession(1, "Tom");
         String sessionId = (String)prefixTestRedisSessionDao.doCreate(fakeSession);
         verify(redisManager, times(0)).set(eq(keySerializer.serialize("abc:" + sessionId)), any((new byte[0]).getClass()), eq(2));
+    }
+
+    @Test
+    public void testDoCreateWithSessionTimeout() {
+        redisSessionDAO.setExpire(-2);
+        FakeSession fakeSession = new FakeSession(2, "Jack");
+        redisSessionDAO.doCreate(fakeSession);
+
+        ArgumentCaptor<Integer> expireArg = ArgumentCaptor.forClass(Integer.class);
+        verify(redisManager).set(any((new byte[0]).getClass()), any((new byte[0]).getClass()), expireArg.capture());
+        assertThat(expireArg.getValue(), is(1800));
     }
 
     @Test

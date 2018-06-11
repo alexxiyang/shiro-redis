@@ -2,15 +2,17 @@ package org.crazycake.shiro.exception;
 
 public class PrincipalInstanceException extends RuntimeException  {
 
-    private static final String MESSAGE = "Principal must implement org.crazycake.shiro.AuthCachePrincipal.\n"
-            + "shiro-redis will get the key for store authorization object in Redis from org.crazycake.shiro.AuthCachePrincipal\n"
-            + "So please use AuthCachePrincipal to tell shiro-redis how to get the cache key\n"
-            + " For example: There is a class UserInfo which implements org.crazycake.shiro.AuthCachePrincipal."
-            + " You can use this class to initial SimpleAuthenticationInfo like this:\n"
-            + " UserInfo userInfo = new userInfo();\n"
-            + " new SimpleAuthenticationInfo(userInfo, \"123456\", \"realm1\")";
+    private static final String MESSAGE = "We need a field to identify this Cache Object in Redis. "
+            + "So you need to defined an id field which you can get unique id to identify this principal. "
+            + "For example, if you use UserInfo as Principal class, the id field maybe userId, userName, email, etc. "
+            + "For example, getUserId(), getUserName(), getEmail(), etc.\n"
+            + "Default value is authCacheKey or id, that means your principal object has a method called \"getAuthCacheKey()\" or \"getId()\"";
 
-    public PrincipalInstanceException() {
-        super(MESSAGE);
+    public PrincipalInstanceException(Class clazz, String idMethodName) {
+        super(clazz + " must has getter for field: " +  idMethodName + "\n" + MESSAGE);
+    }
+
+    public PrincipalInstanceException(Class clazz, String idMethodName, Exception e) {
+        super(clazz + " must has getter for field: " +  idMethodName + "\n" + MESSAGE, e);
     }
 }

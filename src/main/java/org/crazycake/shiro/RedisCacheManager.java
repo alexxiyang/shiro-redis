@@ -33,6 +33,9 @@ public class RedisCacheManager implements CacheManager {
 	public static final String DEFAULT_CACHE_KEY_PREFIX = "shiro:cache:";
 	private String keyPrefix = DEFAULT_CACHE_KEY_PREFIX;
 
+	public static final String DEFAULT_PRINCIPAL_ID_FIELD_NAME = "authCacheKey or id";
+	private String principalIdFieldName = DEFAULT_PRINCIPAL_ID_FIELD_NAME;
+
 	@Override
 	public <K, V> Cache<K, V> getCache(String name) throws CacheException {
 		logger.debug("get cache, name=" + name);
@@ -40,7 +43,7 @@ public class RedisCacheManager implements CacheManager {
 		Cache cache = caches.get(name);
 
 		if (cache == null) {
-			cache = new RedisCache<K, V>(redisManager, keySerializer, valueSerializer, keyPrefix + name + ":", expire);
+			cache = new RedisCache<K, V>(redisManager, keySerializer, valueSerializer, keyPrefix + name + ":", expire, principalIdFieldName);
 			caches.put(name, cache);
 		}
 		return cache;
@@ -84,5 +87,13 @@ public class RedisCacheManager implements CacheManager {
 
 	public void setExpire(int expire) {
 		this.expire = expire;
+	}
+
+	public String getPrincipalIdFieldName() {
+		return principalIdFieldName;
+	}
+
+	public void setPrincipalIdFieldName(String principalIdFieldName) {
+		this.principalIdFieldName = principalIdFieldName;
 	}
 }

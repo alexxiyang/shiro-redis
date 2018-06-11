@@ -1,5 +1,6 @@
 package org.crazycake.shiro;
 
+@Deprecated
 public interface AuthCachePrincipal {
 
     /**
@@ -11,7 +12,11 @@ public interface AuthCachePrincipal {
      * authorization redis key = shiro:mycache:exampleRealm.authorizationCache:123
      *
      * In most cases, authCacheKey should be userId or userName
+     *
+     * @Deprecated use
+     *
      * @return
      */
+    @Deprecated
     String getAuthCacheKey();
 }

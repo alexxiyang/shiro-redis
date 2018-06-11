@@ -1,13 +1,8 @@
-package org.crazycake.shiro;
+package org.crazycake.shiro.model;
 
-public class FakePrincipal implements AuthCachePrincipal {
+public class FakeInvalidPrincipal {
 
     private String username;
-
-    @Override
-    public String getAuthCacheKey() {
-        return username;
-    }
 
     public String getUsername() {
         return username;

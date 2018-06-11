@@ -4,6 +4,7 @@ import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheException;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.CollectionUtils;
+import org.crazycake.shiro.exception.PrincipalIdNullException;
 import org.crazycake.shiro.exception.PrincipalInstanceException;
 import org.crazycake.shiro.exception.SerializationException;
 import org.crazycake.shiro.serializer.ObjectSerializer;
@@ -12,6 +13,8 @@ import org.crazycake.shiro.serializer.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 public class RedisCache<K, V> implements Cache<K, V> {
@@ -23,12 +26,13 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	private IRedisManager redisManager;
 	private String keyPrefix = "";
 	private int expire = 0;
+	private String principalIdFieldName = RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME;
 
 	/**
 	 * Construction
 	 * @param redisManager
 	 */
-	public RedisCache(IRedisManager redisManager, RedisSerializer keySerializer, RedisSerializer valueSerializer, String prefix, int expire) {
+	public RedisCache(IRedisManager redisManager, RedisSerializer keySerializer, RedisSerializer valueSerializer, String prefix, int expire, String principalIdFieldName) {
 		 if (redisManager == null) {
 	         throw new IllegalArgumentException("redisManager cannot be null.");
 	     }
@@ -46,6 +50,9 @@ public class RedisCache<K, V> implements Cache<K, V> {
 		 }
 		 if (expire != -1) {
 		 	this.expire = expire;
+		 }
+		 if (principalIdFieldName != null && !"".equals(principalIdFieldName)) {
+			 this.principalIdFieldName = principalIdFieldName;
 		 }
 	}
 
@@ -107,34 +114,54 @@ public class RedisCache<K, V> implements Cache<K, V> {
 		if (key == null) {
 			return null;
 		}
-		Object redisKey = key;
 		if (keySerializer instanceof StringSerializer) {
-			redisKey = getStringRedisKey(key);
+			return this.keyPrefix + getStringRedisKey(key);
 		}
-        if (redisKey instanceof String) {
-		    return this.keyPrefix + (String) redisKey;
-        }
-		return redisKey;
+		return key;
 	}
 
-	private Object getStringRedisKey(K key) {
-		Object redisKey;
+	private String getStringRedisKey(K key) {
+		String redisKey;
 		if (key instanceof PrincipalCollection) {
-			redisKey = getRedisKeyFromPrincipalCollection((PrincipalCollection) key);
+			redisKey = getRedisKeyFromPrincipalIdField((PrincipalCollection) key);
         } else {
 			redisKey = key.toString();
 		}
 		return redisKey;
 	}
 
-	private Object getRedisKeyFromPrincipalCollection(PrincipalCollection key) {
-		Object redisKey;
-		PrincipalCollection principalCollection = key;
-		if (!(principalCollection.getPrimaryPrincipal() instanceof AuthCachePrincipal)) {
-            throw new PrincipalInstanceException();
-        }
-		AuthCachePrincipal principal = (AuthCachePrincipal) principalCollection.getPrimaryPrincipal();
-		redisKey = principal.getAuthCacheKey();
+	private String getRedisKeyFromPrincipalIdField(PrincipalCollection key) {
+		String redisKey;
+		Object principalObject = key.getPrimaryPrincipal();
+		Method pincipalIdGetter = null;
+		Method[] methods = principalObject.getClass().getDeclaredMethods();
+		for (Method m:methods) {
+			if (RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME.equals(this.principalIdFieldName)
+                    && ("getAuthCacheKey".equals(m.getName()) || "getId".equals(m.getName()))) {
+				pincipalIdGetter = m;
+				break;
+			}
+			if (m.getName().equals("get" + this.principalIdFieldName.substring(0, 1).toUpperCase() + this.principalIdFieldName.substring(1))) {
+				pincipalIdGetter = m;
+				break;
+			}
+		}
+		if (pincipalIdGetter == null) {
+			throw new PrincipalInstanceException(principalObject.getClass(), this.principalIdFieldName);
+		}
+
+		try {
+		    Object idObj = pincipalIdGetter.invoke(principalObject);
+		    if (idObj == null) {
+		        throw new PrincipalIdNullException(principalObject.getClass(), this.principalIdFieldName);
+            }
+			redisKey = idObj.toString();
+		} catch (IllegalAccessException e) {
+			throw new PrincipalInstanceException(principalObject.getClass(), this.principalIdFieldName, e);
+		} catch (InvocationTargetException e) {
+			throw new PrincipalInstanceException(principalObject.getClass(), this.principalIdFieldName, e);
+		}
+
 		return redisKey;
 	}
 
@@ -223,5 +250,13 @@ public class RedisCache<K, V> implements Cache<K, V> {
 
 	public void setKeyPrefix(String keyPrefix) {
 		this.keyPrefix = keyPrefix;
+	}
+
+	public String getPrincipalIdFieldName() {
+		return principalIdFieldName;
+	}
+
+	public void setPrincipalIdFieldName(String principalIdFieldName) {
+		this.principalIdFieldName = principalIdFieldName;
 	}
 }

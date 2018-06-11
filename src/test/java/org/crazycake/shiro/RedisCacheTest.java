@@ -4,10 +4,12 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.crazycake.shiro.exception.PrincipalInstanceException;
 import org.crazycake.shiro.exception.SerializationException;
+import org.crazycake.shiro.model.*;
 import org.crazycake.shiro.serializer.ObjectSerializer;
 import org.crazycake.shiro.serializer.StringSerializer;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -37,7 +39,7 @@ public class RedisCacheTest {
         valueSerializer = new ObjectSerializer();
         redisManager = mock(RedisManager.class);
         testPrefix = "testPrefix:";
-        redisCache = new RedisCache<String, FakeAuth>(redisManager, keySerializer, valueSerializer, testPrefix, 1);
+        redisCache = new RedisCache<String, FakeAuth>(redisManager, keySerializer, valueSerializer, testPrefix, 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME);
 
         Set<byte[]> testSet;
         testSet = new HashSet<byte[]>();
@@ -55,27 +57,27 @@ public class RedisCacheTest {
     @Test
     public void testRedisCache() {
         try {
-            new RedisCache<String, String>(null, keySerializer, valueSerializer, "abc:", 1);
+            new RedisCache<String, String>(null, keySerializer, valueSerializer, "abc:", 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME);
             fail("Excepted exception to be thrown");
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage(),is("redisManager cannot be null."));
         }
 
         try {
-            new RedisCache<String, String>(new RedisManager(), null, valueSerializer, "abc:", 1);
+            new RedisCache<String, String>(new RedisManager(), null, valueSerializer, "abc:", 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME);
             fail("Excepted exception to be thrown");
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage(),is("keySerializer cannot be null."));
         }
 
         try {
-            new RedisCache<String, String>(new RedisManager(), keySerializer, null, "abc:", 1);
+            new RedisCache<String, String>(new RedisManager(), keySerializer, null, "abc:", 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME);
             fail("Excepted exception to be thrown");
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage(),is("valueSerializer cannot be null."));
         }
 
-        RedisCache rc = new RedisCache(new RedisManager(), keySerializer, valueSerializer, "abc", 1);
+        RedisCache rc = new RedisCache(new RedisManager(), keySerializer, valueSerializer, "abc", 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME);
         assertThat(rc.getKeyPrefix(), is("abc"));
     }
 
@@ -125,8 +127,104 @@ public class RedisCacheTest {
     }
 
     @Test
+    public void testPutInvalidPrincipal() throws SerializationException {
+        FakeAuth testValue = new FakeAuth(3, "ted");
+
+        try {
+            RedisCache<PrincipalCollection, FakeAuth> redisCache = new RedisCache<PrincipalCollection, FakeAuth>(redisManager, keySerializer, valueSerializer, testPrefix, 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME);
+            SimplePrincipalCollection testPrincipalCollection = new SimplePrincipalCollection();
+            FakeInvalidPrincipal invalidPrincipal = new FakeInvalidPrincipal();
+            testPrincipalCollection.add(invalidPrincipal, "realm1");
+            redisCache.put(testPrincipalCollection, testValue);
+            fail();
+        } catch (PrincipalInstanceException e) {
+            assertThat(e, is(notNullValue()));
+        }
+        verify(redisManager, times(0)).set(Matchers.any(byte[].class), Matchers.any(byte[].class), anyInt());
+    }
+
+    @Test
+    public void testPutDefaultPrincipal1() throws SerializationException {
+        FakeAuth testValue = new FakeAuth(3, "ted");
+
+        RedisCache<PrincipalCollection, FakeAuth> redisCache = new RedisCache<PrincipalCollection, FakeAuth>(redisManager, keySerializer, valueSerializer, testPrefix, 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME);
+        SimplePrincipalCollection testPrincipalCollection = new SimplePrincipalCollection();
+        FakePrincipalWithDefaultId1 p = new FakePrincipalWithDefaultId1();
+        p.setAuthCacheKey("abc");
+        testPrincipalCollection.add(p, "realm1");
+        redisCache.put(testPrincipalCollection, testValue);
+
+        byte[] testKeyBytes = keySerializer.serialize(testPrefix + "abc");
+        verify(redisManager, times(1)).set(eq(testKeyBytes), Matchers.any(byte[].class), anyInt());
+    }
+
+    @Test
+    public void testPutDefaultPrincipal2() throws SerializationException {
+        FakeAuth testValue = new FakeAuth(3, "ted");
+
+        RedisCache<PrincipalCollection, FakeAuth> redisCache = new RedisCache<PrincipalCollection, FakeAuth>(redisManager, keySerializer, valueSerializer, testPrefix, 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME);
+        SimplePrincipalCollection testPrincipalCollection = new SimplePrincipalCollection();
+        FakePrincipalWithDefaultId2 p = new FakePrincipalWithDefaultId2();
+        p.setId(1);
+        testPrincipalCollection.add(p, "realm1");
+        redisCache.put(testPrincipalCollection, testValue);
+
+        byte[] testKeyBytes = keySerializer.serialize(testPrefix + "1");
+        verify(redisManager, times(1)).set(eq(testKeyBytes), Matchers.any(byte[].class), anyInt());
+    }
+
+    @Test
+    public void testPutPrincipalWithEmptyIdFieldName() throws SerializationException {
+        FakeAuth testValue = new FakeAuth(3, "ted");
+
+        RedisCache<PrincipalCollection, FakeAuth> redisCache = new RedisCache<PrincipalCollection, FakeAuth>(redisManager, keySerializer, valueSerializer, testPrefix, 1, "");
+        SimplePrincipalCollection testPrincipalCollection = new SimplePrincipalCollection();
+        FakePrincipalWithDefaultId2 p = new FakePrincipalWithDefaultId2();
+        p.setId(1);
+        testPrincipalCollection.add(p, "realm1");
+        redisCache.put(testPrincipalCollection, testValue);
+
+        byte[] testKeyBytes = keySerializer.serialize(testPrefix + "1");
+        verify(redisManager, times(1)).set(eq(testKeyBytes), Matchers.any(byte[].class), anyInt());
+    }
+
+    @Test
+    public void testPutPrincipalWith1CharIdFieldName() throws SerializationException {
+        FakeAuth testValue = new FakeAuth(3, "ted");
+
+        RedisCache<PrincipalCollection, FakeAuth> redisCache = new RedisCache<PrincipalCollection, FakeAuth>(redisManager, keySerializer, valueSerializer, testPrefix, 1, "i");
+        SimplePrincipalCollection testPrincipalCollection = new SimplePrincipalCollection();
+        FakePrincipalWith1CharId p = new FakePrincipalWith1CharId();
+        p.setI(1);
+        testPrincipalCollection.add(p, "realm1");
+        redisCache.put(testPrincipalCollection, testValue);
+
+        byte[] testKeyBytes = keySerializer.serialize(testPrefix + "1");
+        verify(redisManager, times(1)).set(eq(testKeyBytes), Matchers.any(byte[].class), anyInt());
+    }
+
+    @Test
+    public void testPutPrincipalWithWrongIdFieldName() throws SerializationException {
+        FakeAuth testValue = new FakeAuth(3, "ted");
+
+        try {
+            RedisCache<PrincipalCollection, FakeAuth> redisCache = new RedisCache<PrincipalCollection, FakeAuth>(redisManager, keySerializer, valueSerializer, testPrefix, 1, "ddd");
+            SimplePrincipalCollection testPrincipalCollection = new SimplePrincipalCollection();
+            FakePrincipalWithDefaultId2 p = new FakePrincipalWithDefaultId2();
+            p.setId(1);
+            testPrincipalCollection.add(p, "realm1");
+            redisCache.put(testPrincipalCollection, testValue);
+            fail();
+        } catch (PrincipalInstanceException e) {
+            assertThat(e, is(notNullValue()));
+        }
+
+        verify(redisManager, times(0)).set(Matchers.any(byte[].class), Matchers.any(byte[].class), anyInt());
+    }
+
+    @Test
     public void testPutPrincipalCollection() throws SerializationException {
-        RedisCache<PrincipalCollection, FakeAuth> principalRedisCache = new RedisCache<PrincipalCollection, FakeAuth>(redisManager, keySerializer, valueSerializer, testPrefix, 1);
+        RedisCache<PrincipalCollection, FakeAuth> principalRedisCache = new RedisCache<PrincipalCollection, FakeAuth>(redisManager, keySerializer, valueSerializer, testPrefix, 1, "userId");
         FakeAuth testValue = new FakeAuth(3, "user");
         byte[] testValueBytes = valueSerializer.serialize(testValue);
         try {
@@ -142,8 +240,9 @@ public class RedisCacheTest {
         SimplePrincipalCollection testKey = new SimplePrincipalCollection();
         FakePrincipal fakePrincipal = new FakePrincipal();
         fakePrincipal.setUsername("admin");
+        fakePrincipal.setUserId(1);
         testKey.add(fakePrincipal, "realm1");
-        byte[] testKeyBytes = keySerializer.serialize(testPrefix + "admin");
+        byte[] testKeyBytes = keySerializer.serialize(testPrefix + "1");
         principalRedisCache.put(testKey, testValue);
         verify(redisManager, times(1)).set(testKeyBytes, testValueBytes, 1);
     }

@@ -24,9 +24,9 @@ You can choose these 2 ways to include shiro-redis into your project
 > Do not use version < 3.0.0\
 > **注意**：\
 > 请不要使用3.0.0以下版本
-# Before use
-Please make sure your principal class implements `org.crazycake.shiro.AuthCachePrincipal`. Because shiro-redis needs a unique key to store authorization object. You will need to implement `getAuthCacheKey()` method to provide the unique key. Best practice is using userId or userName as authCachedKey.
 
+# Before use
+Here is the first thing you need to know. Shiro-redis needs an id field to identify your authorization object in Redis. So please make sure your principal class has a field which you can get unique id of this object. Please setting this id field name by `cacheManager.principalId = id`
 
 For example:
 
@@ -41,9 +41,11 @@ protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) 
 }
 ```
 
-You need to make sure `UserInfo` implements `org.crazycake.shiro.AuthCachePrincipal`. Like this:
+You need to make sure `UserInfo` has an unique field to identify it in Redis. Take userId as an example:
 ```java
-public class UserInfo implements Serializable, AuthCachePrincipal{
+public class UserInfo implements Serializable{
+
+    private Integer userId
 
     private String username;
 
@@ -65,13 +67,16 @@ public class UserInfo implements Serializable, AuthCachePrincipal{
         this.age = age;
     }
 
-    @Override
-    public String getAuthCacheKey() {
-        return getUsername();
+    public Integer getUserId() {
+        return this.userId;
     }
 }
 ```
 
+And put userId as `cacheManager.principalId`, like this:
+```properties
+cacheManager.principalId = userId
+```
 
 # How to configure ?
 
@@ -163,6 +168,11 @@ securityManager.sessionManager = $sessionManager
 
 # Create cacheManager
 cacheManager = org.crazycake.shiro.RedisCacheManager
+
+# Principal id field name. The field which you can get unique id to identify this principal. For example, if you use UserInfo as Principal class, the id field maybe userId, userName, email, etc. Remember to add getter to this id field. For example, getUserId(), getUserName(), getEmail(), etc.
+# Default value is authCacheKey or id, that means your principal object has a method called "getAuthCacheKey()" or "getId()"
+#
+# cacheManager.principalIdFieldName = id
 
 # Redis cache key/value expire time. Default value: 1800 .The expire time is in second. (Optional)
 #
@@ -300,6 +310,7 @@ spring.xml:
     <property name="redisManager" ref="redisManager" />
     <property name="expire" value="1800"/>
     <property name="keyPrefix" value="shiro:cache:" />
+    <property name="principalIdFieldName" value="id" />
 </bean>
 
 <!-- securityManager -->

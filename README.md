@@ -16,17 +16,17 @@ You can choose these 2 ways to include shiro-redis into your project
 <dependency>
     <groupId>org.crazycake</groupId>
     <artifactId>shiro-redis</artifactId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
 </dependency>
 ```
 
 > **Note:**\
-> Do not use version < 3.0.0\
+> Do not use version < 3.1.0\
 > **注意**：\
-> 请不要使用3.0.0以下版本
+> 请不要使用3.1.0以下版本
 
 # Before use
-Here is the first thing you need to know. Shiro-redis needs an id field to identify your authorization object in Redis. So please make sure your principal class has a field which you can get unique id of this object. Please setting this id field name by `cacheManager.principalId = id`
+Here is the first thing you need to know. Shiro-redis needs an id field to identify your authorization object in Redis. So please make sure your principal class has a field which you can get unique id of this object. Please setting this id field name by `cacheManager.principalIdFieldName = <your id field name of principal object>`
 
 For example:
 
@@ -41,15 +41,13 @@ protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) 
 }
 ```
 
-You need to make sure `UserInfo` has an unique field to identify it in Redis. Take userId as an example:
+Then the userInfo object is your principal object. You need to make sure `UserInfo` has an unique field to identify it in Redis. Take userId as an example:
 ```java
 public class UserInfo implements Serializable{
 
     private Integer userId
 
     private String username;
-
-    private Integer age;
 
     public String getUsername() {
         return username;
@@ -59,24 +57,23 @@ public class UserInfo implements Serializable{
         this.username = username;
     }
 
-    public Integer getAge() {
-        return age;
-    }
-
-    public void setAge(Integer age) {
-        this.age = age;
-    }
-
     public Integer getUserId() {
         return this.userId;
     }
 }
 ```
 
-And put userId as `cacheManager.principalId`, like this:
+Put userId as the value of `cacheManager.principalIdFieldName`, like this:
 ```properties
-cacheManager.principalId = userId
+cacheManager.principalIdFieldName = userId
 ```
+
+If you're using Spring, the configuration should be
+```xml
+<property name="principalIdFieldName" value="userId" />
+```
+
+Then shiro-redis will call `userInfo.getUserId()` to get the id for storing Redis object.
 
 # How to configure ?
 

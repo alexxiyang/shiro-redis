@@ -61,6 +61,7 @@ public class RedisClusterManager implements IRedisManager {
         return jedisCluster;
     }
 
+    @Override
     public byte[] get(byte[] key) {
         if (key == null) {
             return null;
@@ -68,6 +69,7 @@ public class RedisClusterManager implements IRedisManager {
         return getJedisCluster().get(key);
     }
 
+    @Override
     public byte[] set(byte[] key, byte[] value, int expireTime) {
         if (key == null) {
             return null;
@@ -79,6 +81,7 @@ public class RedisClusterManager implements IRedisManager {
         return value;
     }
 
+    @Override
     public void del(byte[] key) {
         if (key == null) {
             return;
@@ -86,23 +89,23 @@ public class RedisClusterManager implements IRedisManager {
         getJedisCluster().del(key);
     }
 
-    public Long dbSize() {
+    @Override
+    public Long dbSize(byte[] pattern) {
         Long dbSize = 0L;
         Map<String, JedisPool> clusterNodes = getJedisCluster().getClusterNodes();
-        for (String k : clusterNodes.keySet()) {
-            JedisPool jp = clusterNodes.get(k);
-            Jedis connection = jp.getResource();
-            try {
-                dbSize += connection.dbSize();
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                connection.close();
+        Iterator<Map.Entry<String, JedisPool>> nodeIt = clusterNodes.entrySet().iterator();
+        while (nodeIt.hasNext()) {
+            Map.Entry<String, JedisPool> node = nodeIt.next();
+            long nodeDbSize = getDbSizeFromClusterNode(node.getValue(), pattern);
+            if (nodeDbSize == 0L) {
+                continue;
             }
+            dbSize += nodeDbSize;
         }
         return dbSize;
     }
 
+    @Override
     public Set<byte[]> keys(byte[] pattern) {
         Set<byte[]> keys = new HashSet<byte[]>();
         Map<String, JedisPool> clusterNodes = getJedisCluster().getClusterNodes();
@@ -138,6 +141,27 @@ public class RedisClusterManager implements IRedisManager {
             jedis.close();
         }
         return keys;
+    }
+
+    private long getDbSizeFromClusterNode(JedisPool jedisPool, byte[] pattern) {
+        long dbSize = 0L;
+        Jedis jedis = jedisPool.getResource();
+
+        try {
+            ScanParams params = new ScanParams();
+            params.count(count);
+            params.match(pattern);
+            byte[] cursor = ScanParams.SCAN_POINTER_START_BINARY;
+            ScanResult<byte[]> scanResult;
+            do {
+                scanResult = jedis.scan(cursor, params);
+                dbSize++;
+                cursor = scanResult.getCursorAsBytes();
+            } while (scanResult.getStringCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
+        } finally {
+            jedis.close();
+        }
+        return dbSize;
     }
 
     public int getMaxAttempts() {

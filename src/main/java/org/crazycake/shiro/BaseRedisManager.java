@@ -105,11 +105,20 @@ public abstract class BaseRedisManager implements IRedisManager {
      * Return the size of redis db.
      */
     @Override
-    public Long dbSize() {
-        Long dbSize = 0L;
+    public Long dbSize(byte[] pattern) {
+        long dbSize = 0L;
         Jedis jedis = getJedis();
         try {
-            dbSize = jedis.dbSize();
+            ScanParams params = new ScanParams();
+            params.count(count);
+            params.match(pattern);
+            byte[] cursor = ScanParams.SCAN_POINTER_START_BINARY;
+            ScanResult<byte[]> scanResult;
+            do {
+                scanResult = jedis.scan(cursor, params);
+                dbSize++;
+                cursor = scanResult.getCursorAsBytes();
+            } while (scanResult.getStringCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
         } finally {
             jedis.close();
         }

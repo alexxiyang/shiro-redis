@@ -185,7 +185,12 @@ public class RedisCache<K, V> implements Cache<K, V> {
 
 	@Override
 	public int size() {
-		Long longSize = new Long(redisManager.dbSize());
+		Long longSize = 0L;
+		try {
+			longSize = new Long(redisManager.dbSize(keySerializer.serialize(this.keyPrefix + "*")));
+		} catch (SerializationException e) {
+			logger.error("get keys error", e);
+		}
 		return longSize.intValue();
 	}
 

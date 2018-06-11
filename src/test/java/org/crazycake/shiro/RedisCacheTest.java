@@ -82,8 +82,8 @@ public class RedisCacheTest {
     }
 
     @Test
-    public void testSize() {
-        when(redisManager.dbSize()).thenReturn(2L);
+    public void testSize() throws SerializationException {
+        when(redisManager.dbSize(keySerializer.serialize(testPrefix + "*"))).thenReturn(2L);
         assertThat(redisCache.size(), is(2));
     }
 

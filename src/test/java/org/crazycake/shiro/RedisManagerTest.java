@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -83,17 +82,6 @@ public class RedisManagerTest {
         verify(jedis, times(0)).del(any((new byte[0]).getClass()));
         redisManager.del(keySerializer.serialize("1"));
         verify(jedis, times(1)).del(any((new byte[0]).getClass()));
-    }
-
-    @Test
-    public void testDbSize() {
-        when(jedis.dbSize()).thenReturn(3L);
-        Long actualDbSize = redisManager.dbSize();
-        assertThat(actualDbSize, is(3L));
-
-        when(jedis.dbSize()).thenReturn(null);
-        actualDbSize = redisManager.dbSize();
-        assertThat(actualDbSize, is(nullValue()));
     }
 
     @Test

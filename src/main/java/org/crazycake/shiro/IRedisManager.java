@@ -33,7 +33,7 @@ public interface IRedisManager {
     /**
      * size
      */
-    Long dbSize();
+    Long dbSize(byte[] pattern);
 
     /**
      * keys

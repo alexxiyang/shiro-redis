@@ -139,10 +139,11 @@ redisSessionDAO = org.crazycake.shiro.RedisSessionDAO
 #
 # redisSessionDAO.expire = <expire>
 
-# Custom your redis key prefix for session management, if you doesn't define this parameter, shiro-redis will use 'shiro_redis_session:' as default prefix
+# Custom your redis key prefix for session management
+# Default value is "shiro:session:"
 # Note: Remember to add colon at the end of prefix.
 #
-# redisSessionDAO.keyPrefix = <session keyprefix>
+# redisSessionDAO.keyPrefix = <session key prefix>
 
 # Use redisManager as cache manager
 redisSessionDAO.redisManager = $redisManager
@@ -188,9 +189,11 @@ cacheManager = org.crazycake.shiro.RedisCacheManager
 
 # cacheManager.keySerializer = $cacheManagerKeySerializer
 
-# Custom your redis key prefix for cache management, if you doesn't define this parameter, shiro-redis will use 'shiro_redis_session:' as default prefix
+# Custom your redis key prefix for cache management
+# Default value is "shiro:cache:"
 # Note: Remember to add colon at the end of prefix.
-cacheManager.keyPrefix = shiro:cache:
+#
+# cacheManager.keyPrefix = <cache key prefix>
 
 # Use redisManager as cache manager
 cacheManager.redisManager = $redisManager
@@ -285,7 +288,7 @@ spring.xml:
 <!-- shiro redisManager -->
 <bean id="redisManager" class="org.crazycake.shiro.RedisManager">
     <property name="host" value="127.0.0.1:6379"/>
-    <!-- optional properties:
+    <!-- optional properties
     <property name="timeout" value="10000"/>
     <property name="password" value="123456"/>
     <property name="database" value="1"/>
@@ -297,8 +300,10 @@ spring.xml:
 <!-- Redis-based session configuration -->
 <bean id="redisSessionDAO" class="org.crazycake.shiro.RedisSessionDAO">
     <property name="redisManager" ref="redisManager" />
+    <!-- optional properties
     <property name="expire" value="-2"/>
     <property name="keyPrefix" value="shiro:session:" />
+    -->
 </bean>
 <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
     <property name="sessionDAO" ref="redisSessionDAO" />
@@ -307,9 +312,11 @@ spring.xml:
 <!-- Redis-based cache configuration -->
 <bean id="cacheManager" class="org.crazycake.shiro.RedisCacheManager">
     <property name="redisManager" ref="redisManager" />
+    <!-- optional properties
     <property name="expire" value="1800"/>
     <property name="keyPrefix" value="shiro:cache:" />
     <property name="principalIdFieldName" value="id" />
+    -->
 </bean>
 
 <!-- securityManager -->
@@ -334,7 +341,7 @@ If you use redis sentinel, here is an example of configuration :
 <bean id="redisManager" class="org.crazycake.shiro.RedisSentinelManager">
     <property name="host" value="127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381"/>
     <property name="masterName" value="mymaster"/>
-    <!-- optional properties:、
+    <!-- optional properties
     <property name="timeout" value="2000"/>
     <property name="soTimeout" value="2000"/>
     <property name="password" value=""/>
@@ -351,7 +358,7 @@ If you use redis cluster, here is an example of configuration :
 <!-- shiro redisManager -->
 <bean id="redisManager" class="org.crazycake.shiro.RedisClusterManager">
     <property name="host" value="192.168.21.3:7000,192.168.21.3:7001,192.168.21.3:7002,192.168.21.3:7003,192.168.21.3:7004,192.168.21.3:7005"/>
-    <!-- optional properties:
+    <!-- optional properties
     <property name="timeout" value="10000"/>
     <property name="soTimeout" value="10000"/>
     <property name="maxAttempts" value="2"/>

@@ -166,7 +166,9 @@ securityManager.sessionManager = $sessionManager
 # Create cacheManager
 cacheManager = org.crazycake.shiro.RedisCacheManager
 
-# Principal id field name. The field which you can get unique id to identify this principal. For example, if you use UserInfo as Principal class, the id field maybe userId, userName, email, etc. Remember to add getter to this id field. For example, getUserId(), getUserName(), getEmail(), etc.
+# Principal id field name. The field which you can get unique id to identify this principal.
+# For example, if you use UserInfo as Principal class, the id field maybe userId, userName, email, etc.
+# Remember to add getter to this id field. For example, getUserId(), getUserName(), getEmail(), etc.
 # Default value is authCacheKey or id, that means your principal object has a method called "getAuthCacheKey()" or "getId()"
 #
 # cacheManager.principalIdFieldName = id

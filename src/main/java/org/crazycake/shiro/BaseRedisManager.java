@@ -6,6 +6,7 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -116,7 +117,10 @@ public abstract class BaseRedisManager implements IRedisManager {
             ScanResult<byte[]> scanResult;
             do {
                 scanResult = jedis.scan(cursor, params);
-                dbSize++;
+                List<byte[]> results = scanResult.getResult();
+                for (byte[] result : results) {
+                    dbSize++;
+                }
                 cursor = scanResult.getCursorAsBytes();
             } while (scanResult.getStringCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
         } finally {

@@ -4,11 +4,11 @@ import java.io.Serializable;
 
 public class FakeAuth implements Serializable{
     private Integer id;
-    private String role;
+    private Integer role;
 
     public FakeAuth() {}
 
-    public FakeAuth(Integer id, String role) {
+    public FakeAuth(Integer id, Integer role) {
         this.id = id;
         this.role = role;
     }
@@ -21,11 +21,11 @@ public class FakeAuth implements Serializable{
         this.id = id;
     }
 
-    public String getRole() {
+    public Integer getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Integer role) {
         this.role = role;
     }
 }

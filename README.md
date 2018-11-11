@@ -91,7 +91,7 @@ Here is the configuration for shiro.ini.
 #====================================
 
 #===================================
-# Redis Manager
+# Redis Manager [start]
 #===================================
 
 # Create redisManager
@@ -100,59 +100,19 @@ redisManager = org.crazycake.shiro.RedisManager
 # Redis host. If you don't specify host the default value is 127.0.0.1:6379
 redisManager.host = 127.0.0.1:6379
 
-# Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
-#
-# redisManager.timeout = <timeout>
+#===================================
+# Redis Manager [end]
+#===================================
 
-# Redis password.(Optional)
-#
-# redisManager.password = <password>
-
-# Redis database. Default value is 0(Optional)
-#
-# redisManager.database = <database>
-
-# JedisPoolConfig (Optional)
-# Most of time, you don't need to set jedisPoolConfig
-#
-# jedisPoolConfig = redis.clients.jedis.JedisPoolConfig
-# jedisPoolConfig.<attribute> = <value>
-# redisManager.jedisPoolConfig = jedisPoolConfig
-
-# Scan count. Shiro-redis use Scan to get keys, so you can define the number of elements returned at every iteration. (Optional)
-#
-# redisManager.count = <count>
-
-#====================================
-# Redis-based session configuration
-#====================================
+#=========================================
+# Redis session DAO [start]
+#=========================================
 
 # Create redisSessionDAO
 redisSessionDAO = org.crazycake.shiro.RedisSessionDAO
 
-# Redis cache key/value expire time. The expire time is in second.
-# Special values:
-# -1: no expire
-# -2: the same timeout with session
-# Default value: -2
-# Note: Make sure expire time is longer than session timeout.  (Optional)
-#
-# redisSessionDAO.expire = <expire>
-
-# Custom your redis key prefix for session management
-# Default value is "shiro:session:"
-# Note: Remember to add colon at the end of prefix.
-#
-# redisSessionDAO.keyPrefix = <session key prefix>
-
 # Use redisManager as cache manager
 redisSessionDAO.redisManager = $redisManager
-
-# doReadSession be called about 10 times when login. Save Session in ThreadLocal to resolve this problem. sessionInMemoryTimeout is expiration of Session in ThreadLocal.
-# The default value is 1000 milliseconds (1s)
-# Most of time, you don't need to change it.
-#
-# redisSessionDAO.sessionInMemoryTimeout = <timeout>
 
 sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
 
@@ -160,50 +120,39 @@ sessionManager.sessionDAO = $redisSessionDAO
 
 securityManager.sessionManager = $sessionManager
 
-#=====================================
-# Redis-based cache configuration
-#=====================================
+#=========================================
+# Redis session DAO [end]
+#=========================================
+
+#==========================================
+# Redis cache manager [start]
+#==========================================
 
 # Create cacheManager
 cacheManager = org.crazycake.shiro.RedisCacheManager
 
 # Principal id field name. The field which you can get unique id to identify this principal.
-# For example, if you use UserInfo as Principal class, the id field maybe userId, userName, email, etc.
-# Remember to add getter to this id field. For example, getUserId(), getUserName(), getEmail(), etc.
-# Default value is authCacheKey or id, that means your principal object has a method called "getAuthCacheKey()" or "getId()"
+# For example, if you use UserInfo as Principal class, the id field maybe `id`, `userId`, `email`, etc.
+# Remember to add getter to this id field. For example, `getId()`, `getUserId()`, `getEmail()`, etc.
+# Default value is id, that means your principal object must has a method called `getId()`
 #
-# cacheManager.principalIdFieldName = id
-
-# Redis cache key/value expire time. Default value: 1800 .The expire time is in second. (Optional)
-#
-# cacheManager.expire = <expire>
-
-# If you want change charset of keySerializer or use your own custom serializer, you need to define serializer first
-#
-# cacheManagerKeySerializer = org.crazycake.shiro.serializer.StringSerializer
-
-# Refer to https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html
-# UTF-8, UTF-16, UTF-32, ISO-8859-1, GBK, Big5, etc
-#
-# cacheManagerKeySerializer.charset = UTF-8
-
-# cacheManager.keySerializer = $cacheManagerKeySerializer
-
-# Custom your redis key prefix for cache management
-# Default value is "shiro:cache:"
-# Note: Remember to add colon at the end of prefix.
-#
-# cacheManager.keyPrefix = <cache key prefix>
+cacheManager.principalIdFieldName = id
 
 # Use redisManager as cache manager
 cacheManager.redisManager = $redisManager
 
 securityManager.cacheManager = $cacheManager
 
+#==========================================
+# Redis cache manager [end]
+#==========================================
+
 #=================================
 # shiro-redis configuration [end]
 #=================================
 ```
+
+For complete configurable options list, check [Configurable Options](#configurable-options).
 
 Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-tutorial) for you to understand how to configure `shiro-redis` in `shiro.ini`.
 
@@ -211,7 +160,7 @@ Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-tutorial)
 if you're using Redis Sentinel, please change the redisManager configuration into the following:
 ```properties
 #===================================
-# Redis Manager
+# Redis Manager [start]
 #===================================
 
 # Create redisManager
@@ -223,61 +172,33 @@ redisManager.host = 127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381
 # Sentinel master name
 redisManager.masterName = mymaster
 
-# Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
-#
-# redisManager.timeout = <timeout>
-
-# Timeout for jedis try to read data from redis server (Optional)
-#
-# redisManager.soTimeout = <soTimeout>
-
-# Redis password.(Optional)
-#
-# redisManager.password = <password>
-
-# Redis database. Default value is 0 (Optional)
-#
-# redisManager.database = <database>
-
-# JedisPoolConfig (Optional)
-# Most of time, you don't need to set jedisPoolConfig
-#
-# jedisPoolConfig = redis.clients.jedis.JedisPoolConfig
-# jedisPoolConfig.<attribute> = <value>
-# redisManager.jedisPoolConfig = jedisPoolConfig
-
-# Scan count. Shiro-redis use Scan to get keys, so you can define the number of elements returned at every iteration. (Optional)
-#
-# redisManager.count = <count>
+#===================================
+# Redis Manager [end]
+#===================================
 ```
+
+For complete configurable options list, check [Configurable Options](#configurable-options).
 
 ### Redis Cluster
 If you're using redis cluster, here is an example of configuration :
 
 ```properties
+#===================================
+# Redis Manager [start]
+#===================================
+
 # Create redisManager
 redisManager = org.crazycake.shiro.RedisClusterManager
 
 # Redis host and port list
 redisManager.host = 192.168.21.3:7000,192.168.21.3:7001,192.168.21.3:7002,192.168.21.3:7003,192.168.21.3:7004,192.168.21.3:7005
 
-# Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds).(Optional)
-#
-# redisManager.timeout = 2000
-
-# timeout for jedis try to read data from redis server (Optional)
-#
-# redisManager.soTimeout = 2000
-
-# max attempts to connect to server (Optional)
-#
-# redisManager.maxAttempts = 3
-
-# Redis password.(Optional)
-#
-# redisManager.password = <password>
-
+#===================================
+# Redis Manager [end]
+#===================================
 ```
+
+For complete configurable options list, check [Configurable Options](#configurable-options).
 
 ## Spring
 
@@ -285,41 +206,28 @@ redisManager.host = 192.168.21.3:7000,192.168.21.3:7001,192.168.21.3:7002,192.16
 spring.xml:
 ```xml
 <!-- shiro-redis configuration [start] -->
-<!-- shiro redisManager -->
+
+<!-- Redis Manager [start] -->
 <bean id="redisManager" class="org.crazycake.shiro.RedisManager">
     <property name="host" value="127.0.0.1:6379"/>
-    <!-- optional properties
-    <property name="timeout" value="10000"/>
-    <property name="password" value="123456"/>
-    <property name="database" value="1"/>
-    <property name="jedisPoolConfig" ref="jedisPoolConfig"/>
-    <property name="count" value="100"/>
-    -->
 </bean>
+<!-- Redis Manager [end] -->
 
-<!-- Redis-based session configuration -->
+<!-- Redis session DAO [start] -->
 <bean id="redisSessionDAO" class="org.crazycake.shiro.RedisSessionDAO">
     <property name="redisManager" ref="redisManager" />
-    <!-- optional properties
-    <property name="expire" value="-2"/>
-    <property name="keyPrefix" value="shiro:session:" />
-    -->
 </bean>
 <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
     <property name="sessionDAO" ref="redisSessionDAO" />
 </bean>
+<!-- Redis session DAO [end] -->
 
-<!-- Redis-based cache configuration -->
+<!-- Redis cache manager [start] -->
 <bean id="cacheManager" class="org.crazycake.shiro.RedisCacheManager">
     <property name="redisManager" ref="redisManager" />
-    <!-- optional properties
-    <property name="expire" value="1800"/>
-    <property name="keyPrefix" value="shiro:cache:" />
-    <property name="principalIdFieldName" value="id" />
-    -->
 </bean>
+<!-- Redis cache manager [end] -->
 
-<!-- securityManager -->
 <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
     <property name="sessionManager" ref="sessionManager" />
     <property name="cacheManager" ref="cacheManager" />
@@ -328,8 +236,11 @@ spring.xml:
     <property name="realm" ref="exampleRealm"/>
     <property name="rememberMeManager.cipherKey" value="kPH+bIxk5D2deZiIxcaaaA==" />
 </bean>
+
 <!-- shiro-redis configuration [end] -->
 ```
+
+For complete configurable options list, check [Configurable Options](#configurable-options).
 
 Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-spring-tutorial) for you to understand how to configure `shiro-redis` in spring configuration file.
 
@@ -341,15 +252,10 @@ If you use redis sentinel, here is an example of configuration :
 <bean id="redisManager" class="org.crazycake.shiro.RedisSentinelManager">
     <property name="host" value="127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381"/>
     <property name="masterName" value="mymaster"/>
-    <!-- optional properties
-    <property name="timeout" value="2000"/>
-    <property name="soTimeout" value="2000"/>
-    <property name="password" value=""/>
-    <property name="database" value="0"/>
-    <property name="count" value="100"/>
-    -->
 </bean>
 ```
+
+For complete configurable options list, check [Configurable Options](#configurable-options).
 
 ### Redis Cluster
 If you use redis cluster, here is an example of configuration :
@@ -358,27 +264,23 @@ If you use redis cluster, here is an example of configuration :
 <!-- shiro redisManager -->
 <bean id="redisManager" class="org.crazycake.shiro.RedisClusterManager">
     <property name="host" value="192.168.21.3:7000,192.168.21.3:7001,192.168.21.3:7002,192.168.21.3:7003,192.168.21.3:7004,192.168.21.3:7005"/>
-    <!-- optional properties
-    <property name="timeout" value="10000"/>
-    <property name="soTimeout" value="10000"/>
-    <property name="maxAttempts" value="2"/>
-    <property name="password" value="123456"/>
-    -->
 </bean>
 ```
+
+For complete configurable options list, check [Configurable Options](#configurable-options).
 
 ## Serializer
 Since redis only accept `byte[]`, there comes to a serializer problem.
 Shiro-redis is using StringSerializer as key serializer and ObjectSerializer as value serializer.
 You can use your own custom serializer, as long as this custom serializer implemens `org.crazycake.shiro.serializer.RedisSerializer`
 
-For example, you need to change the charset of keySerializer.
+For example, let's change the charset of keySerializer.
 ```properties
 # If you want change charset of keySerializer or use your own custom serializer, you need to define serializer first
 #
 # cacheManagerKeySerializer = org.crazycake.shiro.serializer.StringSerializer
 
-# Refer to https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html
+# Supported encodings refer to https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html
 # UTF-8, UTF-16, UTF-32, ISO-8859-1, GBK, Big5, etc
 #
 # cacheManagerKeySerializer.charset = UTF-8
@@ -391,6 +293,44 @@ These 4 Serializers are replaceable:
 - cacheManager.valueSerializer
 - redisSessionDAO.keySerializer
 - redisSessionDAO.valueSerializer
+
+## Configurable Options
+
+### RedisManager
+
+| Title              | Default              | Description                 |
+| :------------------| :------------------- | :---------------------------|
+| host               | `127.0.0.1:6379`     | Redis host. If you don't specify host the default value is 127.0.0.1:6379. If you run redis in sentinel mode or cluster mode, separate host names with comma, like 127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381 |
+| masterName         | `mymaster`           | **Only used for sentinel mode**<br>The master node of Redis sentinel mode |
+| timeout            | `2000`               | Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds)  |
+| soTimeout          | `2000`               | **Only used for sentinel mode or cluster mode**<br>The timeout for jedis try to read data from redis server |
+| maxAttempts        | `3`                  | **Only used for cluster mode**<br>Max attempts to connect to server |
+| password           |                      | Redis password |
+| database           | `0`                  | Redis database. Default value is 0 |
+| jedisPoolConfig    | `new redis.clients.jedis.JedisPoolConfig()` | JedisPoolConfig. You can create your own JedisPoolConfig and set attributes as you wish<br>Most of time, you don't need to set jedisPoolConfig<br>Here is an example.<br><pre>jedisPoolConfig = redis.clients.jedis.JedisPoolConfig<br>jedisPoolConfig.testWhileIdle = false<br>redisManager.jedisPoolConfig = jedisPoolConfig</pre> |
+| count              | `100`                |  Scan count. Shiro-redis use Scan to get keys, so you can define the number of elements returned at every iteration. |
+
+### RedisSessionDAO
+
+| Title              | Default              | Description                 |
+| :------------------| :------------------- | :---------------------------|
+| redisManager       |                      | RedisManager which you just configured above (Required) |
+| expire             | `-2`                 | Redis cache key/value expire time. The expire time is in second.<br>Special values:<br>`-1`: no expire<br>`-2`: the same timeout with session<br>Default value: `-2`<br>**Note**: Make sure expire time is longer than session timeout. |
+| keyPrefix          | `shiro:session:`     | Custom your redis key prefix for session management<br>**Note**: Remember to add colon at the end of prefix. |
+| sessionInMemoryTimeout | `1000`           | When we do signin, `doReadSession(sessionId)` will be called by shiro about 10 times. So shiro-redis save Session in ThreadLocal to remit this problem. sessionInMemoryTimeout is expiration of Session in ThreadLocal. <br>Most of time, you don't need to change it. |
+| keySerializer        | `new org.crazycake.shiro.serializer.StringSerializer()` | The key serializer of cache manager<br>You can change the implement of key serializer or the encoding of StringSerializer.<br>Supported encodings refer to [Supported Encodings](https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html). Such as `UTF-8`, `UTF-16`, `UTF-32`, `ISO-8859-1`, `GBK`, `Big5`, etc<br>For more detail, check [Serializer](#serializer) |
+| valueSerializer      | `new org.crazycake.shiro.serializer.ObjectSerializer()` | The value serializer of cache manager<br>You can change the implement of value serializer<br>For more detail, check [Serializer](#serializer) |
+
+### CacheManager
+
+| Title                | Default              | Description                 |
+| :--------------------| :------------------- | :---------------------------|
+| redisManager         |                      | RedisManager which you just configured above (Required) |
+| principalIdFieldName | `id`                 | Principal id field name. The field which you can get unique id to identify this principal.<br>For example, if you use UserInfo as Principal class, the id field maybe `id`, `userId`, `email`, etc.<br>Remember to add getter to this id field. For example, `getId()`, `getUserId(`), `getEmail()`, etc.<br>Default value is `id`, that means your principal object must has a method called `getId()` |
+| expire               | `1800`               | Redis cache key/value expire time. <br>The expire time is in second. |
+| keyPrefix            | `shiro:cache:`       | Custom your redis key prefix for cache management<br>**Note**: Remember to add colon at the end of prefix. |
+| keySerializer        | `new org.crazycake.shiro.serializer.StringSerializer()` | The key serializer of cache manager<br>You can change the implement of key serializer or the encoding of StringSerializer.<br>Supported encodings refer to [Supported Encodings](https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html). Such as `UTF-8`, `UTF-16`, `UTF-32`, `ISO-8859-1`, `GBK`, `Big5`, etc<br>For more detail, check [Serializer](#serializer) |
+| valueSerializer      | `new org.crazycake.shiro.serializer.ObjectSerializer()` | The value serializer of cache manager<br>You can change the implement of value serializer<br>For more detail, check [Serializer](#serializer) |
 
 
 # If you found any bugs

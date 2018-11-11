@@ -318,8 +318,8 @@ These 4 Serializers are replaceable:
 | expire             | `-2`                 | Redis cache key/value expire time. The expire time is in second.<br>Special values:<br>`-1`: no expire<br>`-2`: the same timeout with session<br>Default value: `-2`<br>**Note**: Make sure expire time is longer than session timeout. |
 | keyPrefix          | `shiro:session:`     | Custom your redis key prefix for session management<br>**Note**: Remember to add colon at the end of prefix. |
 | sessionInMemoryTimeout | `1000`           | When we do signin, `doReadSession(sessionId)` will be called by shiro about 10 times. So shiro-redis save Session in ThreadLocal to remit this problem. sessionInMemoryTimeout is expiration of Session in ThreadLocal. <br>Most of time, you don't need to change it. |
-| keySerializer        | `new org.crazycake.shiro.serializer.StringSerializer()` | The key serializer of cache manager<br>You can change the implement of key serializer or the encoding of StringSerializer.<br>Supported encodings refer to [Supported Encodings](https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html). Such as `UTF-8`, `UTF-16`, `UTF-32`, `ISO-8859-1`, `GBK`, `Big5`, etc<br>For more detail, check [Serializer](#serializer) |
-| valueSerializer      | `new org.crazycake.shiro.serializer.ObjectSerializer()` | The value serializer of cache manager<br>You can change the implement of value serializer<br>For more detail, check [Serializer](#serializer) |
+| keySerializer        | `org.crazycake.shiro.serializer.StringSerializer` | The key serializer of cache manager<br>You can change the implement of key serializer or the encoding of StringSerializer.<br>Supported encodings refer to [Supported Encodings](https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html). Such as `UTF-8`, `UTF-16`, `UTF-32`, `ISO-8859-1`, `GBK`, `Big5`, etc<br>For more detail, check [Serializer](#serializer) |
+| valueSerializer      | `org.crazycake.shiro.serializer.ObjectSerializer` | The value serializer of cache manager<br>You can change the implement of value serializer<br>For more detail, check [Serializer](#serializer) |
 
 ### CacheManager
 
@@ -329,8 +329,8 @@ These 4 Serializers are replaceable:
 | principalIdFieldName | `id`                 | Principal id field name. The field which you can get unique id to identify this principal.<br>For example, if you use UserInfo as Principal class, the id field maybe `id`, `userId`, `email`, etc.<br>Remember to add getter to this id field. For example, `getId()`, `getUserId(`), `getEmail()`, etc.<br>Default value is `id`, that means your principal object must has a method called `getId()` |
 | expire               | `1800`               | Redis cache key/value expire time. <br>The expire time is in second. |
 | keyPrefix            | `shiro:cache:`       | Custom your redis key prefix for cache management<br>**Note**: Remember to add colon at the end of prefix. |
-| keySerializer        | `new org.crazycake.shiro.serializer.StringSerializer()` | The key serializer of cache manager<br>You can change the implement of key serializer or the encoding of StringSerializer.<br>Supported encodings refer to [Supported Encodings](https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html). Such as `UTF-8`, `UTF-16`, `UTF-32`, `ISO-8859-1`, `GBK`, `Big5`, etc<br>For more detail, check [Serializer](#serializer) |
-| valueSerializer      | `new org.crazycake.shiro.serializer.ObjectSerializer()` | The value serializer of cache manager<br>You can change the implement of value serializer<br>For more detail, check [Serializer](#serializer) |
+| keySerializer        | `org.crazycake.shiro.serializer.StringSerializer` | The key serializer of cache manager<br>You can change the implement of key serializer or the encoding of StringSerializer.<br>Supported encodings refer to [Supported Encodings](https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html). Such as `UTF-8`, `UTF-16`, `UTF-32`, `ISO-8859-1`, `GBK`, `Big5`, etc<br>For more detail, check [Serializer](#serializer) |
+| valueSerializer      | `org.crazycake.shiro.serializer.ObjectSerializer` | The value serializer of cache manager<br>You can change the implement of value serializer<br>For more detail, check [Serializer](#serializer) |
 
 
 # If you found any bugs

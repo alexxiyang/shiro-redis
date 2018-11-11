@@ -300,7 +300,7 @@ These 4 Serializers are replaceable:
 
 | Title              | Default              | Description                 |
 | :------------------| :------------------- | :---------------------------|
-| host               | `127.0.0.1:6379`     | Redis host. If you don't specify host the default value is 127.0.0.1:6379. If you run redis in sentinel mode or cluster mode, separate host names with comma, like 127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381 |
+| host               | `127.0.0.1:6379`     | Redis host. If you don't specify host the default value is `127.0.0.1:6379`. If you run redis in sentinel mode or cluster mode, separate host names with comma, like `127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381` |
 | masterName         | `mymaster`           | **Only used for sentinel mode**<br>The master node of Redis sentinel mode |
 | timeout            | `2000`               | Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds)  |
 | soTimeout          | `2000`               | **Only used for sentinel mode or cluster mode**<br>The timeout for jedis try to read data from redis server |

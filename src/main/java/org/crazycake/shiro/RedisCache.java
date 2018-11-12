@@ -25,8 +25,8 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	private RedisSerializer keySerializer = new StringSerializer();
 	private RedisSerializer valueSerializer = new ObjectSerializer();
 	private IRedisManager redisManager;
-	private String keyPrefix = "";
-	private int expire = 0;
+	private String keyPrefix = RedisCacheManager.DEFAULT_CACHE_KEY_PREFIX;
+	private int expire = RedisCacheManager.DEFAULT_EXPIRE;
 	private String principalIdFieldName = RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME;
 
 	/**
@@ -49,9 +49,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 		 if (prefix != null && !"".equals(prefix)) {
 			 this.keyPrefix = prefix;
 		 }
-		 if (expire != -1) {
-		 	this.expire = expire;
-		 }
+         this.expire = expire;
 		 if (principalIdFieldName != null) {
 			 this.principalIdFieldName = principalIdFieldName;
 		 }

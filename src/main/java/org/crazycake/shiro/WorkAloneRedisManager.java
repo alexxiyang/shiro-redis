@@ -22,11 +22,6 @@ public abstract class WorkAloneRedisManager implements IRedisManager {
     protected abstract Jedis getJedis();
 
     /**
-     * Expire time in seconds.
-     */
-    protected static final int DEFAULT_EXPIRE = -1;
-
-    /**
      * Default value of count.
      */
     protected static final int DEFAULT_COUNT = 100;
@@ -63,21 +58,22 @@ public abstract class WorkAloneRedisManager implements IRedisManager {
 
     /**
      * set
-     * @param key
-     * @param value
-     * @param exipreTime
+     * @param key key
+     * @param value value
+     * @param expireTime expire time
      * @return value
      */
     @Override
-    public byte[] set(byte[] key, byte[] value, int exipreTime) {
+    public byte[] set(byte[] key, byte[] value, int expireTime) {
         if (key == null) {
             return null;
         }
         Jedis jedis = getJedis();
         try {
             jedis.set(key, value);
-            if (exipreTime >= 0) {
-                jedis.expire(key, exipreTime);
+            // -1 and 0 is not a valid expire time in Jedis
+            if (expireTime > 0) {
+                jedis.expire(key, expireTime);
             }
          } finally {
             jedis.close();
@@ -87,7 +83,7 @@ public abstract class WorkAloneRedisManager implements IRedisManager {
 
     /**
      * Delete a key-value pair.
-     * @param key
+     * @param key key
      */
     @Override
     public void del(byte[] key) {
@@ -104,6 +100,8 @@ public abstract class WorkAloneRedisManager implements IRedisManager {
 
     /**
      * Return the size of redis db.
+     * @param pattern key pattern
+     * @return key-value size
      */
     @Override
     public Long dbSize(byte[] pattern) {
@@ -131,9 +129,8 @@ public abstract class WorkAloneRedisManager implements IRedisManager {
 
     /**
      * Return all the keys of Redis db. Filtered by pattern.
-     *
-     * @param pattern
-     * @return
+     * @param pattern key pattern
+     * @return key set
      */
     public Set<byte[]> keys(byte[] pattern) {
         Set<byte[]> keys = new HashSet<byte[]>();

@@ -24,7 +24,7 @@ public class RedisCacheManager implements CacheManager {
 	private IRedisManager redisManager;
 
 	// expire time in seconds
-	private static final int DEFAULT_EXPIRE = 1800;
+	public static final int DEFAULT_EXPIRE = 1800;
 	private int expire = DEFAULT_EXPIRE;
 
 	/**

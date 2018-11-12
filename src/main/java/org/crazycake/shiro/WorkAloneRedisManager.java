@@ -38,7 +38,7 @@ public abstract class WorkAloneRedisManager implements IRedisManager {
 
     /**
      * get value from redis
-     * @param key
+     * @param key key
      * @return value
      */
     @Override

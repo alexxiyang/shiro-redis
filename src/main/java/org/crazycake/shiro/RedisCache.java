@@ -30,8 +30,13 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	private String principalIdFieldName = RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME;
 
 	/**
-	 * Construction
-	 * @param redisManager
+	 *
+	 * @param redisManager redisManager
+	 * @param keySerializer keySerializer
+	 * @param valueSerializer valueSerializer
+	 * @param prefix authorization prefix
+	 * @param expire expire
+	 * @param principalIdFieldName id field name of principal object
 	 */
 	public RedisCache(IRedisManager redisManager, RedisSerializer keySerializer, RedisSerializer valueSerializer, String prefix, int expire, String principalIdFieldName) {
 		 if (redisManager == null) {
@@ -57,9 +62,9 @@ public class RedisCache<K, V> implements Cache<K, V> {
 
 	/**
 	 * get shiro authorization redis key-value
-	 * @param key
-	 * @return
-	 * @throws CacheException
+	 * @param key key
+	 * @return value
+	 * @throws CacheException get cache exception
 	 */
 	@Override
 	public V get(K key) throws CacheException {
@@ -195,7 +200,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 
 	/**
 	 * get all authorization key-value quantity
-	 * @return
+	 * @return key-value size
 	 */
 	@Override
 	public int size() {

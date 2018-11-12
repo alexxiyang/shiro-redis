@@ -17,9 +17,10 @@ public interface IRedisManager {
     byte[] get(byte[] key);
 
     /**
-     * set
-     * @param key key
+     * set value
+     * @param key  key
      * @param value value
+     * @param expire expire
      * @return value
      */
     byte[] set(byte[] key, byte[] value, int expire);

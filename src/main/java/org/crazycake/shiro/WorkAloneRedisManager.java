@@ -12,7 +12,7 @@ import java.util.Set;
 /**
  * Abstract class of RedisManager.
  */
-public abstract class BaseRedisManager implements IRedisManager {
+public abstract class WorkAloneRedisManager implements IRedisManager {
 
     /**
      * We are going to operate redis by acquiring Jedis object.

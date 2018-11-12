@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class RedisSentinelManager extends BaseRedisManager implements IRedisManager {
+public class RedisSentinelManager extends WorkAloneRedisManager implements IRedisManager {
 
 	private static final String DEFAULT_HOST = "127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381";
 	private String host = DEFAULT_HOST;

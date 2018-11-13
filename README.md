@@ -16,7 +16,7 @@ You can choose these 2 ways to include shiro-redis into your project
 <dependency>
     <groupId>org.crazycake</groupId>
     <artifactId>shiro-redis</artifactId>
-    <version>3.1.0</version>
+    <version>3.2.0</version>
 </dependency>
 ```
 

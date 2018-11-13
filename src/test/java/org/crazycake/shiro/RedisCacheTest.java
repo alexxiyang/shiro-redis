@@ -89,16 +89,17 @@ public class RedisCacheTest {
     }
 
     @Test
-    public void testPutIdeal() {
+    public void testPut() {
         doPutAuth(redisCache, user1);
         FakeAuth fakeAuth = redisCache.get(user1);
         assertAuthEquals(fakeAuth, turnUserToFakeAuth((UserInfo)user1.getPrimaryPrincipal()));
     }
 
     @Test
-    public void testSize() {
+    public void testSize() throws InterruptedException {
         doPutAuth(redisCache, user1);
         doPutAuth(redisCache, user2);
+        Thread.sleep(200);
         assertEquals(redisCache.size(), 2);
     }
 

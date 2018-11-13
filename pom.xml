@@ -85,7 +85,7 @@
 
 	<developers>
 		<developer>
-			<id>alexxiyang</id>
+				<id>alexxiyang</id>
 			<name>Alex Yang</name>
 			<email>alexxiyang@gmail.com</email>
 			<timezone>GMT-7</timezone>
@@ -172,7 +172,7 @@
 			</activation>
 
 			<properties>
-				<gpg.keyname>4DD0EC63</gpg.keyname>	<!-- GPG Key ID to use for signing -->
+				<gpg.keyname>D688E942</gpg.keyname>	<!-- GPG Key ID to use for signing -->
 				<release.username>alexxiyang</release.username>
 			</properties>
 

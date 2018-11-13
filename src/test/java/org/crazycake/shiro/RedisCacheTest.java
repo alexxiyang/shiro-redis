@@ -99,7 +99,7 @@ public class RedisCacheTest {
     public void testSize() throws InterruptedException {
         doPutAuth(redisCache, user1);
         doPutAuth(redisCache, user2);
-        Thread.sleep(200);
+        Thread.sleep(500);
         assertEquals(redisCache.size(), 2);
     }
 

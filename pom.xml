@@ -4,7 +4,7 @@
 
 	<groupId>org.crazycake</groupId>
 	<artifactId>shiro-redis</artifactId>
-	<version>3.2.0</version>
+	<version>3.2.1</version>
 	<packaging>jar</packaging>
 
 	<name>shiro-redis</name>
@@ -143,23 +143,6 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<!--<reporting>-->
-		<!--<plugins>-->
-			<!--<plugin>-->
-				<!--<groupId>org.jacoco</groupId>-->
-				<!--<artifactId>jacoco-maven-plugin</artifactId>-->
-				<!--<reportSets>-->
-					<!--<reportSet>-->
-						<!--<reports>-->
-							<!--&lt;!&ndash; select non-aggregate reports &ndash;&gt;-->
-							<!--<report>report</report>-->
-						<!--</reports>-->
-					<!--</reportSet>-->
-				<!--</reportSets>-->
-			<!--</plugin>-->
-		<!--</plugins>-->
-	<!--</reporting>-->
 
 	<profiles>
 		<profile>

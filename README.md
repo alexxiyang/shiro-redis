@@ -16,7 +16,7 @@ You can choose these 2 ways to include shiro-redis into your project
 <dependency>
     <groupId>org.crazycake</groupId>
     <artifactId>shiro-redis</artifactId>
-    <version>3.2.0</version>
+    <version>3.2.1</version>
 </dependency>
 ```
 
@@ -331,6 +331,99 @@ These 4 Serializers are replaceable:
 | keyPrefix            | `shiro:cache:`       | Custom your redis key prefix for cache management<br>**Note**: Remember to add colon at the end of prefix. |
 | keySerializer        | `org.crazycake.shiro.serializer.StringSerializer` | The key serializer of cache manager<br>You can change the implement of key serializer or the encoding of StringSerializer.<br>Supported encodings refer to [Supported Encodings](https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html). Such as `UTF-8`, `UTF-16`, `UTF-32`, `ISO-8859-1`, `GBK`, `Big5`, etc<br>For more detail, check [Serializer](#serializer) |
 | valueSerializer      | `org.crazycake.shiro.serializer.ObjectSerializer` | The value serializer of cache manager<br>You can change the implement of value serializer<br>For more detail, check [Serializer](#serializer) |
+
+# Spring boot starter
+
+Shiro-redis’s Spring-Boot integration is the easiest way to integrate Shiro-redis into a Spring-base application.
+
+> Note: `shiro-redis-spring-boot-starter` version `3.2.1` is based on `shiro-spring-boot-web-starter` version `1.4.0-RC2`
+
+First include the Shiro-redis Spring boot starter dependency in you application classpath
+
+```xml
+<dependency>
+    <groupId>org.crazycake</groupId>
+    <artifactId>shiro-redis-spring-boot-starter</artifactId>
+    <version>3.2.1</version>
+</dependency>
+```
+
+The next step depends on whether you've created your own `SessionManager` or `SessionsSecurityManager`.
+Because `shiro-redis-spring-boot-starter` will create `RedisSessionDAO` and `RedisCacheManager` for you. Then inject them into `SessionManager` and `SessionsSecurityManager` automatically.
+
+But if you've created your own `SessionManager` or `SessionsSecurityManager` as below:
+```java
+@Bean
+public SessionsSecurityManager securityManager(List<Realm> realms) {
+    DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager(realms);
+    // other stuff
+    return securityManager;
+}
+```
+You will have to inject them by yourself. for more deail, see below
+
+## If you haven't created your own `SessionManager` or `SessionsSecurityManager`
+
+You are good to go.
+
+## If you have created your own `SessionManager` or `SessionsSecurityManager`
+
+Inject `redisSessionDAO` and `redisCacheManager` which created by `shiro-redis-spring-boot-starter` already
+```java
+@Autowired
+RedisSessionDAO redisSessionDAO;
+
+@Autowired
+RedisCacheManager redisCacheManager;
+```
+
+Inject them into `SessionManager` and `SessionsSecurityManager`
+
+```java
+@Bean
+public SessionManager sessionManager() {
+    DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();
+
+    // inject redisSessionDAO
+    sessionManager.setSessionDAO(redisSessionDAO);
+    return sessionManager;
+}
+
+@Bean
+public SessionsSecurityManager securityManager(List<Realm> realms, SessionManager sessionManager) {
+    DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager(realms);
+
+    //inject sessionManager
+    securityManager.setSessionManager(sessionManager);
+
+    // inject redisCacheManager
+    securityManager.setCacheManager(redisCacheManager);
+    return securityManager;
+}
+```
+
+For full example, see [shiro-redis-spring-boot-tutorial](https://github.com/alexxiyang/shiro-redis-spring-boot-tutorial)
+
+### Configuration Properties
+
+| Title                                              | Default              | Description                 |
+| :--------------------------------------------------| :------------------- | :---------------------------|
+| shiro-redis.enabled                                | `true`               | Enables shiro-redis’s Spring module |
+| shiro-redis.redis-anager.deploy-mode               | `standalone`         | Redis deploy mode. Options: `standalone`, `sentinel`, 'cluster' |
+| shiro-redis.redis-anager.host                      | `127.0.0.1:6379`     | Redis host. If you don't specify host the default value is `127.0.0.1:6379`. If you run redis in sentinel mode or cluster mode, separate host names with comma, like `127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381` |
+| shiro-redis.redis-anager.master-name               | `mymaster`           | **Only used for sentinel mode**<br>The master node of Redis sentinel mode |
+| shiro-redis.redis-anager.timeout                   | `2000`               | Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds)  |
+| shiro-redis.redis-anager.so-timeout                | `2000`               | **Only used for sentinel mode or cluster mode**<br>The timeout for jedis try to read data from redis server |
+| shiro-redis.redis-anager.max-attempts              | `3`                  | **Only used for cluster mode**<br>Max attempts to connect to server |
+| shiro-redis.redis-anager.password                  |                      | Redis password |
+| shiro-redis.redis-anager.database                  | `0`                  | Redis database. Default value is 0 |
+| shiro-redis.redis-anager.count                     | `100`                |  Scan count. Shiro-redis use Scan to get keys, so you can define the number of elements returned at every iteration. |
+| shiro-redis.session-dao.expire                     | `-2`                 | Redis cache key/value expire time. The expire time is in second.<br>Special values:<br>`-1`: no expire<br>`-2`: the same timeout with session<br>Default value: `-2`<br>**Note**: Make sure expire time is longer than session timeout. |
+| shiro-redis.session-dao.key-prefix                 | `shiro:session:`     | Custom your redis key prefix for session management<br>**Note**: Remember to add colon at the end of prefix. |
+| shiro-redis.session-dao.session-in-memory-timeout  | `1000`           | When we do signin, `doReadSession(sessionId)` will be called by shiro about 10 times. So shiro-redis save Session in ThreadLocal to remit this problem. sessionInMemoryTimeout is expiration of Session in ThreadLocal. <br>Most of time, you don't need to change it. |
+| shiro-redis.cache-manager.principal-id-field-name  | `id`                 | Principal id field name. The field which you can get unique id to identify this principal.<br>For example, if you use UserInfo as Principal class, the id field maybe `id`, `userId`, `email`, etc.<br>Remember to add getter to this id field. For example, `getId()`, `getUserId(`), `getEmail()`, etc.<br>Default value is `id`, that means your principal object must has a method called `getId()` |
+| shiro-redis.cache-manager.expire                   | `1800`               | Redis cache key/value expire time. <br>The expire time is in second. |
+| shiro-redis.cache-manager.key-prefix               | `shiro:cache:`       | Custom your redis key prefix for cache management<br>**Note**: Remember to add colon at the end of prefix. |
 
 
 # If you found any bugs

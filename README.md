@@ -364,7 +364,7 @@ You will have to inject them by yourself. for more deail, see below
 
 ## If you haven't created your own `SessionManager` or `SessionsSecurityManager`
 
-You are all set.
+You are all set. Enjoy it!
 
 ## If you have created your own `SessionManager` or `SessionsSecurityManager`
 

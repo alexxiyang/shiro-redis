@@ -409,15 +409,15 @@ For full example, see [shiro-redis-spring-boot-tutorial](https://github.com/alex
 | Title                                              | Default              | Description                 |
 | :--------------------------------------------------| :------------------- | :---------------------------|
 | shiro-redis.enabled                                | `true`               | Enables shiro-redis’s Spring module |
-| shiro-redis.redis-anager.deploy-mode               | `standalone`         | Redis deploy mode. Options: `standalone`, `sentinel`, 'cluster' |
-| shiro-redis.redis-anager.host                      | `127.0.0.1:6379`     | Redis host. If you don't specify host the default value is `127.0.0.1:6379`. If you run redis in sentinel mode or cluster mode, separate host names with comma, like `127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381` |
-| shiro-redis.redis-anager.master-name               | `mymaster`           | **Only used for sentinel mode**<br>The master node of Redis sentinel mode |
-| shiro-redis.redis-anager.timeout                   | `2000`               | Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds)  |
-| shiro-redis.redis-anager.so-timeout                | `2000`               | **Only used for sentinel mode or cluster mode**<br>The timeout for jedis try to read data from redis server |
-| shiro-redis.redis-anager.max-attempts              | `3`                  | **Only used for cluster mode**<br>Max attempts to connect to server |
-| shiro-redis.redis-anager.password                  |                      | Redis password |
-| shiro-redis.redis-anager.database                  | `0`                  | Redis database. Default value is 0 |
-| shiro-redis.redis-anager.count                     | `100`                |  Scan count. Shiro-redis use Scan to get keys, so you can define the number of elements returned at every iteration. |
+| shiro-redis.redis-manager.deploy-mode               | `standalone`         | Redis deploy mode. Options: `standalone`, `sentinel`, 'cluster' |
+| shiro-redis.redis-manager.host                      | `127.0.0.1:6379`     | Redis host. If you don't specify host the default value is `127.0.0.1:6379`. If you run redis in sentinel mode or cluster mode, separate host names with comma, like `127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381` |
+| shiro-redis.redis-manager.master-name               | `mymaster`           | **Only used for sentinel mode**<br>The master node of Redis sentinel mode |
+| shiro-redis.redis-manager.timeout                   | `2000`               | Redis connect timeout. Timeout for jedis try to connect to redis server(In milliseconds)  |
+| shiro-redis.redis-manager.so-timeout                | `2000`               | **Only used for sentinel mode or cluster mode**<br>The timeout for jedis try to read data from redis server |
+| shiro-redis.redis-manager.max-attempts              | `3`                  | **Only used for cluster mode**<br>Max attempts to connect to server |
+| shiro-redis.redis-manager.password                  |                      | Redis password |
+| shiro-redis.redis-manager.database                  | `0`                  | Redis database. Default value is 0 |
+| shiro-redis.redis-manager.count                     | `100`                |  Scan count. Shiro-redis use Scan to get keys, so you can define the number of elements returned at every iteration. |
 | shiro-redis.session-dao.expire                     | `-2`                 | Redis cache key/value expire time. The expire time is in second.<br>Special values:<br>`-1`: no expire<br>`-2`: the same timeout with session<br>Default value: `-2`<br>**Note**: Make sure expire time is longer than session timeout. |
 | shiro-redis.session-dao.key-prefix                 | `shiro:session:`     | Custom your redis key prefix for session management<br>**Note**: Remember to add colon at the end of prefix. |
 | shiro-redis.session-dao.session-in-memory-timeout  | `1000`           | When we do signin, `doReadSession(sessionId)` will be called by shiro about 10 times. So shiro-redis save Session in ThreadLocal to remit this problem. sessionInMemoryTimeout is expiration of Session in ThreadLocal. <br>Most of time, you don't need to change it. |

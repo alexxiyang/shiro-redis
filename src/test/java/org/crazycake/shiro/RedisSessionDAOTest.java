@@ -86,6 +86,18 @@ public class RedisSessionDAOTest {
     @Test
     public void testUpdate() {
         redisSessionDAO.doCreate(session1);
+        redisSessionDAO.doReadSession(session1.getId());
+        doChangeSessionName(session1, name1);
+        redisSessionDAO.update(session1);
+        FakeSession actualSession = (FakeSession)redisSessionDAO.doReadSession(session1.getId());
+        assertEquals(actualSession.getName(), name1);
+    }
+
+    @Test
+    public void testUpdateWithoutSessionInMemory() {
+        redisSessionDAO.setSessionInMemoryEnabled(false);
+        redisSessionDAO.doCreate(session1);
+        redisSessionDAO.doReadSession(session1.getId());
         doChangeSessionName(session1, name1);
         redisSessionDAO.update(session1);
         FakeSession actualSession = (FakeSession)redisSessionDAO.doReadSession(session1.getId());

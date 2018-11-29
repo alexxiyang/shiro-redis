@@ -430,6 +430,6 @@ For full example, see [shiro-redis-spring-boot-tutorial](https://github.com/alex
 
 # If you found any bugs
 
-Please send email to alexxiyang@gmail.com
+Please create the issue
 
 可以用中文

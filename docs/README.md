@@ -2,7 +2,7 @@ shiro-redis
 =============
 
 [![Build Status](https://travis-ci.org/alexxiyang/shiro-redis.svg?branch=master)](https://travis-ci.org/alexxiyang/shiro-redis)
-
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.crazycake/shiro-redis/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.crazycake/shiro-redis)
 
 shiro only provide the support of ehcache and concurrentHashMap. Here is an implement of redis cache can be used by shiro. Hope it will help you!
 

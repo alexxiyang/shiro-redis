@@ -29,6 +29,10 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	 */
 	private long sessionInMemoryTimeout = DEFAULT_SESSION_IN_MEMORY_TIMEOUT;
 
+	private static final boolean DEFAULT_SESSION_IN_MEMORY_ENABLED = true;
+
+	private boolean sessionInMemoryEnabled = DEFAULT_SESSION_IN_MEMORY_ENABLED;
+
 	// expire time in seconds
 	private static final int DEFAULT_EXPIRE = -2;
 	private static final int NO_EXPIRE = -1;
@@ -48,6 +52,9 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	@Override
 	public void update(Session session) throws UnknownSessionException {
 		this.saveSession(session);
+		if (this.sessionInMemoryEnabled) {
+			this.setSessionToThreadLocal(session.getId(), session);
+		}
 	}
 	
 	/**
@@ -131,20 +138,24 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 			logger.warn("session id is null");
 			return null;
 		}
-		Session s = getSessionFromThreadLocal(sessionId);
-
-		if (s != null) {
-			return s;
+			if (this.sessionInMemoryEnabled) {
+			Session session = getSessionFromThreadLocal(sessionId);
+			if (session != null) {
+				return session;
+			}
 		}
 
+		Session session = null;
 		logger.debug("read session from redis");
 		try {
-			s = (Session) valueSerializer.deserialize(redisManager.get(keySerializer.serialize(getRedisSessionKey(sessionId))));
-			setSessionToThreadLocal(sessionId, s);
+			session = (Session) valueSerializer.deserialize(redisManager.get(keySerializer.serialize(getRedisSessionKey(sessionId))));
+			if (this.sessionInMemoryEnabled) {
+				setSessionToThreadLocal(sessionId, session);
+			}
 		} catch (SerializationException e) {
 			logger.error("read session error. settionId=" + sessionId);
 		}
-		return s;
+		return session;
 	}
 
 	private void setSessionToThreadLocal(Serializable sessionId, Session s) {
@@ -233,5 +244,13 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 
 	public void setExpire(int expire) {
 		this.expire = expire;
+	}
+
+	public boolean getSessionInMemoryEnabled() {
+		return sessionInMemoryEnabled;
+	}
+
+	public void setSessionInMemoryEnabled(boolean sessionInMemoryEnabled) {
+		this.sessionInMemoryEnabled = sessionInMemoryEnabled;
 	}
 }

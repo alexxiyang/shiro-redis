@@ -4,6 +4,7 @@ import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheException;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.CollectionUtils;
+import org.crazycake.shiro.exception.CacheManagerPrincipalIdNotAssignedException;
 import org.crazycake.shiro.exception.PrincipalIdNullException;
 import org.crazycake.shiro.exception.PrincipalInstanceException;
 import org.crazycake.shiro.exception.SerializationException;
@@ -24,13 +25,18 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	private RedisSerializer keySerializer = new StringSerializer();
 	private RedisSerializer valueSerializer = new ObjectSerializer();
 	private IRedisManager redisManager;
-	private String keyPrefix = "";
-	private int expire = 0;
+	private String keyPrefix = RedisCacheManager.DEFAULT_CACHE_KEY_PREFIX;
+	private int expire = RedisCacheManager.DEFAULT_EXPIRE;
 	private String principalIdFieldName = RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME;
 
 	/**
-	 * Construction
-	 * @param redisManager
+	 *
+	 * @param redisManager redisManager
+	 * @param keySerializer keySerializer
+	 * @param valueSerializer valueSerializer
+	 * @param prefix authorization prefix
+	 * @param expire expire
+	 * @param principalIdFieldName id field name of principal object
 	 */
 	public RedisCache(IRedisManager redisManager, RedisSerializer keySerializer, RedisSerializer valueSerializer, String prefix, int expire, String principalIdFieldName) {
 		 if (redisManager == null) {
@@ -48,14 +54,18 @@ public class RedisCache<K, V> implements Cache<K, V> {
 		 if (prefix != null && !"".equals(prefix)) {
 			 this.keyPrefix = prefix;
 		 }
-		 if (expire != -1) {
-		 	this.expire = expire;
-		 }
-		 if (principalIdFieldName != null && !"".equals(principalIdFieldName)) {
+         this.expire = expire;
+		 if (principalIdFieldName != null) {
 			 this.principalIdFieldName = principalIdFieldName;
 		 }
 	}
 
+	/**
+	 * get shiro authorization redis key-value
+	 * @param key key
+	 * @return value
+	 * @throws CacheException get cache exception
+	 */
 	@Override
 	public V get(K key) throws CacheException {
 		logger.debug("get key [" + key + "]");
@@ -79,13 +89,13 @@ public class RedisCache<K, V> implements Cache<K, V> {
 
 	@Override
 	public V put(K key, V value) throws CacheException {
-		logger.debug("put key [" + key + "]");
 		if (key == null) {
 			logger.warn("Saving a null key is meaningless, return value directly without call Redis.");
 			return value;
 		}
 		try {
 			Object redisCacheKey = getRedisCacheKey(key);
+			logger.debug("put key [" + redisCacheKey + "]");
 			redisManager.set(keySerializer.serialize(redisCacheKey), value != null ? valueSerializer.serialize(value) : null, expire);
 			return value;
 		} catch (SerializationException e) {
@@ -131,25 +141,13 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	}
 
 	private String getRedisKeyFromPrincipalIdField(PrincipalCollection key) {
-		String redisKey;
 		Object principalObject = key.getPrimaryPrincipal();
-		Method pincipalIdGetter = null;
-		Method[] methods = principalObject.getClass().getDeclaredMethods();
-		for (Method m:methods) {
-			if (RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME.equals(this.principalIdFieldName)
-                    && ("getAuthCacheKey".equals(m.getName()) || "getId".equals(m.getName()))) {
-				pincipalIdGetter = m;
-				break;
-			}
-			if (m.getName().equals("get" + this.principalIdFieldName.substring(0, 1).toUpperCase() + this.principalIdFieldName.substring(1))) {
-				pincipalIdGetter = m;
-				break;
-			}
-		}
-		if (pincipalIdGetter == null) {
-			throw new PrincipalInstanceException(principalObject.getClass(), this.principalIdFieldName);
-		}
+		Method pincipalIdGetter = getPrincipalIdGetter(principalObject);
+		return getIdObj(principalObject, pincipalIdGetter);
+	}
 
+	private String getIdObj(Object principalObject, Method pincipalIdGetter) {
+		String redisKey;
 		try {
 		    Object idObj = pincipalIdGetter.invoke(principalObject);
 		    if (idObj == null) {
@@ -161,8 +159,25 @@ public class RedisCache<K, V> implements Cache<K, V> {
 		} catch (InvocationTargetException e) {
 			throw new PrincipalInstanceException(principalObject.getClass(), this.principalIdFieldName, e);
 		}
-
 		return redisKey;
+	}
+
+	private Method getPrincipalIdGetter(Object principalObject) {
+		Method pincipalIdGetter = null;
+		String principalIdMethodName = this.getPrincipalIdMethodName();
+		try {
+			pincipalIdGetter = principalObject.getClass().getMethod(principalIdMethodName);
+		} catch (NoSuchMethodException e) {
+			throw new PrincipalInstanceException(principalObject.getClass(), this.principalIdFieldName);
+		}
+		return pincipalIdGetter;
+	}
+
+	private String getPrincipalIdMethodName() {
+		if (this.principalIdFieldName == null || "".equals(this.principalIdFieldName)) {
+			throw new CacheManagerPrincipalIdNotAssignedException();
+		}
+		return "get" + this.principalIdFieldName.substring(0, 1).toUpperCase() + this.principalIdFieldName.substring(1);
 	}
 
 
@@ -183,6 +198,10 @@ public class RedisCache<K, V> implements Cache<K, V> {
         }
 	}
 
+	/**
+	 * get all authorization key-value quantity
+	 * @return key-value size
+	 */
 	@Override
 	public int size() {
 		Long longSize = 0L;

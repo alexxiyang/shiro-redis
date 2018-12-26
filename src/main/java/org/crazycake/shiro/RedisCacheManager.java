@@ -24,7 +24,7 @@ public class RedisCacheManager implements CacheManager {
 	private IRedisManager redisManager;
 
 	// expire time in seconds
-	private static final int DEFAULT_EXPIRE = 1800;
+	public static final int DEFAULT_EXPIRE = 1800;
 	private int expire = DEFAULT_EXPIRE;
 
 	/**
@@ -33,7 +33,7 @@ public class RedisCacheManager implements CacheManager {
 	public static final String DEFAULT_CACHE_KEY_PREFIX = "shiro:cache:";
 	private String keyPrefix = DEFAULT_CACHE_KEY_PREFIX;
 
-	public static final String DEFAULT_PRINCIPAL_ID_FIELD_NAME = "authCacheKey or id";
+	public static final String DEFAULT_PRINCIPAL_ID_FIELD_NAME = "id";
 	private String principalIdFieldName = DEFAULT_PRINCIPAL_ID_FIELD_NAME;
 
 	@Override

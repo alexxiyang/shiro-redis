@@ -4,7 +4,7 @@
 
 	<groupId>org.crazycake</groupId>
 	<artifactId>shiro-redis</artifactId>
-	<version>3.1.0</version>
+	<version>3.2.2</version>
 	<packaging>jar</packaging>
 
 	<name>shiro-redis</name>
@@ -41,7 +41,7 @@
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-core</artifactId>
-			<version>1.2.6</version>
+			<version>1.3.2</version>
 		</dependency>
 
 		<!-- Testing -->
@@ -75,11 +75,17 @@
 			<artifactId>checkstyle</artifactId>
 			<version>8.3</version>
 		</dependency>
+		<dependency>
+			<groupId>com.github.javafaker</groupId>
+			<artifactId>javafaker</artifactId>
+			<version>0.16</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<developers>
 		<developer>
-			<id>alexxiyang</id>
+				<id>alexxiyang</id>
 			<name>Alex Yang</name>
 			<email>alexxiyang@gmail.com</email>
 			<timezone>GMT-7</timezone>
@@ -135,79 +141,21 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!--
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.1</version>
-				<executions>
-					<execution>
-						<id>default-prepare-agent</id>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>default-report</id>
-						<goals>
-							<goal>report</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>default-check</id>
-						<goals>
-							<goal>check</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<rule implementation="org.jacoco.maven.RuleConfiguration">
-									<element>BUNDLE</element>
-									<limits>
-										<limit implementation="org.jacoco.report.check.Limit">
-											<counter>COMPLEXITY</counter>
-											<value>COVEREDRATIO</value>
-											<minimum>0.60</minimum>
-										</limit>
-									</limits>
-								</rule>
-							</rules>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			-->
 		</plugins>
 	</build>
-
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<reportSets>
-					<reportSet>
-						<reports>
-							<!-- select non-aggregate reports -->
-							<report>report</report>
-						</reports>
-					</reportSet>
-				</reportSets>
-			</plugin>
-		</plugins>
-	</reporting>
 
 	<profiles>
 		<profile>
 			<id>release-sign-artifacts</id>
 			<activation>
 				<property>
-					<name>performRelease</name>
+					<name>release</name>
 					<value>true</value>
 				</property>
 			</activation>
 
 			<properties>
-				<gpg.keyname>4DD0EC63</gpg.keyname>	<!-- GPG Key ID to use for signing -->
+				<gpg.keyname>D688E942</gpg.keyname>	<!-- GPG Key ID to use for signing -->
 				<release.username>alexxiyang</release.username>
 			</properties>
 

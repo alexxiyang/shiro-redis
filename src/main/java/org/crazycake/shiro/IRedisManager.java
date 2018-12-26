@@ -11,34 +11,37 @@ public interface IRedisManager {
 
     /**
      * get value from redis
-     * @param key
-     * @return
+     * @param key key
+     * @return value
      */
     byte[] get(byte[] key);
 
     /**
-     * set
-     * @param key
-     * @param value
-     * @return
+     * set value
+     * @param key  key
+     * @param value value
+     * @param expire expire
+     * @return value
      */
     byte[] set(byte[] key, byte[] value, int expire);
 
     /**
      * del
-     * @param key
+     * @param key key
      */
     void del(byte[] key);
 
     /**
-     * size
+     * dbsize
+     * @param pattern pattern
+     * @return key-value size
      */
     Long dbSize(byte[] pattern);
 
     /**
      * keys
-     * @param pattern
-     * @return
+     * @param pattern key pattern
+     * @return key set
      */
     Set<byte[]> keys(byte[] pattern);
 

@@ -23,8 +23,7 @@ public class MultiClassLoaderObjectInputStream extends ObjectInputStream {
 		try {
 			ClassLoader cl = Thread.currentThread().getContextClassLoader();
 			return Class.forName(name, false, cl);
-		}
-		catch (Throwable ex) {
+		} catch (Throwable ex) {
 			log.debug(ex.getMessage());
 			// Cannot access thread context ClassLoader - falling back...
 		}
@@ -33,8 +32,7 @@ public class MultiClassLoaderObjectInputStream extends ObjectInputStream {
 			// No thread context class loader -> use class loader of this class.
 			ClassLoader cl = MultiClassLoaderObjectInputStream.class.getClassLoader();
 			return Class.forName(name, false, cl);
-		}
-		catch (Throwable ex) {
+		} catch (Throwable ex) {
 			log.debug(ex.getMessage());
 			// Cannot access thread context ClassLoader - falling back...
 		}
@@ -43,8 +41,7 @@ public class MultiClassLoaderObjectInputStream extends ObjectInputStream {
 		try {
 			ClassLoader cl = ClassLoader.getSystemClassLoader();
 			return Class.forName(name, false, cl);
-		}
-		catch (Throwable ex) {
+		} catch (Throwable ex) {
 			log.debug(ex.getMessage());
 			// Cannot access system ClassLoader - oh well, maybe the caller can live with null...
 		}

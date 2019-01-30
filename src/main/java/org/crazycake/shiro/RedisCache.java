@@ -142,6 +142,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 
 	private String getRedisKeyFromPrincipalIdField(PrincipalCollection key) {
 		Object principalObject = key.getPrimaryPrincipal();
+		
 		Method pincipalIdGetter = getPrincipalIdGetter(principalObject);
 		return getIdObj(principalObject, pincipalIdGetter);
 	}

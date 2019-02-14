@@ -22,9 +22,8 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 public class TestFixture {
 
@@ -42,11 +41,10 @@ public class TestFixture {
 
 
     public static void blastRedis() {
-        Jedis jedis = new Jedis(properties.getProperty("redisManager.host").split(":")[0]);
+        Jedis jedis = doGetRedisInstance();
         jedis.flushAll();
         jedis.close();
     }
-
 
     //                                /$$$$$$   /$$$$$$          /$$       /$$
     //                               /$$__  $$ /$$__  $$        | $$      | $$
@@ -151,6 +149,10 @@ public class TestFixture {
         session.setName(name);
     }
 
+    private static Jedis doGetRedisInstance() {
+        return new Jedis(properties.getProperty("redisManager.host").split(":")[0]);
+    }
+
     //                                                      /$$
     //                                                     | $$
     //    /$$$$$$   /$$$$$$$ /$$$$$$$  /$$$$$$   /$$$$$$  /$$$$$$
@@ -161,7 +163,7 @@ public class TestFixture {
     //   \_______/|_______/|_______/  \_______/|__/         \___/
 
     public static void assertRedisEmpty() {
-        Jedis jedis = new Jedis(properties.getProperty("redisManager.host").split(":")[0]);
+        Jedis jedis = doGetRedisInstance();
         assertThat("Redis should be empty",jedis.dbSize(), is(0L));
     }
 
@@ -240,7 +242,7 @@ public class TestFixture {
     }
 
     public static Long getRedisTTL(String key, RedisSerializer keySerializer) {
-        Jedis jedis = new Jedis(properties.getProperty("redisManager.host").split(":")[0]);
+        Jedis jedis = doGetRedisInstance();
         Long ttl = 0L;
         try {
             ttl = jedis.ttl(keySerializer.serialize(key));

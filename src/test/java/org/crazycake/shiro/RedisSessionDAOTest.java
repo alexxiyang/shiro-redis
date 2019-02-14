@@ -2,14 +2,18 @@ package org.crazycake.shiro;
 
 import org.apache.shiro.session.Session;
 import org.apache.shiro.session.UnknownSessionException;
+import org.crazycake.shiro.exception.SerializationException;
 import org.crazycake.shiro.model.FakeSession;
 import org.crazycake.shiro.serializer.StringSerializer;
 import org.junit.Before;
 import org.junit.Test;
-import java.util.*;
-import static fixture.TestFixture.scaffoldStandaloneRedisManager;
-import static org.junit.Assert.fail;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Map;
+
 import static fixture.TestFixture.*;
+import static org.junit.Assert.fail;
 
 public class RedisSessionDAOTest {
 
@@ -117,5 +121,17 @@ public class RedisSessionDAOTest {
         redisSessionDAO.doCreate(session2);
         Collection<Session> activeSessions = redisSessionDAO.getActiveSessions();
         assertEquals(activeSessions.size(), 2);
+    }
+
+    @Test
+    public void testRemoveExpiredSessionInMemory() throws InterruptedException, SerializationException {
+        redisSessionDAO.setSessionInMemoryTimeout(500L);
+        redisSessionDAO.doCreate(session1);
+        redisSessionDAO.doReadSession(session1.getId());
+        Thread.sleep(1000);
+        redisSessionDAO.doCreate(session2);
+        redisSessionDAO.doReadSession(session2.getId());
+        Map<Serializable, SessionInMemory> sessionMap = (Map<Serializable, SessionInMemory>) redisSessionDAO.getSessionsInThread().get();
+        assertEquals(sessionMap.size(), 1);
     }
 }

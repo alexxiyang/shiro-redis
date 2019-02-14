@@ -138,7 +138,8 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 			logger.warn("session id is null");
 			return null;
 		}
-			if (this.sessionInMemoryEnabled) {
+
+		if (this.sessionInMemoryEnabled) {
 			Session session = getSessionFromThreadLocal(sessionId);
 			if (session != null) {
 				return session;
@@ -164,14 +165,32 @@ public class RedisSessionDAO extends AbstractSessionDAO {
             sessionMap = new HashMap<Serializable, SessionInMemory>();
             sessionsInThread.set(sessionMap);
         }
+
+		removeExpiredSessionInMemory(sessionMap);
+
 		SessionInMemory sessionInMemory = new SessionInMemory();
 		sessionInMemory.setCreateTime(new Date());
 		sessionInMemory.setSession(s);
 		sessionMap.put(sessionId, sessionInMemory);
 	}
 
+	private void removeExpiredSessionInMemory(Map<Serializable, SessionInMemory> sessionMap) {
+		Iterator<Serializable> it = sessionMap.keySet().iterator();
+		while(it.hasNext()) {
+			Serializable sessionId = it.next();
+			SessionInMemory sessionInMemory = sessionMap.get(sessionId);
+			if (sessionInMemory == null) {
+				it.remove();
+				continue;
+			}
+			long liveTime = getSessionInMemoryLiveTime(sessionInMemory);
+			if (liveTime > sessionInMemoryTimeout) {
+				it.remove();
+			}
+		}
+	}
+
 	private Session getSessionFromThreadLocal(Serializable sessionId) {
-		Session s = null;
 
 		if (sessionsInThread.get() == null) {
 			return null;
@@ -182,16 +201,19 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 		if (sessionInMemory == null) {
 			return null;
 		}
-		Date now = new Date();
-		long duration = now.getTime() - sessionInMemory.getCreateTime().getTime();
-		if (duration < sessionInMemoryTimeout) {
-			s = sessionInMemory.getSession();
-			logger.debug("read session from memory");
-		} else {
+		long liveTime = getSessionInMemoryLiveTime(sessionInMemory);
+		if (liveTime > sessionInMemoryTimeout) {
 			sessionMap.remove(sessionId);
+			return null;
 		}
 
-		return s;
+		logger.debug("read session from memory");
+		return sessionInMemory.getSession();
+	}
+
+	private long getSessionInMemoryLiveTime(SessionInMemory sessionInMemory) {
+		Date now = new Date();
+		return now.getTime() - sessionInMemory.getCreateTime().getTime();
 	}
 
 	private String getRedisSessionKey(Serializable sessionId) {
@@ -252,5 +274,9 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 
 	public void setSessionInMemoryEnabled(boolean sessionInMemoryEnabled) {
 		this.sessionInMemoryEnabled = sessionInMemoryEnabled;
+	}
+
+	public static ThreadLocal getSessionsInThread() {
+		return sessionsInThread;
 	}
 }

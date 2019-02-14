@@ -8,11 +8,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import org.crazycake.shiro.exception.SerializationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ObjectSerializer implements RedisSerializer<Object> {
-    private static Logger log = LoggerFactory.getLogger(ObjectSerializer.class);
 
     public static final int BYTE_ARRAY_OUTPUT_STREAM_SIZE = 128;
 
@@ -50,7 +47,7 @@ public class ObjectSerializer implements RedisSerializer<Object> {
 
         try {
             ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
-        	ObjectInputStream objectInputStream = new MultiClassLoaderObjectInputStream(byteStream);
+            ObjectInputStream objectInputStream = new MultiClassLoaderObjectInputStream(byteStream);
             result = objectInputStream.readObject();
         } catch (IOException e) {
             throw new SerializationException("deserialize error", e);

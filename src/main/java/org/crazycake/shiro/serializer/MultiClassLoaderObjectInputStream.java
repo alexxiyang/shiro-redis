@@ -8,42 +8,49 @@ import java.io.ObjectStreamClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * For fixing https://github.com/alexxiyang/shiro-redis/issues/84
+ */
 public class MultiClassLoaderObjectInputStream extends ObjectInputStream {
-	private static Logger log = LoggerFactory.getLogger(MultiClassLoaderObjectInputStream.class);
+	private static Logger logger = LoggerFactory.getLogger(MultiClassLoaderObjectInputStream.class);
 	
 	MultiClassLoaderObjectInputStream(InputStream str) throws IOException {
 		super(str);
 	}
 
+	/**
+	 * Try :
+	 * 1. thread class loader
+	 * 2. application class loader
+	 * 3. system class loader
+	 * @param desc
+	 * @return
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
 	@Override
 	protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
         String name = desc.getName();
-        //log.debug("resolveClass:"+name);
-        
+
 		try {
 			ClassLoader cl = Thread.currentThread().getContextClassLoader();
 			return Class.forName(name, false, cl);
 		} catch (Throwable ex) {
-			log.debug(ex.getMessage());
-			// Cannot access thread context ClassLoader - falling back...
+			logger.debug("Cannot access thread context ClassLoader!", ex);
 		}
 		
 		try {
-			// No thread context class loader -> use class loader of this class.
 			ClassLoader cl = MultiClassLoaderObjectInputStream.class.getClassLoader();
 			return Class.forName(name, false, cl);
 		} catch (Throwable ex) {
-			log.debug(ex.getMessage());
-			// Cannot access thread context ClassLoader - falling back...
+			logger.debug("Cannot access application ClassLoader", ex);
 		}
 		
-		// getClassLoader() returning null indicates the bootstrap ClassLoader
 		try {
 			ClassLoader cl = ClassLoader.getSystemClassLoader();
 			return Class.forName(name, false, cl);
 		} catch (Throwable ex) {
-			log.debug(ex.getMessage());
-			// Cannot access system ClassLoader - oh well, maybe the caller can live with null...
+			logger.debug("Cannot access system ClassLoader", ex);
 		}
 
         return super.resolveClass(desc);

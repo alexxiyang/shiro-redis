@@ -1,20 +1,24 @@
 package org.crazycake.shiro;
 
+import static fixture.TestFixture.*;
+import static org.junit.Assert.fail;
+
+import java.util.Properties;
+import java.util.Set;
+
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.crazycake.shiro.exception.CacheManagerPrincipalIdNotAssignedException;
 import org.crazycake.shiro.exception.PrincipalInstanceException;
-import org.crazycake.shiro.model.*;
+import org.crazycake.shiro.model.FakeAuth;
+import org.crazycake.shiro.model.UserInfo;
 import org.crazycake.shiro.serializer.ObjectSerializer;
 import org.crazycake.shiro.serializer.StringSerializer;
 import org.junit.Before;
 import org.junit.Test;
-import java.util.Properties;
-import java.util.Set;
 
-import static fixture.TestFixture.turnUserToFakeAuth;
-import static org.junit.Assert.fail;
-import static fixture.TestFixture.*;
+import com.github.javafaker.Faker;
 
 /**
  * input key, value (java)
@@ -25,10 +29,14 @@ public class RedisCacheTest {
     private RedisCache<PrincipalCollection, FakeAuth> redisCache;
     private RedisCache<PrincipalCollection, FakeAuth> redisCacheWithPrincipalIdFieldName;
     private RedisCache<PrincipalCollection, FakeAuth> redisCacheWithEmptyPrincipalIdFieldName;
+    private RedisCache<PrincipalCollection, String> redisCacheWithStrings;
+
     private Properties properties = loadProperties("shiro-standalone.ini");
     private PrincipalCollection user1;
     private PrincipalCollection user2;
     private PrincipalCollection user3;
+    private PrincipalCollection user4;
+
     private Set users1_2_3;
     private String prefix;
 
@@ -42,9 +50,11 @@ public class RedisCacheTest {
         redisCache = scaffoldRedisCache(redisManager, new StringSerializer(), new ObjectSerializer(), prefix, NumberUtils.toInt(properties.getProperty("cacheManager.expire")), RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME);
         redisCacheWithPrincipalIdFieldName = scaffoldRedisCache(redisManager, new StringSerializer(), new ObjectSerializer(), prefix, NumberUtils.toInt(properties.getProperty("cacheManager.expire")), properties.getProperty("cacheManager.principalIdFieldName"));
         redisCacheWithEmptyPrincipalIdFieldName = scaffoldRedisCache(redisManager, new StringSerializer(), new ObjectSerializer(), prefix, NumberUtils.toInt(properties.getProperty("cacheManager.expire")), "");
+        redisCacheWithStrings = scaffoldRedisCache(redisManager, new StringSerializer(), new ObjectSerializer(), prefix, NumberUtils.toInt(properties.getProperty("cacheManager.expire")), properties.getProperty("cacheManager.principalIdFieldName"));
         user1 = scaffoldAuthKey(scaffoldUser());
         user2 = scaffoldAuthKey(scaffoldUser());
         user3 = scaffoldAuthKey(scaffoldUser());
+        user4 = new SimplePrincipalCollection(Faker.instance().gameOfThrones().character(), Faker.instance().gameOfThrones().city());
         users1_2_3 = scaffoldKeys(user1, user2, user3);
     }
 
@@ -93,6 +103,13 @@ public class RedisCacheTest {
         doPutAuth(redisCache, user1);
         FakeAuth fakeAuth = redisCache.get(user1);
         assertAuthEquals(fakeAuth, turnUserToFakeAuth((UserInfo)user1.getPrimaryPrincipal()));
+    }
+    
+    @Test
+    public void testPutString() {
+        redisCacheWithStrings.put(user4, user4.getPrimaryPrincipal().toString());
+        String auth = redisCacheWithStrings.get(user4);
+        assertEquals(auth, user4.getPrimaryPrincipal());
     }
 
     @Test

@@ -428,6 +428,12 @@ For full example, see [shiro-redis-spring-boot-tutorial](https://github.com/alex
 | shiro-redis.cache-manager.key-prefix               | `shiro:cache:`       | Custom your redis key prefix for cache management<br>**Note**: Remember to add colon at the end of prefix. |
 
 
+## Working with `spring-boot-devtools`
+If you are using `shiro-redis` with `spring-boot-devtools`. Please add this line to `resources/META-INF/spring-devtools.properties` (Create it if there is no this file):
+```ini
+restart.include.shiro-redis=/shiro-[\\w-\\.]+jar
+```
+
 # If you found any bugs
 
 Please create the issue

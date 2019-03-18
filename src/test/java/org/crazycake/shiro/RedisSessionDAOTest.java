@@ -5,6 +5,7 @@ import org.apache.shiro.session.UnknownSessionException;
 import org.crazycake.shiro.exception.SerializationException;
 import org.crazycake.shiro.model.FakeSession;
 import org.crazycake.shiro.serializer.StringSerializer;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,6 +42,11 @@ public class RedisSessionDAOTest {
     public void setUp() {
         blast();
         scaffold();
+    }
+
+    @After
+    public void tearDown() {
+        blast();
     }
 
     @Test

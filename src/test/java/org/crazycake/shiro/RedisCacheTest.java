@@ -15,6 +15,7 @@ import org.crazycake.shiro.model.FakeAuth;
 import org.crazycake.shiro.model.UserInfo;
 import org.crazycake.shiro.serializer.ObjectSerializer;
 import org.crazycake.shiro.serializer.StringSerializer;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -64,6 +65,12 @@ public class RedisCacheTest {
         blast();
         scaffold();
     }
+
+    @After
+    public void tearDown() {
+        blast();
+    }
+
 
     @Test
     public void testInitialize() {

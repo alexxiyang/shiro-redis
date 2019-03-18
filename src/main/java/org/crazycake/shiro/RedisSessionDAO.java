@@ -176,7 +176,7 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 
 	private void removeExpiredSessionInMemory(Map<Serializable, SessionInMemory> sessionMap) {
 		Iterator<Serializable> it = sessionMap.keySet().iterator();
-		while(it.hasNext()) {
+		while (it.hasNext()) {
 			Serializable sessionId = it.next();
 			SessionInMemory sessionInMemory = sessionMap.get(sessionId);
 			if (sessionInMemory == null) {

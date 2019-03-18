@@ -95,4 +95,11 @@ public class RedisSentinelManager extends WorkAloneRedisManager implements IRedi
 		this.soTimeout = soTimeout;
 	}
 
+	public JedisSentinelPool getJedisPool() {
+		return jedisPool;
+	}
+
+	public void setJedisPool(JedisSentinelPool jedisPool) {
+		this.jedisPool = jedisPool;
+	}
 }

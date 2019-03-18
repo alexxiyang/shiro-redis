@@ -307,8 +307,9 @@ These 4 Serializers are replaceable:
 | maxAttempts        | `3`                  | **Only used for cluster mode**<br>Max attempts to connect to server |
 | password           |                      | Redis password |
 | database           | `0`                  | Redis database. Default value is 0 |
-| jedisPoolConfig    | `new redis.clients.jedis.JedisPoolConfig()` | JedisPoolConfig. You can create your own JedisPoolConfig and set attributes as you wish<br>Most of time, you don't need to set jedisPoolConfig<br>Here is an example.<br>`jedisPoolConfig = redis.clients.jedis.JedisPoolConfig`<br>`jedisPoolConfig.testWhileIdle = false`<br>`redisManager.jedisPoolConfig = jedisPoolConfig` |
+| jedisPoolConfig    | `new redis.clients.jedis.JedisPoolConfig()` | JedisPoolConfig. You can create your own JedisPoolConfig instance and set attributes as you wish<br>Most of time, you don't need to set jedisPoolConfig<br>Here is an example.<br>`jedisPoolConfig = redis.clients.jedis.JedisPoolConfig`<br>`jedisPoolConfig.testWhileIdle = false`<br>`redisManager.jedisPoolConfig = jedisPoolConfig` |
 | count              | `100`                |  Scan count. Shiro-redis use Scan to get keys, so you can define the number of elements returned at every iteration. |
+| jedisPool          | `null`               | **Only used for sentinel mode or single mode**<br>You can create your own JedisPool instance and set attributes as you wish |
 
 ### RedisSessionDAO
 

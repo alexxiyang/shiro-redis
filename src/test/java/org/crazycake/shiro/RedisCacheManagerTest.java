@@ -1,12 +1,14 @@
 package org.crazycake.shiro;
 
 import org.apache.shiro.cache.Cache;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static fixture.TestFixture.*;
 
 public class RedisCacheManagerTest {
 
@@ -18,6 +20,11 @@ public class RedisCacheManagerTest {
         redisManager = Mockito.mock(RedisManager.class);
         redisCacheManager = new RedisCacheManager();
         redisCacheManager.setRedisManager(redisManager);
+    }
+
+    @After
+    public void tearDown() {
+        blastRedis();
     }
 
     @Test

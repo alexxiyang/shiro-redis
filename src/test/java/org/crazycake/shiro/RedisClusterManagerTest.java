@@ -1,5 +1,6 @@
 package org.crazycake.shiro;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.JedisCluster;
@@ -9,6 +10,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
+import static fixture.TestFixture.*;
 
 public class RedisClusterManagerTest {
 
@@ -20,6 +22,11 @@ public class RedisClusterManagerTest {
         jedisCluster = mock(JedisCluster.class);
         redisClusterManager = new RedisClusterManager();
         redisClusterManager.setJedisCluster(jedisCluster);
+    }
+
+    @After
+    public void tearDown() {
+        blastRedis();
     }
 
     @Test

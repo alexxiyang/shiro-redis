@@ -29,6 +29,8 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	private int expire = RedisCacheManager.DEFAULT_EXPIRE;
 	private String principalIdFieldName = RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME;
 
+	private volatile Method principalIdMethod = null;
+
 	/**
 	 *
 	 * @param redisManager redisManager
@@ -166,12 +168,20 @@ public class RedisCache<K, V> implements Cache<K, V> {
 	}
 
 	private Method getPrincipalIdGetter(Object principalObject) {
-		Method pincipalIdGetter = null;
-		String principalIdMethodName = this.getPrincipalIdMethodName();
-		try {
-			pincipalIdGetter = principalObject.getClass().getMethod(principalIdMethodName);
-		} catch (NoSuchMethodException e) {
-			throw new PrincipalInstanceException(principalObject.getClass(), this.principalIdFieldName);
+		Method pincipalIdGetter = principalIdMethod;
+		if (pincipalIdGetter == null) {
+			synchronized (this) {
+				pincipalIdGetter = principalIdMethod;
+				if (pincipalIdGetter == null) {
+					String principalIdMethodName = this.getPrincipalIdMethodName();
+					try {
+						pincipalIdGetter = principalIdMethod =
+								principalObject.getClass().getMethod(principalIdMethodName);
+					} catch (NoSuchMethodException e) {
+						throw new PrincipalInstanceException(principalObject.getClass(), this.principalIdFieldName);
+					}
+				}
+			}
 		}
 		return pincipalIdGetter;
 	}

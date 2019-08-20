@@ -39,7 +39,7 @@ public interface IRedisManager {
     Long dbSize(byte[] pattern);
 
     /**
-     * keys
+     * keys use scan not keys so no block
      * @param pattern key pattern
      * @return key set
      */

@@ -132,6 +132,7 @@ public abstract class WorkAloneRedisManager implements IRedisManager {
      * @param pattern key pattern
      * @return key set
      */
+    @Override
     public Set<byte[]> keys(byte[] pattern) {
         Set<byte[]> keys = new HashSet<byte[]>();
         Jedis jedis = getJedis();

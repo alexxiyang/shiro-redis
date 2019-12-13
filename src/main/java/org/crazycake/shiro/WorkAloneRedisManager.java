@@ -120,7 +120,7 @@ public abstract class WorkAloneRedisManager implements IRedisManager {
                     dbSize++;
                 }
                 cursor = scanResult.getCursorAsBytes();
-            } while (scanResult.getStringCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
+            } while (scanResult.getCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
         } finally {
             jedis.close();
         }
@@ -146,7 +146,7 @@ public abstract class WorkAloneRedisManager implements IRedisManager {
                 scanResult = jedis.scan(cursor, params);
                 keys.addAll(scanResult.getResult());
                 cursor = scanResult.getCursorAsBytes();
-            } while (scanResult.getStringCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
+            } while (scanResult.getCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
         } finally {
             jedis.close();
         }

@@ -26,7 +26,7 @@ public class RedisSentinelManager extends WorkAloneRedisManager implements IRedi
 
 	private int database = Protocol.DEFAULT_DATABASE;
 
-	private JedisSentinelPool jedisPool;
+	private volatile JedisSentinelPool jedisPool;
 
 	@Override
 	protected Jedis getJedis() {

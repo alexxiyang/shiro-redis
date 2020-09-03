@@ -8,8 +8,8 @@ shiro only provide the support of ehcache and concurrentHashMap. Here is an impl
 
 # Download
 
-You can choose these 2 ways to include shiro-redis into your project
-* use "git clone https://github.com/alexxiyang/shiro-redis.git" to clone project to your local workspace and build jar file by your self
+You use either of the following 2 ways to include `shiro-redis` into your project
+* use `git clone https://github.com/alexxiyang/shiro-redis.git` to clone project to your local workspace and build jar file by your self
 * add maven dependency 
 
 ```xml
@@ -30,7 +30,7 @@ Here is the first thing you need to know. Shiro-redis needs an id field to ident
 
 For example:
 
-If you create SimpleAuthenticationInfo like the following:
+If you create `SimpleAuthenticationInfo` like this:
 ```java
 @Override
 protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
@@ -41,7 +41,7 @@ protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) 
 }
 ```
 
-Then the userInfo object is your principal object. You need to make sure `UserInfo` has an unique field to identify it in Redis. Take userId as an example:
+Then the `userInfo` object is your principal object. You need to make sure `UserInfo` has an unique field for Redis to identify it. Take `userId` as an example:
 ```java
 public class UserInfo implements Serializable{
 
@@ -73,16 +73,17 @@ If you're using Spring, the configuration should be
 <property name="principalIdFieldName" value="userId" />
 ```
 
-Then shiro-redis will call `userInfo.getUserId()` to get the id for storing Redis object.
+Then `shiro-redis` will call `userInfo.getUserId()` to get the id for saving Redis object.
 
 # How to configure ?
 
-You can configure shiro-redis either in `shiro.ini` or in `spring-*.xml`
+You can configure `shiro-redis` either in `shiro.ini` or in `spring-*.xml`
 
 ## shiro.ini
-Here is the configuration for shiro.ini.
+Here is the configuration example for shiro.ini.
 
 ### Redis Standalone
+If you are running Redis in Standalone mode
 
 ```properties
 [main]
@@ -135,7 +136,6 @@ cacheManager = org.crazycake.shiro.RedisCacheManager
 # For example, if you use UserInfo as Principal class, the id field maybe `id`, `userId`, `email`, etc.
 # Remember to add getter to this id field. For example, `getId()`, `getUserId()`, `getEmail()`, etc.
 # Default value is id, that means your principal object must has a method called `getId()`
-#
 cacheManager.principalIdFieldName = id
 
 # Use redisManager as cache manager
@@ -157,7 +157,7 @@ For complete configurable options list, check [Configurable Options](#configurab
 Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-tutorial) for you to understand how to configure `shiro-redis` in `shiro.ini`.
 
 ### Redis Sentinel
-if you're using Redis Sentinel, please change the redisManager configuration into the following:
+if you're using Redis Sentinel, please replace the `redisManager` configuration of the standalone version into the following:
 ```properties
 #===================================
 # Redis Manager [start]
@@ -180,7 +180,7 @@ redisManager.masterName = mymaster
 For complete configurable options list, check [Configurable Options](#configurable-options).
 
 ### Redis Cluster
-If you're using redis cluster, here is an example of configuration :
+If you're using redis cluster, please replace the `redisManager` configuration of the standalone version into the following:
 
 ```properties
 #===================================
@@ -201,9 +201,11 @@ redisManager.host = 192.168.21.3:7000,192.168.21.3:7001,192.168.21.3:7002,192.16
 For complete configurable options list, check [Configurable Options](#configurable-options).
 
 ## Spring
+If you are using Spring
 
 ### Redis Standalone
-spring.xml:
+If you are running Redis in Standalone mode
+
 ```xml
 <!-- shiro-redis configuration [start] -->
 
@@ -245,7 +247,7 @@ For complete configurable options list, check [Configurable Options](#configurab
 Here is a [tutorial project](https://github.com/alexxiyang/shiro-redis-spring-tutorial) for you to understand how to configure `shiro-redis` in spring configuration file.
 
 ### Redis Sentinel
-If you use redis sentinel, here is an example of configuration :
+If you use redis sentinel, please replace the `redisManager` configuration of the standalone version into the following:
 ```xml
 <!-- shiro-redis configuration [start] -->
 <!-- shiro redisManager -->
@@ -258,7 +260,7 @@ If you use redis sentinel, here is an example of configuration :
 For complete configurable options list, check [Configurable Options](#configurable-options).
 
 ### Redis Cluster
-If you use redis cluster, here is an example of configuration :
+If you use redis cluster, please replace the `redisManager` configuration of the standalone version into the following:
 ```xml
 <!-- shiro-redis configuration [start] -->
 <!-- shiro redisManager -->
@@ -270,11 +272,11 @@ If you use redis cluster, here is an example of configuration :
 For complete configurable options list, check [Configurable Options](#configurable-options).
 
 ## Serializer
-Since redis only accept `byte[]`, there comes to a serializer problem.
-Shiro-redis is using StringSerializer as key serializer and ObjectSerializer as value serializer.
-You can use your own custom serializer, as long as this custom serializer implemens `org.crazycake.shiro.serializer.RedisSerializer`
+Since redis only accept `byte[]`, there comes a serializer problem.
+Shiro-redis is using `StringSerializer` as key serializer and `ObjectSerializer` as value serializer.
+You can use your own custom serializer, as long as this custom serializer implements `org.crazycake.shiro.serializer.RedisSerializer`
 
-For example, let's change the charset of keySerializer.
+For example, we can change the charset of keySerializer like this
 ```properties
 # If you want change charset of keySerializer or use your own custom serializer, you need to define serializer first
 #
@@ -288,13 +290,14 @@ For example, let's change the charset of keySerializer.
 # cacheManager.keySerializer = $cacheManagerKeySerializer
 ```
 
-These 4 Serializers are replaceable:
+These 4 options that you can replace them with your cutom serializers:
 - cacheManager.keySerializer
 - cacheManager.valueSerializer
 - redisSessionDAO.keySerializer
 - redisSessionDAO.valueSerializer
 
 ## Configurable Options
+Here are all the available options you can use in `shiro-redis` configuration file.
 
 ### RedisManager
 
@@ -336,11 +339,11 @@ These 4 Serializers are replaceable:
 
 # Spring boot starter
 
-Shiro-redis’s Spring-Boot integration is the easiest way to integrate Shiro-redis into a Spring-base application.
+Using `Spring-Boot` integration is the easiest way to integrate `shiro-redis` into a Spring-base application.
 
 > Note: `shiro-redis-spring-boot-starter` version `3.2.1` is based on `shiro-spring-boot-web-starter` version `1.4.0-RC2`
 
-First include the Shiro-redis Spring boot starter dependency in you application classpath
+First include the `shiro-redis` Spring boot starter dependency in you application classpath
 
 ```xml
 <dependency>
@@ -351,26 +354,24 @@ First include the Shiro-redis Spring boot starter dependency in you application 
 ```
 
 The next step depends on whether you've created your own `SessionManager` or `SessionsSecurityManager`.
-Because `shiro-redis-spring-boot-starter` will create `RedisSessionDAO` and `RedisCacheManager` for you. Then inject them into `SessionManager` and `SessionsSecurityManager` automatically.
+## If you haven't created your own `SessionManager` or `SessionsSecurityManager`
+If you don't have your own `SessionManager` or `SessionsSecurityManager` in your configuration, `shiro-redis-spring-boot-starter` will create `RedisSessionDAO` and `RedisCacheManager` for you. Then inject them into `SessionManager` and `SessionsSecurityManager` automatically.
+So, You are all set. Enjoy it!
 
-But if you've created your own `SessionManager` or `SessionsSecurityManager` as below:
+## If you have created your own `SessionManager` or `SessionsSecurityManager`
+If you have created your own `SessionManager` or `SessionsSecurityManager` like this:
 ```java
 @Bean
 public SessionsSecurityManager securityManager(List<Realm> realms) {
     DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager(realms);
-    // other stuff
+    
+    // other stuff...
+    
     return securityManager;
 }
 ```
-You will have to inject them by yourself. for more deail, see below
 
-## If you haven't created your own `SessionManager` or `SessionsSecurityManager`
-
-You are all set. Enjoy it!
-
-## If you have created your own `SessionManager` or `SessionsSecurityManager`
-
-Inject `redisSessionDAO` and `redisCacheManager` which created by `shiro-redis-spring-boot-starter` already
+Then inject `redisSessionDAO` and `redisCacheManager` which created by `shiro-redis-spring-boot-starter` already
 ```java
 @Autowired
 RedisSessionDAO redisSessionDAO;
@@ -379,7 +380,7 @@ RedisSessionDAO redisSessionDAO;
 RedisCacheManager redisCacheManager;
 ```
 
-Inject them into `SessionManager` and `SessionsSecurityManager`
+Inject them into your own `SessionManager` and `SessionsSecurityManager`
 
 ```java
 @Bean
@@ -388,6 +389,9 @@ public SessionManager sessionManager() {
 
     // inject redisSessionDAO
     sessionManager.setSessionDAO(redisSessionDAO);
+    
+    // other stuff...
+    
     return sessionManager;
 }
 
@@ -400,6 +404,9 @@ public SessionsSecurityManager securityManager(List<Realm> realms, SessionManage
 
     // inject redisCacheManager
     securityManager.setCacheManager(redisCacheManager);
+    
+    // other stuff...
+    
     return securityManager;
 }
 ```
@@ -407,6 +414,7 @@ public SessionsSecurityManager securityManager(List<Realm> realms, SessionManage
 For full example, see [shiro-redis-spring-boot-tutorial](https://github.com/alexxiyang/shiro-redis-spring-boot-tutorial)
 
 ### Configuration Properties
+Here are all available options you can use in Spring-boot starter configuration
 
 | Title                                              | Default              | Description                 |
 | :--------------------------------------------------| :------------------- | :---------------------------|

@@ -4,6 +4,7 @@ import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheException;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.CollectionUtils;
+import org.crazycake.shiro.common.IRedisManager;
 import org.crazycake.shiro.exception.CacheManagerPrincipalIdNotAssignedException;
 import org.crazycake.shiro.exception.PrincipalIdNullException;
 import org.crazycake.shiro.exception.PrincipalInstanceException;
@@ -18,15 +19,20 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
+/**
+ * Used for setting/getting authorization information from Redis
+ * @param <K>
+ * @param <V>
+ */
 public class RedisCache<K, V> implements Cache<K, V> {
 
 	private static Logger logger = LoggerFactory.getLogger(RedisCache.class);
 
-	private RedisSerializer keySerializer = new StringSerializer();
-	private RedisSerializer valueSerializer = new ObjectSerializer();
+	private RedisSerializer keySerializer;
+	private RedisSerializer valueSerializer;
 	private IRedisManager redisManager;
 	private String keyPrefix = RedisCacheManager.DEFAULT_CACHE_KEY_PREFIX;
-	private int expire = RedisCacheManager.DEFAULT_EXPIRE;
+	private int expire;
 	private String principalIdFieldName = RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME;
 
 	/**
@@ -120,6 +126,11 @@ public class RedisCache<K, V> implements Cache<K, V> {
         }
 	}
 
+	/**
+	 * get the full Redis key including prefix by Redis key
+	 * @param key
+	 * @return
+	 */
 	private Object getRedisCacheKey(K key) {
 		if (key == null) {
 			return null;
@@ -130,6 +141,11 @@ public class RedisCache<K, V> implements Cache<K, V> {
 		return key;
 	}
 
+	/**
+	 * get Redis key (not including prefix)
+	 * @param key
+	 * @return
+	 */
 	private String getStringRedisKey(K key) {
 		String redisKey;
 		if (key instanceof PrincipalCollection) {
@@ -140,6 +156,11 @@ public class RedisCache<K, V> implements Cache<K, V> {
 		return redisKey;
 	}
 
+	/**
+	 * get the Redis key (not including prefix) by PrincipalCollection
+	 * @param key
+	 * @return
+	 */
 	private String getRedisKeyFromPrincipalIdField(PrincipalCollection key) {
 		Object principalObject = key.getPrimaryPrincipal();
 		if (principalObject instanceof String) {

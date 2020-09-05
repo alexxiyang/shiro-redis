@@ -1,32 +1,24 @@
 package org.crazycake.shiro;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import redis.clients.jedis.JedisCluster;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.*;
-import static fixture.TestFixture.*;
 
 public class RedisClusterManagerTest {
 
     private RedisClusterManager redisClusterManager;
     private JedisCluster jedisCluster;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         jedisCluster = mock(JedisCluster.class);
         redisClusterManager = new RedisClusterManager();
         redisClusterManager.setJedisCluster(jedisCluster);
-    }
-
-    @After
-    public void tearDown() {
-        blastRedis();
     }
 
     @Test
@@ -44,12 +36,12 @@ public class RedisClusterManagerTest {
     public void set() {
         redisClusterManager.set(null, null, -1);
         verify(jedisCluster, times(0)).set(any(byte[].class), any(byte[].class));
-        redisClusterManager.set(new byte[0], null, -1);
+        redisClusterManager.set(new byte[0], new byte[0], -1);
         verify(jedisCluster, times(1)).set(any(byte[].class), any(byte[].class));
         verify(jedisCluster, times(0)).expire(any(byte[].class), any(int.class));
-        redisClusterManager.set(new byte[0], null, 0);
+        redisClusterManager.set(new byte[0], new byte[0], 0);
         verify(jedisCluster, times(1)).expire(any(byte[].class), any(int.class));
-        redisClusterManager.set(new byte[0], null, 1);
+        redisClusterManager.set(new byte[0], new byte[0], 1);
         verify(jedisCluster, times(2)).expire(any(byte[].class), any(int.class));
     }
 }

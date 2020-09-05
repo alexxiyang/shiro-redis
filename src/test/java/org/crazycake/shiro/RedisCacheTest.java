@@ -1,173 +1,121 @@
 package org.crazycake.shiro;
 
-import static fixture.TestFixture.*;
-import static org.junit.Assert.fail;
-
-import java.util.Properties;
-import java.util.Set;
-
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.SimplePrincipalCollection;
-import org.crazycake.shiro.exception.CacheManagerPrincipalIdNotAssignedException;
-import org.crazycake.shiro.exception.PrincipalInstanceException;
-import org.crazycake.shiro.model.FakeAuth;
-import org.crazycake.shiro.model.UserInfo;
+import org.crazycake.shiro.common.IRedisManager;
+import org.crazycake.shiro.exception.SerializationException;
 import org.crazycake.shiro.serializer.ObjectSerializer;
 import org.crazycake.shiro.serializer.StringSerializer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.github.javafaker.Faker;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-/**
- * input key, value (java)
- * output value (java)
- */
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.*;
+import static org.mockito.Mockito.*;
+
 public class RedisCacheTest {
+    private IRedisManager redisManager;
+    private StringSerializer keySerializer = new StringSerializer();
+    private ObjectSerializer valueSerializer = new ObjectSerializer();
 
-    private RedisCache<PrincipalCollection, FakeAuth> redisCache;
-    private RedisCache<PrincipalCollection, FakeAuth> redisCacheWithPrincipalIdFieldName;
-    private RedisCache<PrincipalCollection, FakeAuth> redisCacheWithEmptyPrincipalIdFieldName;
-    private RedisCache<PrincipalCollection, String> redisCacheWithStrings;
-
-    private Properties properties = loadProperties("shiro-standalone.ini");
-    private PrincipalCollection user1;
-    private PrincipalCollection user2;
-    private PrincipalCollection user3;
-    private PrincipalCollection user4;
-
-    private Set users1_2_3;
-    private String prefix;
-
-    private void blast() {
-        blastRedis();
-    }
-
-    private void scaffold() {
-        RedisManager redisManager = scaffoldStandaloneRedisManager();
-        prefix = scaffoldPrefix();
-        redisCache = scaffoldRedisCache(redisManager, new StringSerializer(), new ObjectSerializer(), prefix, NumberUtils.toInt(properties.getProperty("cacheManager.expire")), RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME);
-        redisCacheWithPrincipalIdFieldName = scaffoldRedisCache(redisManager, new StringSerializer(), new ObjectSerializer(), prefix, NumberUtils.toInt(properties.getProperty("cacheManager.expire")), properties.getProperty("cacheManager.principalIdFieldName"));
-        redisCacheWithEmptyPrincipalIdFieldName = scaffoldRedisCache(redisManager, new StringSerializer(), new ObjectSerializer(), prefix, NumberUtils.toInt(properties.getProperty("cacheManager.expire")), "");
-        redisCacheWithStrings = scaffoldRedisCache(redisManager, new StringSerializer(), new ObjectSerializer(), prefix, NumberUtils.toInt(properties.getProperty("cacheManager.expire")), properties.getProperty("cacheManager.principalIdFieldName"));
-        user1 = scaffoldAuthKey(scaffoldUser());
-        user2 = scaffoldAuthKey(scaffoldUser());
-        user3 = scaffoldAuthKey(scaffoldUser());
-        user4 = new SimplePrincipalCollection(Faker.instance().gameOfThrones().character(), Faker.instance().gameOfThrones().city());
-        users1_2_3 = scaffoldKeys(user1, user2, user3);
-    }
-
-
-    @Before
+    @BeforeEach
     public void setUp() {
-        blast();
-        scaffold();
+        redisManager = mock(IRedisManager.class);
     }
 
-    @After
-    public void tearDown() {
-        blast();
+    private RedisCache mountRedisCache() {
+        return new RedisCache(redisManager, new StringSerializer(), new ObjectSerializer(), "employee:", 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME);
     }
-
 
     @Test
     public void testInitialize() {
-        try {
-            new RedisCache<String, String>(null, null, null, "abc:", 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME);
-            fail("Excepted exception to be thrown");
-        } catch (IllegalArgumentException e) {
-            assertEquals(e.getMessage(), "redisManager cannot be null.");
-        }
-
-        try {
-            new RedisCache<String, String>(new RedisManager(), null, null, "abc:", 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME);
-            fail("Excepted exception to be thrown");
-        } catch (IllegalArgumentException e) {
-            assertEquals(e.getMessage(), "keySerializer cannot be null.");
-        }
-
-        try {
-            new RedisCache<String, String>(new RedisManager(), new StringSerializer(), null, "abc:", 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME);
-            fail("Excepted exception to be thrown");
-        } catch (IllegalArgumentException e) {
-            assertEquals(e.getMessage(), "valueSerializer cannot be null.");
-        }
-
-        RedisCache rc = new RedisCache(new RedisManager(), new StringSerializer(), new ObjectSerializer(), "abc", 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME);
-        assertEquals(rc.getKeyPrefix(), "abc");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new RedisCache<String, String>(null, null, null, "abc:", 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new RedisCache<String, String>(new RedisManager(), null, null, "abc:", 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new RedisCache<String, String>(new RedisManager(), new StringSerializer(), null, "abc:", 1, RedisCacheManager.DEFAULT_PRINCIPAL_ID_FIELD_NAME));
     }
 
     @Test
-    public void testPutNull() {
-        doPutAuth(redisCache, null);
-        assertRedisEmpty();
+    public void testPut() throws SerializationException {
+        RedisCache rc = mountRedisCache();
+        Object value = rc.put("foo", "bar");
+        assertThat(value, is("bar"));
+        verify(redisManager).set(keySerializer.serialize("employee:foo"), valueSerializer.serialize("bar"), 1);
+
+        PrincipalCollection principal = new EmployeePrincipal(3);
+        rc.put(principal, "account information");
+
+        verify(redisManager).set(keySerializer.serialize("employee:3"), valueSerializer.serialize("account information"), 1);
+    }
+}
+
+class Employee {
+    private int id;
+
+    public Employee(int id) {
+        this.id = id;
     }
 
-    @Test
-    public void testPut() {
-        doPutAuth(redisCache, user1);
-        FakeAuth fakeAuth = redisCache.get(user1);
-        assertAuthEquals(fakeAuth, turnUserToFakeAuth((UserInfo)user1.getPrimaryPrincipal()));
+    public int getId() {
+        return this.id;
     }
-    
-    @Test
-    public void testPutString() {
-        redisCacheWithStrings.put(user4, user4.getPrimaryPrincipal().toString());
-        String auth = redisCacheWithStrings.get(user4);
-        assertEquals(auth, user4.getPrimaryPrincipal());
-    }
+}
 
-    @Test
-    public void testSize() throws InterruptedException {
-        doPutAuth(redisCache, user1);
-        doPutAuth(redisCache, user2);
-        Thread.sleep(800);
-        assertEquals(redisCache.size(), 2);
+class EmployeePrincipal implements PrincipalCollection {
+
+    private Employee primaryPrincipal;
+
+    public EmployeePrincipal(int id) {
+        this.primaryPrincipal = new Employee(id);
     }
 
-    @Test
-    public void testPutInvalidPrincipal() {
-        try {
-            doPutAuth(redisCacheWithPrincipalIdFieldName, user3);
-            fail();
-        } catch (PrincipalInstanceException e) {
-            assertPrincipalInstanceException(e);
-        }
+    @Override
+    public Employee getPrimaryPrincipal() {
+        return this.primaryPrincipal;
     }
 
-    @Test
-    public void testPutPrincipalWithEmptyIdFieldName() {
-        try {
-            doPutAuth(redisCacheWithEmptyPrincipalIdFieldName, user3);
-            fail();
-        } catch (CacheManagerPrincipalIdNotAssignedException e) {
-            assertEquals(e.getMessage(), "CacheManager didn't assign Principal Id field name!");
-        }
+    @Override
+    public <T> T oneByType(Class<T> aClass) {
+        return null;
     }
 
-    @Test
-    public void testRemove() {
-        doPutAuth(redisCache, user1);
-        doRemoveAuth(redisCache, user1);
-        assertRedisEmpty();
+    @Override
+    public <T> Collection<T> byType(Class<T> aClass) {
+        return null;
     }
 
-    @Test
-    public void testClear() {
-        doClearAuth(redisCache);
-        assertRedisEmpty();
+    @Override
+    public List asList() {
+        return null;
     }
 
-    @Test
-    public void testKeys() {
-        doPutAuth(redisCache, user1);
-        doPutAuth(redisCache, user2);
-        doPutAuth(redisCache, user3);
-        Set actualKeys = doKeysAuth(redisCache);
-        assertKeysEquals(actualKeys, turnPrincipalCollectionToString(users1_2_3, prefix));
+    @Override
+    public Set asSet() {
+        return null;
     }
 
+    @Override
+    public Collection fromRealm(String s) {
+        return null;
+    }
 
+    @Override
+    public Set<String> getRealmNames() {
+        return null;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return false;
+    }
+
+    @Override
+    public Iterator iterator() {
+        return null;
+    }
 }

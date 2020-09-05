@@ -3,6 +3,8 @@ package org.crazycake.shiro;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.session.UnknownSessionException;
 import org.apache.shiro.session.mgt.eis.AbstractSessionDAO;
+import org.crazycake.shiro.common.IRedisManager;
+import org.crazycake.shiro.common.SessionInMemory;
 import org.crazycake.shiro.exception.SerializationException;
 import org.crazycake.shiro.serializer.ObjectSerializer;
 import org.crazycake.shiro.serializer.RedisSerializer;
@@ -13,6 +15,9 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 import java.util.*;
 
+/**
+ * Used for setting/getting authentication information from Redis
+ */
 public class RedisSessionDAO extends AbstractSessionDAO {
 
 	private static Logger logger = LoggerFactory.getLogger(RedisSessionDAO.class);
@@ -20,35 +25,56 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	private static final String DEFAULT_SESSION_KEY_PREFIX = "shiro:session:";
 	private String keyPrefix = DEFAULT_SESSION_KEY_PREFIX;
 
-	private static final long DEFAULT_SESSION_IN_MEMORY_TIMEOUT = 1000L;
 	/**
 	 * doReadSession be called about 10 times when login.
 	 * Save Session in ThreadLocal to resolve this problem. sessionInMemoryTimeout is expiration of Session in ThreadLocal.
 	 * The default value is 1000 milliseconds (1s).
 	 * Most of time, you don't need to change it.
+	 *
+	 * You can turn it off by setting sessionInMemoryEnabled to false
 	 */
+	private static final long DEFAULT_SESSION_IN_MEMORY_TIMEOUT = 1000L;
 	private long sessionInMemoryTimeout = DEFAULT_SESSION_IN_MEMORY_TIMEOUT;
 
 	private static final boolean DEFAULT_SESSION_IN_MEMORY_ENABLED = true;
-
 	private boolean sessionInMemoryEnabled = DEFAULT_SESSION_IN_MEMORY_ENABLED;
 
-	// expire time in seconds
-	private static final int DEFAULT_EXPIRE = -2;
-	private static final int NO_EXPIRE = -1;
+	private static ThreadLocal sessionsInThread = new ThreadLocal();
 
 	/**
-	 * Please make sure expire is longer than sesion.getTimeout()
+	 * expire time in seconds.
+	 * NOTE: Please make sure expire is longer than session.getTimeout(),
+	 * otherwise you might need the issue that session in Redis got erased when the Session is still available
+	 *
+	 * DEFAULT_EXPIRE: use the timeout of session instead of setting it by yourself
+	 * NO_EXPIRE: never expire
 	 */
+	private static final int DEFAULT_EXPIRE = -2;
+	private static final int NO_EXPIRE = -1;
 	private int expire = DEFAULT_EXPIRE;
 
 	private static final int MILLISECONDS_IN_A_SECOND = 1000;
 
+	/**
+	 * redisManager used for communicate with Redis
+	 */
 	private IRedisManager redisManager;
+
+	/**
+	 * Serializer of key
+	 */
 	private RedisSerializer keySerializer = new StringSerializer();
+
+	/**
+	 * Serializer of value
+	 */
 	private RedisSerializer valueSerializer = new ObjectSerializer();
-	private static ThreadLocal sessionsInThread = new ThreadLocal();
-	
+
+	/**
+	 * save/update session
+	 * @param session
+	 * @throws UnknownSessionException
+	 */
 	@Override
 	public void update(Session session) throws UnknownSessionException {
 		this.saveSession(session);
@@ -56,12 +82,7 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 			this.setSessionToThreadLocal(session.getId(), session);
 		}
 	}
-	
-	/**
-	 * save session
-	 * @param session
-	 * @throws UnknownSessionException
-	 */
+
 	private void saveSession(Session session) throws UnknownSessionException {
 		if (session == null || session.getId() == null) {
 			logger.error("session or session id is null");
@@ -77,7 +98,7 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 			throw new UnknownSessionException(e);
 		}
 		if (expire == DEFAULT_EXPIRE) {
-			this.redisManager.set(key, value, (int) (session.getTimeout() / MILLISECONDS_IN_A_SECOND));
+			redisManager.set(key, value, (int) (session.getTimeout() / MILLISECONDS_IN_A_SECOND));
 			return;
 		}
 		if (expire != NO_EXPIRE && expire * MILLISECONDS_IN_A_SECOND < session.getTimeout()) {
@@ -87,9 +108,13 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 					+ session.getTimeout()
 					+ " . It may cause some problems.");
 		}
-		this.redisManager.set(key, value, expire);
+		redisManager.set(key, value, expire);
 	}
 
+	/**
+	 * delete session
+	 * @param session
+	 */
 	@Override
 	public void delete(Session session) {
 		if (session == null || session.getId() == null) {
@@ -103,11 +128,15 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 		}
 	}
 
+	/**
+	 * get all active sessions
+	 * @return
+	 */
 	@Override
 	public Collection<Session> getActiveSessions() {
 		Set<Session> sessions = new HashSet<Session>();
 		try {
-			Set<byte[]> keys = redisManager.keys(this.keySerializer.serialize(this.keyPrefix + "*"));
+			Set<byte[]> keys = redisManager.keys(keySerializer.serialize(this.keyPrefix + "*"));
 			if (keys != null && keys.size() > 0) {
 				for (byte[] key:keys) {
 					Session s = (Session) valueSerializer.deserialize(redisManager.get(key));
@@ -132,6 +161,11 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 		return sessionId;
 	}
 
+	/**
+	 * I change
+	 * @param sessionId
+	 * @return
+	 */
 	@Override
 	protected Session doReadSession(Serializable sessionId) {
 		if (sessionId == null) {
@@ -191,7 +225,6 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	}
 
 	private Session getSessionFromThreadLocal(Serializable sessionId) {
-
 		if (sessionsInThread.get() == null) {
 			return null;
 		}

@@ -1,4 +1,4 @@
-package org.crazycake.shiro.model;
+package org.crazycake.shiro.integration.fixture.model;
 
 import org.apache.shiro.session.InvalidSessionException;
 import org.apache.shiro.session.Session;

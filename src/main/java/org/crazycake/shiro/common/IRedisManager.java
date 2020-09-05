@@ -1,4 +1,4 @@
-package org.crazycake.shiro;
+package org.crazycake.shiro.common;
 
 import java.util.Set;
 

@@ -1,4 +1,4 @@
-package org.crazycake.shiro;
+package org.crazycake.shiro.common;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPoolConfig;
@@ -46,7 +46,7 @@ public abstract class WorkAloneRedisManager implements IRedisManager {
         if (key == null) {
             return null;
         }
-        byte[] value = null;
+        byte[] value;
         Jedis jedis = getJedis();
         try {
             value = jedis.get(key);
@@ -120,7 +120,7 @@ public abstract class WorkAloneRedisManager implements IRedisManager {
                     dbSize++;
                 }
                 cursor = scanResult.getCursorAsBytes();
-            } while (scanResult.getStringCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
+            } while (scanResult.getCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
         } finally {
             jedis.close();
         }
@@ -146,7 +146,7 @@ public abstract class WorkAloneRedisManager implements IRedisManager {
                 scanResult = jedis.scan(cursor, params);
                 keys.addAll(scanResult.getResult());
                 cursor = scanResult.getCursorAsBytes();
-            } while (scanResult.getStringCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
+            } while (scanResult.getCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
         } finally {
             jedis.close();
         }

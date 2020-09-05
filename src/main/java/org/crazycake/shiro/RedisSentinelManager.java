@@ -1,5 +1,7 @@
 package org.crazycake.shiro;
 
+import org.crazycake.shiro.common.IRedisManager;
+import org.crazycake.shiro.common.WorkAloneRedisManager;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisSentinelPool;
 import redis.clients.jedis.Protocol;
@@ -37,12 +39,14 @@ public class RedisSentinelManager extends WorkAloneRedisManager implements IRedi
 	}
 
 	private void init() {
-		synchronized (this) {
-			if (jedisPool == null) {
-				String[] sentinelHosts = host.split(",\\s*");
-				Set<String> sentinels = new HashSet<String>();
-				Collections.addAll(sentinels, sentinelHosts);
-				jedisPool = new JedisSentinelPool(masterName, sentinels, getJedisPoolConfig(), timeout, soTimeout, password, database);
+		if (jedisPool == null) {
+			synchronized (RedisSentinelManager.class) {
+				if (jedisPool == null) {
+					String[] sentinelHosts = host.split(",\\s*");
+					Set<String> sentinels = new HashSet<String>();
+					Collections.addAll(sentinels, sentinelHosts);
+					jedisPool = new JedisSentinelPool(masterName, sentinels, getJedisPoolConfig(), timeout, soTimeout, password, database);
+				}
 			}
 		}
 	}

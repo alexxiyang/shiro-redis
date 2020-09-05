@@ -1,4 +1,4 @@
-package org.crazycake.shiro.model;
+package org.crazycake.shiro.integration.fixture.model;
 
 import java.io.Serializable;
 

@@ -1,5 +1,7 @@
 package org.crazycake.shiro;
 
+import org.crazycake.shiro.common.IRedisManager;
+import org.crazycake.shiro.common.WorkAloneRedisManager;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Protocol;
@@ -19,10 +21,12 @@ public class RedisManager extends WorkAloneRedisManager implements IRedisManager
 	private JedisPool jedisPool;
 
 	private void init() {
-		synchronized (this) {
-			if (jedisPool == null) {
-				String[] hostAndPort = host.split(":");
-				jedisPool = new JedisPool(getJedisPoolConfig(), hostAndPort[0], Integer.parseInt(hostAndPort[1]), timeout, password, database);
+		if (jedisPool == null) {
+			synchronized (RedisManager.class) {
+				if (jedisPool == null) {
+					String[] hostAndPort = host.split(":");
+					jedisPool = new JedisPool(getJedisPoolConfig(), hostAndPort[0], Integer.parseInt(hostAndPort[1]), timeout, password, database);
+				}
 			}
 		}
 	}

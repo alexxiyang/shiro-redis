@@ -3,6 +3,7 @@ package org.crazycake.shiro;
 import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheException;
 import org.apache.shiro.cache.CacheManager;
+import org.crazycake.shiro.common.IRedisManager;
 import org.crazycake.shiro.serializer.ObjectSerializer;
 import org.crazycake.shiro.serializer.RedisSerializer;
 import org.crazycake.shiro.serializer.StringSerializer;
@@ -17,7 +18,7 @@ public class RedisCacheManager implements CacheManager {
 	private final Logger logger = LoggerFactory.getLogger(RedisCacheManager.class);
 
 	// fast lookup by name map
-	private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
+	private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<>();
 	private RedisSerializer keySerializer = new StringSerializer();
 	private RedisSerializer valueSerializer = new ObjectSerializer();
 
@@ -40,7 +41,7 @@ public class RedisCacheManager implements CacheManager {
 	public <K, V> Cache<K, V> getCache(String name) throws CacheException {
 		logger.debug("get cache, name=" + name);
 
-		Cache cache = caches.get(name);
+		Cache<K, V> cache = caches.get(name);
 
 		if (cache == null) {
 			cache = new RedisCache<K, V>(redisManager, keySerializer, valueSerializer, keyPrefix + name + ":", expire, principalIdFieldName);

@@ -1,5 +1,6 @@
 package org.crazycake.shiro;
 
+import org.crazycake.shiro.common.IRedisManager;
 import redis.clients.jedis.*;
 
 import java.util.HashSet;
@@ -36,9 +37,11 @@ public class RedisClusterManager implements IRedisManager {
     private volatile JedisCluster jedisCluster = null;
 
     private void init() {
-        synchronized (this) {
-            if (jedisCluster == null) {
-                jedisCluster = new JedisCluster(getHostAndPortSet(), timeout, soTimeout, maxAttempts, password, getJedisPoolConfig());
+        if (jedisCluster == null) {
+            synchronized (RedisClusterManager.class) {
+                if (jedisCluster == null) {
+                    jedisCluster = new JedisCluster(getHostAndPortSet(), timeout, soTimeout, maxAttempts, password, getJedisPoolConfig());
+                }
             }
         }
     }
@@ -136,7 +139,7 @@ public class RedisClusterManager implements IRedisManager {
                 scanResult = jedis.scan(cursor, params);
                 keys.addAll(scanResult.getResult());
                 cursor = scanResult.getCursorAsBytes();
-            } while (scanResult.getStringCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
+            } while (scanResult.getCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
         } finally {
             jedis.close();
         }
@@ -157,7 +160,7 @@ public class RedisClusterManager implements IRedisManager {
                 scanResult = jedis.scan(cursor, params);
                 dbSize++;
                 cursor = scanResult.getCursorAsBytes();
-            } while (scanResult.getStringCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
+            } while (scanResult.getCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
         } finally {
             jedis.close();
         }

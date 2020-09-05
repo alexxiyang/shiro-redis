@@ -1,4 +1,4 @@
-package fixture;
+package org.crazycake.shiro.integration.fixture;
 
 import com.github.javafaker.Faker;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -9,11 +9,10 @@ import org.crazycake.shiro.RedisCache;
 import org.crazycake.shiro.RedisManager;
 import org.crazycake.shiro.RedisSessionDAO;
 import org.crazycake.shiro.exception.SerializationException;
-import org.crazycake.shiro.model.FakeAuth;
-import org.crazycake.shiro.model.FakeSession;
-import org.crazycake.shiro.model.UserInfo;
+import org.crazycake.shiro.integration.fixture.model.FakeAuth;
+import org.crazycake.shiro.integration.fixture.model.FakeSession;
+import org.crazycake.shiro.integration.fixture.model.UserInfo;
 import org.crazycake.shiro.serializer.RedisSerializer;
-import org.junit.Assert;
 import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
@@ -22,8 +21,10 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.StringContains.containsString;
 
 public class TestFixture {
 
@@ -168,7 +169,7 @@ public class TestFixture {
     }
 
     public static void assertKeysEquals(Set actualKeys, Set expectKeys) {
-        Assert.assertEquals(expectKeys, actualKeys);
+        assertEquals(expectKeys, actualKeys);
     }
 
     public static void assertAuthEquals(FakeAuth actualAuth, FakeAuth expectAuth) {

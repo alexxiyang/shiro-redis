@@ -1,44 +1,43 @@
 package org.crazycake.shiro;
 
 import org.apache.shiro.cache.Cache;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
+import org.crazycake.shiro.common.IRedisManager;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static fixture.TestFixture.*;
+import static org.mockito.Mockito.*;
 
 public class RedisCacheManagerTest {
 
-    private RedisManager redisManager;
+    private IRedisManager redisManager;
     private RedisCacheManager redisCacheManager;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        redisManager = Mockito.mock(RedisManager.class);
-        redisCacheManager = new RedisCacheManager();
-        redisCacheManager.setRedisManager(redisManager);
-    }
-
-    @After
-    public void tearDown() {
-        blastRedis();
+        redisManager = mock(IRedisManager.class);
     }
 
     @Test
-    public void testGetCache() {
-        Cache cache = redisCacheManager.getCache("testCache1");
-        Cache cache1 = redisCacheManager.getCache("testCache1");
-        assertThat(cache,is(cache1));
+    public void testInitWithoutSettingRedisManager() {
+        redisCacheManager = new RedisCacheManager();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            redisCacheManager.getCache("testCache");
+        });
+    }
 
+    @Test
+    public void testInit() {
+        redisCacheManager = new RedisCacheManager();
+        redisCacheManager.setRedisManager(redisManager);
         redisCacheManager.setKeyPrefix("testRedisManager1:");
-        Cache cache2 = redisCacheManager.getCache("testCache2");
-        assertThat(cache2.getClass().getName(), is("org.crazycake.shiro.RedisCache"));
-
-        RedisCache redisCache2 = (RedisCache) cache2;
-        assertThat(redisCache2.getKeyPrefix(), is("testRedisManager1:testCache2:"));
+        redisCacheManager.setPrincipalIdFieldName("id");
+        Cache testCache = redisCacheManager.getCache("testCache");
+        assertThat(testCache.getClass().getName(), is("org.crazycake.shiro.RedisCache"));
+        RedisCache redisTestCache = (RedisCache) testCache;
+        assertThat(redisTestCache.getKeyPrefix(), is("testRedisManager1:testCache:"));
+        assertThat(redisTestCache.getPrincipalIdFieldName(), is("id"));
     }
 
 }

@@ -1,143 +1,161 @@
 package org.crazycake.shiro;
 
+import org.apache.shiro.session.InvalidSessionException;
 import org.apache.shiro.session.Session;
-import org.apache.shiro.session.UnknownSessionException;
+import org.crazycake.shiro.common.IRedisManager;
 import org.crazycake.shiro.exception.SerializationException;
-import org.crazycake.shiro.model.FakeSession;
+import org.crazycake.shiro.serializer.ObjectSerializer;
 import org.crazycake.shiro.serializer.StringSerializer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Map;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
-import static fixture.TestFixture.*;
-import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.*;
 
 public class RedisSessionDAOTest {
+    private IRedisManager redisManager;
+    private StringSerializer keySerializer = new StringSerializer();
+    private ObjectSerializer valueSerializer = new ObjectSerializer();
 
-    private RedisSessionDAO redisSessionDAO;
-    private FakeSession session1;
-    private FakeSession session2;
-    private FakeSession emptySession;
-    private String name1;
-    private String prefix;
-    private void blast() {
-        blastRedis();
-    }
-
-    private void scaffold() {
-        prefix = scaffoldPrefix();
-        RedisManager redisManager = scaffoldStandaloneRedisManager();
-        redisSessionDAO = scaffoldRedisSessionDAO(redisManager, prefix);
-        session1 = scaffoldSession();
-        session2 = scaffoldSession();
-        emptySession = scaffoldEmptySession();
-        name1 = scaffoldUsername();
-    }
-
-    @Before
+    @BeforeEach
     public void setUp() {
-        blast();
-        scaffold();
+        redisManager = mock(IRedisManager.class);
     }
 
-    @After
-    public void tearDown() {
-        blast();
-    }
-
-    @Test
-    public void testDoCreateNull() {
-        try {
-            redisSessionDAO.doCreate(null);
-            fail();
-        } catch (UnknownSessionException e) {
-            assertEquals(e.getMessage(), "session is null");
+    private RedisSessionDAO mountRedisSessionDAO(Integer expire) {
+        RedisSessionDAO redisSessionDAO = new RedisSessionDAO();
+        if (expire != null) {
+            redisSessionDAO.setExpire(expire);
         }
+        redisSessionDAO.setKeyPrefix("student:");
+        redisSessionDAO.setRedisManager(redisManager);
+        return redisSessionDAO;
     }
 
     @Test
-    public void testDoCreate() {
-        redisSessionDAO.doCreate(session1);
-        Session actualSession = redisSessionDAO.doReadSession(session1.getId());
-        assertSessionEquals(actualSession, session1);
+    public void testUpdate() throws SerializationException {
+        RedisSessionDAO sessionDAO = mountRedisSessionDAO(null);
+        StudentSession session = new StudentSession(99, 2000);
+        sessionDAO.update(session);
+        verify(redisManager).set(keySerializer.serialize("student:99"), valueSerializer.serialize(session), 2);
     }
 
     @Test
-    public void testDoCreateWithSessionTimeout() {
-        doSetSessionDAOExpire(redisSessionDAO, -2);
-        redisSessionDAO.doCreate(session2);
-        assertEquals(getRedisTTL(prefix + session2.getId(), new StringSerializer()), 1800L);
+    public void testUpdateByCustomExpire() throws SerializationException {
+        RedisSessionDAO sessionDAO = mountRedisSessionDAO(3);
+        StudentSession session = new StudentSession(98, 2000);
+        sessionDAO.update(session);
+        verify(redisManager).set(keySerializer.serialize("student:98"), valueSerializer.serialize(session), 3);
     }
 
     @Test
-    public void testUpdateNull() {
-        try {
-            redisSessionDAO.update(null);
-            fail();
-        } catch (UnknownSessionException e) {
-            assertEquals(e.getMessage(), "session or session id is null");
-        }
+    public void testUpdateByNoExpire() throws SerializationException {
+        RedisSessionDAO sessionDAO = mountRedisSessionDAO(-1);
+        StudentSession session = new StudentSession(97, 2000);
+        sessionDAO.update(session);
+        verify(redisManager).set(keySerializer.serialize("student:97"), valueSerializer.serialize(session), -1);
     }
 
     @Test
-    public void testUpdateEmptySession() {
-        try {
-            redisSessionDAO.update(emptySession);
-            fail();
-        } catch (UnknownSessionException e) {
-            assertEquals(e.getMessage(), "session or session id is null");
-        }
+    public void testDelete() throws SerializationException {
+        RedisSessionDAO sessionDAO = mountRedisSessionDAO(null);
+        StudentSession session = new StudentSession(96, 1000);
+        sessionDAO.delete(session);
+        verify(redisManager).del(keySerializer.serialize("student:96"));
     }
 
     @Test
-    public void testUpdate() {
-        redisSessionDAO.doCreate(session1);
-        redisSessionDAO.doReadSession(session1.getId());
-        doChangeSessionName(session1, name1);
-        redisSessionDAO.update(session1);
-        FakeSession actualSession = (FakeSession)redisSessionDAO.doReadSession(session1.getId());
-        assertEquals(actualSession.getName(), name1);
+    public void testGetActiveSessions() throws SerializationException {
+        Set<byte[]> mockKeys = new HashSet<byte[]>();
+        mockKeys.add(keySerializer.serialize("student:1"));
+        mockKeys.add(keySerializer.serialize("student:2"));
+        when(redisManager.keys(keySerializer.serialize("student:*"))).thenReturn(mockKeys);
+
+        StudentSession mockSession1 = new StudentSession(1, 2000);
+        StudentSession mockSession2 = new StudentSession(2, 2000);
+        when(redisManager.get(keySerializer.serialize("student:1"))).thenReturn(valueSerializer.serialize(mockSession1));
+        when(redisManager.get(keySerializer.serialize("student:2"))).thenReturn(valueSerializer.serialize(mockSession2));
+
+        RedisSessionDAO sessionDAO = mountRedisSessionDAO(null);
+        assertThat(sessionDAO.getActiveSessions().size(), is(2));
+    }
+}
+
+class StudentSession implements Session, Serializable {
+    private Integer id;
+    private long timeout;
+
+    public StudentSession(Integer id, long timeout) {
+        this.id = id;
+        this.timeout = timeout;
     }
 
-    @Test
-    public void testUpdateWithoutSessionInMemory() {
-        redisSessionDAO.setSessionInMemoryEnabled(false);
-        redisSessionDAO.doCreate(session1);
-        redisSessionDAO.doReadSession(session1.getId());
-        doChangeSessionName(session1, name1);
-        redisSessionDAO.update(session1);
-        FakeSession actualSession = (FakeSession)redisSessionDAO.doReadSession(session1.getId());
-        assertEquals(actualSession.getName(), name1);
+    @Override
+    public Serializable getId() {
+        return id;
     }
 
-    @Test
-    public void testDelete() {
-        redisSessionDAO.doCreate(session1);
-        redisSessionDAO.delete(session1);
-        assertRedisEmpty();
+    @Override
+    public Date getStartTimestamp() {
+        return null;
     }
 
-    @Test
-    public void testGetActiveSessions() {
-        redisSessionDAO.doCreate(session1);
-        redisSessionDAO.doCreate(session2);
-        Collection<Session> activeSessions = redisSessionDAO.getActiveSessions();
-        assertEquals(activeSessions.size(), 2);
+    @Override
+    public Date getLastAccessTime() {
+        return null;
     }
 
-    @Test
-    public void testRemoveExpiredSessionInMemory() throws InterruptedException, SerializationException {
-        redisSessionDAO.setSessionInMemoryTimeout(500L);
-        redisSessionDAO.doCreate(session1);
-        redisSessionDAO.doReadSession(session1.getId());
-        Thread.sleep(1000);
-        redisSessionDAO.doCreate(session2);
-        redisSessionDAO.doReadSession(session2.getId());
-        Map<Serializable, SessionInMemory> sessionMap = (Map<Serializable, SessionInMemory>) redisSessionDAO.getSessionsInThread().get();
-        assertEquals(sessionMap.size(), 1);
+    @Override
+    public long getTimeout() throws InvalidSessionException {
+        return timeout;
+    }
+
+    @Override
+    public void setTimeout(long l) throws InvalidSessionException {
+
+    }
+
+    @Override
+    public String getHost() {
+        return null;
+    }
+
+    @Override
+    public void touch() throws InvalidSessionException {
+
+    }
+
+    @Override
+    public void stop() throws InvalidSessionException {
+
+    }
+
+    @Override
+    public Collection<Object> getAttributeKeys() throws InvalidSessionException {
+        return null;
+    }
+
+    @Override
+    public Object getAttribute(Object o) throws InvalidSessionException {
+        return null;
+    }
+
+    @Override
+    public void setAttribute(Object o, Object o1) throws InvalidSessionException {
+
+    }
+
+    @Override
+    public Object removeAttribute(Object o) throws InvalidSessionException {
+        return null;
     }
 }

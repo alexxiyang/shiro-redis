@@ -188,7 +188,7 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 				setSessionToThreadLocal(sessionId, session);
 			}
 		} catch (SerializationException e) {
-			logger.error("read session error. settionId=" + sessionId);
+			logger.error("read session error. sessionId=" + sessionId);
 		}
 		return session;
 	}

@@ -5,6 +5,7 @@ import org.apache.shiro.session.UnknownSessionException;
 import org.crazycake.shiro.common.SessionInMemory;
 import org.crazycake.shiro.exception.SerializationException;
 import org.crazycake.shiro.integration.fixture.model.FakeSession;
+import org.crazycake.shiro.serializer.ObjectSerializer;
 import org.crazycake.shiro.serializer.StringSerializer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -16,6 +17,8 @@ import java.util.Collection;
 import java.util.Map;
 
 import static org.crazycake.shiro.integration.fixture.TestFixture.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * RedisSessionDAO integration test was put under org.crazycake.shiro
@@ -29,6 +32,9 @@ public class RedisSessionDAOIntegrationTest {
     private FakeSession emptySession;
     private String name1;
     private String prefix;
+    private StringSerializer keySerializer = new StringSerializer();
+    private ObjectSerializer valueSerializer = new ObjectSerializer();
+
     private void blast() {
         blastRedis();
     }
@@ -135,5 +141,29 @@ public class RedisSessionDAOIntegrationTest {
         redisSessionDAO.doReadSession(session2.getId());
         Map<Serializable, SessionInMemory> sessionMap = (Map<Serializable, SessionInMemory>) redisSessionDAO.getSessionsInThread().get();
         assertEquals(sessionMap.size(), 1);
+    }
+
+    @Test
+    public void testTurnOffSessionInMemoryEnabled() throws InterruptedException, SerializationException {
+        redisSessionDAO.setSessionInMemoryTimeout(2000L);
+        session1.setCompany("apple");
+        redisSessionDAO.doCreate(session1);
+        // Load session into SessionInThread
+        redisSessionDAO.doReadSession(session1.getId());
+        // Directly update session in Redis
+        session1.setCompany("google");
+        RedisManager redisManager = scaffoldStandaloneRedisManager();
+        String sessionRedisKey = prefix + session1.getId();
+        redisManager.set(keySerializer.serialize(sessionRedisKey), valueSerializer.serialize(session1), 10);
+        // Try to read session again
+        Thread.sleep(500);
+        FakeSession sessionFromThreadLocal = (FakeSession)redisSessionDAO.doReadSession(session1.getId());
+        // The company should be the old value
+        assertThat(sessionFromThreadLocal.getCompany(), is("apple"));
+        // Turn off sessionInMemoryEnabled
+        redisSessionDAO.setSessionInMemoryEnabled(false);
+        // Try to read session again. It should get the version in Redis
+        FakeSession sessionFromRedis = (FakeSession)redisSessionDAO.doReadSession(session1.getId());
+        assertThat(sessionFromRedis.getCompany(), is("google"));
     }
 }

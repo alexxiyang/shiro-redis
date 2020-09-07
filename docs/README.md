@@ -22,8 +22,6 @@ You use either of the following 2 ways to include `shiro-redis` into your projec
 
 > **Note:**\
 > Do not use version < 3.1.0\
-> **注意**：\
-> 请不要使用3.1.0以下版本
 
 ## shiro-core/jedis Version Comparison Charts
 

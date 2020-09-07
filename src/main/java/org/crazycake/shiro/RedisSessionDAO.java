@@ -77,6 +77,9 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	 */
 	@Override
 	public void update(Session session) throws UnknownSessionException {
+		if (this.sessionInMemoryEnabled) {
+			this.removeExpiredSessionInMemory();
+		}
 		this.saveSession(session);
 		if (this.sessionInMemoryEnabled) {
 			this.setSessionToThreadLocal(session.getId(), session);
@@ -117,9 +120,15 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	 */
 	@Override
 	public void delete(Session session) {
+		if (this.sessionInMemoryEnabled) {
+			this.removeExpiredSessionInMemory();
+		}
 		if (session == null || session.getId() == null) {
 			logger.error("session or session id is null");
 			return;
+		}
+		if (this.sessionInMemoryEnabled) {
+			this.delSessionFromThreadLocal(session.getId());
 		}
 		try {
 			redisManager.del(keySerializer.serialize(getRedisSessionKey(session.getId())));
@@ -134,6 +143,9 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	 */
 	@Override
 	public Collection<Session> getActiveSessions() {
+		if (this.sessionInMemoryEnabled) {
+			this.removeExpiredSessionInMemory();
+		}
 		Set<Session> sessions = new HashSet<Session>();
 		try {
 			Set<byte[]> keys = redisManager.keys(keySerializer.serialize(this.keyPrefix + "*"));
@@ -151,11 +163,14 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 
 	@Override
 	protected Serializable doCreate(Session session) {
+		if (this.sessionInMemoryEnabled) {
+			this.removeExpiredSessionInMemory();
+		}
 		if (session == null) {
 			logger.error("session is null");
 			throw new UnknownSessionException("session is null");
 		}
-		Serializable sessionId = this.generateSessionId(session);  
+		Serializable sessionId = this.generateSessionId(session);
         this.assignSessionId(session, sessionId);
         this.saveSession(session);
 		return sessionId;
@@ -168,47 +183,67 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 	 */
 	@Override
 	protected Session doReadSession(Serializable sessionId) {
+		if (this.sessionInMemoryEnabled) {
+			this.removeExpiredSessionInMemory();
+		}
 		if (sessionId == null) {
 			logger.warn("session id is null");
 			return null;
 		}
-
 		if (this.sessionInMemoryEnabled) {
 			Session session = getSessionFromThreadLocal(sessionId);
 			if (session != null) {
 				return session;
 			}
 		}
-
 		Session session = null;
-		logger.debug("read session from redis");
 		try {
-			session = (Session) valueSerializer.deserialize(redisManager.get(keySerializer.serialize(getRedisSessionKey(sessionId))));
+			String sessionRedisKey = getRedisSessionKey(sessionId);
+			logger.debug("read session: " + sessionRedisKey + " from Redis");
+			session = (Session) valueSerializer.deserialize(redisManager.get(keySerializer.serialize(sessionRedisKey)));
 			if (this.sessionInMemoryEnabled) {
 				setSessionToThreadLocal(sessionId, session);
 			}
 		} catch (SerializationException e) {
-			logger.error("read session error. sessionId=" + sessionId);
+			logger.error("read session error. sessionId: " + sessionId);
 		}
 		return session;
 	}
 
-	private void setSessionToThreadLocal(Serializable sessionId, Session s) {
+	private void setSessionToThreadLocal(Serializable sessionId, Session session) {
+		this.initSessionsInThread();
 		Map<Serializable, SessionInMemory> sessionMap = (Map<Serializable, SessionInMemory>) sessionsInThread.get();
-		if (sessionMap == null) {
-            sessionMap = new HashMap<Serializable, SessionInMemory>();
-            sessionsInThread.set(sessionMap);
-        }
-
-		removeExpiredSessionInMemory(sessionMap);
-
-		SessionInMemory sessionInMemory = new SessionInMemory();
-		sessionInMemory.setCreateTime(new Date());
-		sessionInMemory.setSession(s);
-		sessionMap.put(sessionId, sessionInMemory);
+		sessionMap.put(sessionId, this.createSessionInMemory(session));
 	}
 
-	private void removeExpiredSessionInMemory(Map<Serializable, SessionInMemory> sessionMap) {
+	private void delSessionFromThreadLocal(Serializable sessionId) {
+		Map<Serializable, SessionInMemory> sessionMap = (Map<Serializable, SessionInMemory>) sessionsInThread.get();
+		if (sessionMap == null) {
+			return;
+		}
+		sessionMap.remove(sessionId);
+	}
+
+	private SessionInMemory createSessionInMemory(Session session) {
+		SessionInMemory sessionInMemory = new SessionInMemory();
+		sessionInMemory.setCreateTime(new Date());
+		sessionInMemory.setSession(session);
+		return sessionInMemory;
+	}
+
+	private void initSessionsInThread() {
+		Map<Serializable, SessionInMemory> sessionMap = (Map<Serializable, SessionInMemory>) sessionsInThread.get();
+		if (sessionMap == null) {
+			sessionMap = new HashMap<Serializable, SessionInMemory>();
+			sessionsInThread.set(sessionMap);
+		}
+	}
+
+	private void removeExpiredSessionInMemory() {
+		Map<Serializable, SessionInMemory> sessionMap = (Map<Serializable, SessionInMemory>) sessionsInThread.get();
+		if (sessionMap == null) {
+			return;
+		}
 		Iterator<Serializable> it = sessionMap.keySet().iterator();
 		while (it.hasNext()) {
 			Serializable sessionId = it.next();
@@ -222,6 +257,9 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 				it.remove();
 			}
 		}
+		if (sessionMap.size() == 0) {
+			sessionsInThread.remove();
+		}
 	}
 
 	private Session getSessionFromThreadLocal(Serializable sessionId) {
@@ -232,11 +270,6 @@ public class RedisSessionDAO extends AbstractSessionDAO {
 		Map<Serializable, SessionInMemory> sessionMap = (Map<Serializable, SessionInMemory>) sessionsInThread.get();
 		SessionInMemory sessionInMemory = sessionMap.get(sessionId);
 		if (sessionInMemory == null) {
-			return null;
-		}
-		long liveTime = getSessionInMemoryLiveTime(sessionInMemory);
-		if (liveTime > sessionInMemoryTimeout) {
-			sessionMap.remove(sessionId);
 			return null;
 		}
 

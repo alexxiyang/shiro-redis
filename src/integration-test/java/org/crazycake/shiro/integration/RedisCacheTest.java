@@ -116,7 +116,6 @@ public class RedisCacheTest {
     public void testSize() throws InterruptedException {
         doPutAuth(redisCache, user1);
         doPutAuth(redisCache, user2);
-        Thread.sleep(800);
         assertEquals(redisCache.size(), 2);
     }
 

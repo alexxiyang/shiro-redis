@@ -1,12 +1,8 @@
 package org.crazycake.shiro.integration;
 
-import com.github.javafaker.Faker;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.SimplePrincipalCollection;
-import org.crazycake.shiro.RedisCacheManager;
 import org.crazycake.shiro.RedisManager;
-import org.crazycake.shiro.RedisSessionDAO;
 import org.crazycake.shiro.exception.SerializationException;
 import org.crazycake.shiro.integration.fixture.model.UserInfo;
 import org.crazycake.shiro.serializer.ObjectSerializer;

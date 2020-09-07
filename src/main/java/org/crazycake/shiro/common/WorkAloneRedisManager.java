@@ -60,7 +60,7 @@ public abstract class WorkAloneRedisManager implements IRedisManager {
      * set
      * @param key key
      * @param value value
-     * @param expireTime expire time
+     * @param expireTime expire time in second
      * @return value
      */
     @Override

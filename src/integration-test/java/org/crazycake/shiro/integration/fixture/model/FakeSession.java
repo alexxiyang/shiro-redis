@@ -11,6 +11,7 @@ import java.util.Date;
 public class FakeSession extends SimpleSession implements Serializable, Session{
     private Integer id;
     private String name;
+    private String company;
 
     public FakeSession() {}
 
@@ -33,6 +34,14 @@ public class FakeSession extends SimpleSession implements Serializable, Session{
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.crazycake.shiro.common;
 
+import org.crazycake.shiro.IRedisManager;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.ScanParams;

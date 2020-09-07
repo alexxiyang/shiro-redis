@@ -3,7 +3,6 @@ package org.crazycake.shiro;
 import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheException;
 import org.apache.shiro.cache.CacheManager;
-import org.crazycake.shiro.common.IRedisManager;
 import org.crazycake.shiro.serializer.ObjectSerializer;
 import org.crazycake.shiro.serializer.RedisSerializer;
 import org.crazycake.shiro.serializer.StringSerializer;

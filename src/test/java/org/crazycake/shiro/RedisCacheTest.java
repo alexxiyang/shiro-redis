@@ -1,8 +1,6 @@
 package org.crazycake.shiro;
 
 import org.apache.shiro.subject.PrincipalCollection;
-import org.apache.shiro.subject.SimplePrincipalCollection;
-import org.crazycake.shiro.common.IRedisManager;
 import org.crazycake.shiro.exception.SerializationException;
 import org.crazycake.shiro.serializer.ObjectSerializer;
 import org.crazycake.shiro.serializer.StringSerializer;

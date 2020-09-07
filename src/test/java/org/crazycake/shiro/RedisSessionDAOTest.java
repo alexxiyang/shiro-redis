@@ -2,7 +2,6 @@ package org.crazycake.shiro;
 
 import org.apache.shiro.session.InvalidSessionException;
 import org.apache.shiro.session.Session;
-import org.crazycake.shiro.common.IRedisManager;
 import org.crazycake.shiro.exception.SerializationException;
 import org.crazycake.shiro.serializer.ObjectSerializer;
 import org.crazycake.shiro.serializer.StringSerializer;

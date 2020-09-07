@@ -1,7 +1,6 @@
 package org.crazycake.shiro;
 
 import org.apache.shiro.cache.Cache;
-import org.crazycake.shiro.common.IRedisManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

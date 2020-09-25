@@ -21,8 +21,8 @@ You use either of the following 2 ways to include `shiro-redis` into your projec
 ```
 
 > **Note:**\
-> 3.3.0 is compiled by java11\
-> 3.3.1 is compiled by java8
+> 3.3.0 is compiled in java11 by mistake.
+> Please use 3.3.1 which is compiled in java8
 
 ## shiro-core/jedis Version Comparison Charts
 

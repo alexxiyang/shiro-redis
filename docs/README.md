@@ -20,8 +20,8 @@ You use either of the following 2 ways to include `shiro-redis` into your projec
 </dependency>
 ```
 
-> **Note:**
-> 3.3.0 is compiled by java11
+> **Note:**\
+> 3.3.0 is compiled by java11\
 > 3.3.1 is compiled by java8
 
 ## shiro-core/jedis Version Comparison Charts

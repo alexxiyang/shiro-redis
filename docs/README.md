@@ -16,19 +16,21 @@ You use either of the following 2 ways to include `shiro-redis` into your projec
 <dependency>
     <groupId>org.crazycake</groupId>
     <artifactId>shiro-redis</artifactId>
-    <version>3.3.0</version>
+    <version>3.3.1</version>
 </dependency>
 ```
 
-> **Note:**\
-> Do not use version < 3.1.0\
+> **Note:**
+> 3.3.0 is compiled by java11
+> 3.3.1 is compiled by java8
 
 ## shiro-core/jedis Version Comparison Charts
 
 | shiro-redis       | shiro     | jedis     |
 | :----------------:| :-------: | :-------: |
 | 3.2.3             | 1.3.2     | 2.9.0     |
-| 3.3.0             | 1.6.0     | 3.3.0     |
+| 3.3.0 (java11)    | 1.6.0     | 3.3.0     |
+| 3.3.1 (java8)     | 1.6.0     | 3.3.0     |
 
 # Before use
 Here is the first thing you need to know. Shiro-redis needs an id field to identify your authorization object in Redis. So please make sure your principal class has a field which you can get unique id of this object. Please setting this id field name by `cacheManager.principalIdFieldName = <your id field name of principal object>`

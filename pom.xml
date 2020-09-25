@@ -4,7 +4,7 @@
 
 	<groupId>org.crazycake</groupId>
 	<artifactId>shiro-redis</artifactId>
-	<version>3.3.0</version>
+	<version>3.3.1</version>
 	<packaging>jar</packaging>
 
 	<name>shiro-redis</name>
@@ -139,8 +139,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.0</version>
 				<configuration>
-					<source>11</source>
-					<target>11</target>
+					<source>1.8</source>
+					<target>1.8</target>
 					<encoding>UTF-8</encoding>
 					<compilerArgument>-nowarn</compilerArgument>
 				</configuration>

@@ -356,7 +356,7 @@ First include the `shiro-redis` Spring boot starter dependency in you applicatio
 <dependency>
     <groupId>org.crazycake</groupId>
     <artifactId>shiro-redis-spring-boot-starter</artifactId>
-    <version>3.2.1</version>
+    <version>3.3.1</version>
 </dependency>
 ```
 

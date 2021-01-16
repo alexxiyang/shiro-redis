@@ -29,7 +29,11 @@
 			<artifactId>jedis</artifactId>
 			<version>3.3.0</version>
 		</dependency>
-
+		<dependency>
+			<groupId>io.lettuce</groupId>
+			<artifactId>lettuce-core</artifactId>
+			<version>6.0.2.RELEASE</version>
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>

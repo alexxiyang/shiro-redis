@@ -2,14 +2,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.crazycake</groupId>
+	<groupId>com.github.yiyingcanfeng</groupId>
 	<artifactId>shiro-redis</artifactId>
-	<version>3.3.2</version>
+	<version>3.4</version>
 	<packaging>jar</packaging>
 
 	<name>shiro-redis</name>
 	<description>shiro only provide the support of ehcache and concurrentHashMap. Here is an implement of redis cache can be used by shiro. Hope it will help you!</description>
-	<url>https://github.com/alexxiyang/shiro-redis</url>
+	<url>https://github.com/yiyingcanfeng/shiro-redis</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -27,7 +27,7 @@
 		<dependency>
 			<groupId>redis.clients</groupId>
 			<artifactId>jedis</artifactId>
-			<version>3.3.0</version>
+			<version>3.5.0</version>
 		</dependency>
 		<dependency>
 			<groupId>io.lettuce</groupId>
@@ -42,7 +42,7 @@
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-core</artifactId>
-			<version>1.6.0</version>
+			<version>1.7.0</version>
 		</dependency>
 
 		<!-- Test -->
@@ -67,7 +67,7 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>3.5.7</version>
+			<version>3.7.7</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -86,19 +86,19 @@
 
 	<developers>
 		<developer>
-				<id>alexxiyang</id>
-			<name>Alex Yang</name>
-			<email>alexxiyang@gmail.com</email>
+			<id>yiyingcanfeng</id>
+			<name>yiyingcanfeng</name>
+			<email>yiyingcanfeng@qq.com</email>
 			<timezone>GMT-7</timezone>
-			<organizationUrl>https://github.com/alexxiyang</organizationUrl>
+			<organizationUrl>https://github.com/yiyingcanfeng</organizationUrl>
 			<roles>
 			</roles>
 		</developer>
 	</developers>
 	<scm>
-		<connection>scm:git:https://github.com/alexxiyang/shiro-redis.git</connection>
-		<developerConnection>scm:git:https://github.com/alexxiyang/shiro-redis.git</developerConnection>
-		<url>https://github.com/alexxiyang/shiro-redis.git</url>
+		<connection>scm:git:https://github.com/yiyingcanfeng/shiro-redis.git</connection>
+		<developerConnection>scm:git:https://github.com/yiyingcanfeng/shiro-redis.git</developerConnection>
+		<url>https://github.com/yiyingcanfeng/shiro-redis.git</url>
 	</scm>
 	<distributionManagement>
 		<snapshotRepository>
@@ -174,8 +174,8 @@
 			</activation>
 
 			<properties>
-				<gpg.keyname>D688E942</gpg.keyname>	<!-- GPG Key ID to use for signing -->
-				<release.username>alexxiyang</release.username>
+				<gpg.keyname>2070C081</gpg.keyname>	<!-- GPG Key ID to use for signing -->
+				<release.username>yiyingcanfeng</release.username>
 			</properties>
 
 			<build>

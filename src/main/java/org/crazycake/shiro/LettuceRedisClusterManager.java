@@ -60,7 +60,7 @@ public class LettuceRedisClusterManager implements IRedisManager {
     /**
      * Whether to enable async.
      */
-    private boolean isAsync = false;
+    private boolean isAsync = true;
 
     /**
      * The number of elements returned at every iteration.

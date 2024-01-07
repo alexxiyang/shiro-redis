@@ -117,9 +117,7 @@ public abstract class WorkAloneRedisManager implements IRedisManager {
             do {
                 scanResult = jedis.scan(cursor, params);
                 List<byte[]> results = scanResult.getResult();
-                for (byte[] result : results) {
-                    dbSize++;
-                }
+                dbSize += results.size();
                 cursor = scanResult.getCursorAsBytes();
             } while (scanResult.getCursor().compareTo(ScanParams.SCAN_POINTER_START) > 0);
         } finally {
@@ -133,6 +131,7 @@ public abstract class WorkAloneRedisManager implements IRedisManager {
      * @param pattern key pattern
      * @return key set
      */
+    @Override
     public Set<byte[]> keys(byte[] pattern) {
         Set<byte[]> keys = new HashSet<byte[]>();
         Jedis jedis = getJedis();

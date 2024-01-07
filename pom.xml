@@ -28,6 +28,13 @@
 			<groupId>redis.clients</groupId>
 			<artifactId>jedis</artifactId>
 			<version>3.6.0</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>io.lettuce</groupId>
+			<artifactId>lettuce-core</artifactId>
+			<version>6.2.3.RELEASE</version>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
@@ -38,7 +45,7 @@
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-core</artifactId>
-			<version>1.10.0</version>
+			<version>1.11.0</version>
 		</dependency>
 
 		<!-- Test -->

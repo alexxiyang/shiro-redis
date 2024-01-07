@@ -93,7 +93,7 @@ public class RedisClusterManager implements IRedisManager {
 
     @Override
     public Long dbSize(byte[] pattern) {
-        Long dbSize = 0L;
+        long dbSize = 0L;
         Map<String, JedisPool> clusterNodes = getJedisCluster().getClusterNodes();
         Iterator<Map.Entry<String, JedisPool>> nodeIt = clusterNodes.entrySet().iterator();
         while (nodeIt.hasNext()) {
@@ -115,7 +115,7 @@ public class RedisClusterManager implements IRedisManager {
         while (nodeIt.hasNext()) {
             Map.Entry<String, JedisPool> node = nodeIt.next();
             Set<byte[]> nodeKeys = getKeysFromClusterNode(node.getValue(), pattern);
-            if (nodeKeys == null || nodeKeys.size() == 0) {
+            if (nodeKeys.size() == 0) {
                 continue;
             }
             keys.addAll(nodeKeys);
